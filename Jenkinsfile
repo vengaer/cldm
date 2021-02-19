@@ -26,6 +26,15 @@ pipeline {
                 make
             }
         }
+        stage('Test') {
+            agent {
+                docket { image "${DOCKER_IMAGE}" }
+            }
+            steps {
+                echo '-- Running Tests --'
+                make test
+            }
+        }
         stage('Gitlab Success') {
             steps {
                 echo '-- Notifying Gitlab --'
