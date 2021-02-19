@@ -1,34 +1,37 @@
-CC         ?= gcc
-LN         ?= ln
-MKDIR      ?= mkdir
-RM         ?= rm
+CC          ?= gcc
+LN          ?= ln
+MKDIR       ?= mkdir
+RM          ?= rm
+PYTEST      ?= pytest
 
-sostem     := libmockc
-sover      := 0
-socompat   := 0
+sostem      := libmockc
+sover       := 0
+socompat    := 0
 
-cext       := c
-oext       := o
-soext      := so
+cext        := c
+oext        := o
+soext       := so
 
-builddir   := build
-srcdir     := $(sostem)
+builddir    := build
+srcdir      := $(sostem)
+testdir     := test
 
-target     := $(sostem).$(soext).$(sover)
-link       := $(sostem).$(soext)
+target      := $(sostem).$(soext).$(sover)
+link        := $(sostem).$(soext)
 
-CFLAGS     ?= -std=c11 -Wall -Wextra -Wpedantic -fPIC -c
-CPPFLAGS   ?=
-LDFLAGS    ?= -shared -Wl,-soname,$(sostem).$(soext).$(socompat)
-LDLIBS     ?= -ldl
-LNFLAGS    ?= -sf
-MKDIRFLAGS ?= -p
-RMFLAGS    ?= -rf
+CFLAGS      ?= -std=c11 -Wall -Wextra -Wpedantic -fPIC -c
+CPPFLAGS    ?=
+LDFLAGS     ?= -shared -Wl,-soname,$(sostem).$(soext).$(socompat)
+LDLIBS      ?= -ldl
+LNFLAGS     ?= -sf
+MKDIRFLAGS  ?= -p
+RMFLAGS     ?= -rf
+PYTESTFLAGS ?= -v --rootdir=$(testdir)
 
-QUIET      ?= @
+QUIET       ?= @
 
-src        := $(wildcard $(srcdir)/*.$(cext))
-obj        := $(patsubst $(srcdir)/%.$(cext),$(builddir)/%.$(oext),$(src))
+src         := $(wildcard $(srcdir)/*.$(cext))
+obj         := $(patsubst $(srcdir)/%.$(cext),$(builddir)/%.$(oext),$(src))
 
 .PHONY: all
 all: $(target) $(link)
@@ -44,6 +47,11 @@ $(target): $(obj)
 $(builddir)/%.$(oext): $(srcdir)/%.$(cext) | $(builddir)
 	$(info [CC] $@)
 	$(QUIET)$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS)
+
+.PHONY: test
+test:
+	$(QUIET)$(PYTEST) $(PYTESTFLAGS)
+
 
 $(builddir):
 	$(QUIET)$(MKDIR) $(MKDIRFLAGS) $@
