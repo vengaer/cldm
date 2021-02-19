@@ -1,7 +1,14 @@
 import os
 import pytest
+import shutil
 
 from config import *
+
+def pytest_runtest_setup():
+    try:
+        os.mkdir(working_dir)
+    except:
+        pass
 
 def pytest_runtest_teardown():
     try:
@@ -9,4 +16,6 @@ def pytest_runtest_teardown():
     except:
         pass
 
-    os.system('make -C {} clean'.format(project_root))
+    shutil.rmtree(working_dir)
+
+    os.system('make -sC {} clean'.format(project_root))
