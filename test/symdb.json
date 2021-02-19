@@ -1,0 +1,20 @@
+{
+    "includes": ["stddef.h"],
+    "structs": {
+        "s0": {
+            "members": {
+                "i": { "type": "int" },
+                "p": { "type": "struct s0 *" }
+            }
+        }
+    },
+    "symbols": {
+        "foo":   {"rettype": "void", "params": ["int", "char"]},
+        "bar":   {"rettype": "int",  "params": ["void *", "char"]},
+        "baz":   {"rettype": "void", "params": []},
+        "func0": {"rettype": "void", "params": ["void"]},
+        "func1": {"rettype": "char const *", "params": ["char const *restrict", "size_t", "char const *restrict"]},
+        "func2": {"rettype": "int *", "params": []},
+        "func3": {"rettype": "struct s0 *", "params": ["char const *", "struct s0"]}
+    }
+}
