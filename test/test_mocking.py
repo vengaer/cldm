@@ -9,7 +9,7 @@ from symbols import *
 from util import *
 
 def test_preload():
-    target = 'makegen_test'
+    target = 'mockups_test'
     symbol_tu = 'syms.c'
 
     db = read_db()
@@ -33,7 +33,7 @@ def test_preload():
     assert exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))[0] == 28
 
 def test_gmock_compat():
-    target = 'makegen_test'
+    target = 'mockups_test'
     symbol_tu = 'syms.c'
 
     db = read_db()
@@ -58,7 +58,7 @@ def test_gmock_compat():
     assert exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))[0] == 28
 
 def test_symbol_fallback():
-    target = 'makegen_test'
+    target = 'mockups_test'
     symbol_tu = 'syms.c'
 
     db = read_db()
@@ -86,7 +86,7 @@ def test_symbol_fallback():
 
 
 def test_invoke():
-    target = 'makegen_test'
+    target = 'mockups_test'
     symbol_tu = 'syms.c'
     mockmsg = 'mockfoo called'
 
@@ -118,7 +118,7 @@ def test_invoke():
     assert output.decode('utf-8').replace('\n', '') == mockmsg
 
 def test_increment_counter():
-    target = 'makegen_test'
+    target = 'mockups_test'
     symbol_tu = 'syms.c'
 
     db = read_db()
@@ -148,7 +148,7 @@ def test_increment_counter():
     assert output.decode('utf-8').replace('\n', '') == '123'
 
 def test_invoke_with_fallback():
-    target = 'makegen_test'
+    target = 'mockups_test'
     symbol_tu = 'syms.c'
     mockmsg = 'mockfoo called'
 
@@ -181,7 +181,7 @@ def test_invoke_with_fallback():
     assert output.decode('utf-8').strip().split('\n') == [mockmsg, re.search(r'puts\("(.*)"\)', db['symbols']['ret2']['exec'][0]).group(1)]
 
 def test_will_once():
-    target = 'makegen_test'
+    target = 'mockups_test'
     symbol_tu = 'syms.c'
 
     db = read_db()
@@ -210,7 +210,7 @@ def test_will_once():
     assert output.decode('utf-8').strip().split('\n') == ['5', re.search(r'puts\("(.*)"\)', db['symbols']['ret2']['exec'][0]).group(1), '2']
 
 def test_atoi_mock():
-    target = 'makegen_test'
+    target = 'mockups_test'
     symbol_tu = 'syms.c'
 
     db = read_db()
