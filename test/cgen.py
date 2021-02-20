@@ -94,6 +94,8 @@ class CGen():
                     self.__append_src_content('{} {};'.format(db['structs'][struct]['members'][name]['type'], name))
         for symname in db['symbols']:
             sym = db['symbols'][symname]
+            if not sym.get('generate', True):
+                continue
             with self.with_open_function(sym['rettype'], symname, sym.get('params', ['void'])):
                 if len(sym.get('params', [])) != 1 or sym['params'][0] != 'void':
                     for i, _ in enumerate(sym.get('params', [])):

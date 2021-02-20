@@ -218,3 +218,35 @@ def test_will_once():
     rv, output, _ = exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))
     assert rv == 0
     assert output.decode('utf-8').strip().split('\n') == ['5', re.search(r'puts\("(.*)"\)', db['symbols']['ret2']['exec'][0]).group(1), '2']
+
+def test_atoi_mock():
+    target = 'makegen_test'
+    symbol_tu = 'syms.c'
+
+    db = read_db()
+    cgen = CGen('main.c')
+    cgen.append_include('lmc.h', system_header=False)       \
+        .append_include('syms.h', system_header=False)      \
+        .append_include('stdio.h')                          \
+        .append_include('stdlib.h')
+
+    with cgen.with_open_function('int', 'main'):
+        cgen.append_line('EXPECT_CALL(atoi).WILL_ONCE(RETURN(5));') \
+            .append_line('printf("%d\\n", atoi("1"));')             \
+            .append_line('printf("%d\\n", atoi("1"));')             \
+            .append_return('atoi("1")')
+    cgen.write()
+
+    cgen = CGen(symbol_tu)
+    cgen.generate_matching_symbols()
+    cgen.write()
+
+    mgen = Makegen(target, src='main.c')
+    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.generate()
+
+    assert exec_bash('make -C {}'.format(working_dir))[0] == 0
+    rv, output, _ = exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))
+    print(output)
+    assert rv == 1
+    assert output.decode('utf-8').strip().split('\n') == ['5', '1']
