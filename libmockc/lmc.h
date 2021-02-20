@@ -663,7 +663,6 @@ enum lmc_opmode {
 #define INVOKE(...)              LMC_INVOKE(__VA_ARGS__)
 #define RETURN(...)              LMC_RETURN(__VA_ARGS__)
 #define INCREMENT_COUNTER(...)   LMC_INCREMENT_COUNTER(__VA_ARGS__)
-#define ASSIGN(...)              LMC_ASSIGN(__VA_ARGS__)
 #endif
 
 #ifdef LMC_GMOCK_COMPAT
@@ -672,7 +671,6 @@ enum lmc_opmode {
 #define Invoke(...)           LMC_INVOKE(__VA_ARGS__)
 #define Return(...)           LMC_RETURN(__VA_ARGS__)
 #define IncrementCounter(...) LMC_INCREMENT_COUNTER(__VA_ARGS__)
-#define Assign(...)           LMC_ASSIGN(__VA_ARGS__)
 #endif
 
 #include "lmc_config.h"
