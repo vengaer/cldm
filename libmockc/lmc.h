@@ -536,9 +536,7 @@ enum lmc_opmode {
                     lmc_assert(0, "Invalid opmode");                                                    \
             }                                                                                           \
         }                                                                                               \
-        extern _Bool lmc_is_open(void);                                                                 \
         extern void *lmc_symbol(char const*);                                                           \
-        lmc_assert(lmc_is_open(), "lmc has not been initialized");                                      \
         rettype(* lmc_handle_ ## name)(__VA_ARGS__);                                                    \
         dlerror();                                                                                      \
         *(void **) (& lmc_handle_ ## name) = lmc_symbol(#name);                                         \
@@ -588,9 +586,7 @@ enum lmc_opmode {
                     lmc_assert(0, "Invalid opmode");                                                    \
             }                                                                                           \
         }                                                                                               \
-        extern _Bool lmc_is_open(void);                                                                 \
         extern void *lmc_symbol(char const*);                                                           \
-        lmc_assert(lmc_is_open(), "lmc has not been initialized");                                      \
         rettype(* lmc_handle_ ## name)(void);                                                           \
         dlerror();                                                                                      \
         *(void **) (& lmc_handle_ ## name) = lmc_symbol(#name);                                         \
@@ -607,6 +603,13 @@ enum lmc_opmode {
 
 #define lmc_mock_function1(call_prefix, call_postop, utype, rettype, name)                              \
     lmc_generate_mock_ctx(utype, rettype, name, void)
+#endif
+
+#ifdef LMC_GENERATE_SYMBOLS
+#define lmc_for_each_word(iter, str)                                            \
+    for(char *end = (iter = str, strchr(str, ' '));                             \
+        (end ? *end = '\0' : 0, iter);                                    \
+        iter = end ? end + 1 :  0, end ? end = strchr(end + 1, ' ') : 0)
 #endif
 
 #define LMC_MOCK_FUNCTION(rettype, ...) \
@@ -659,12 +662,6 @@ enum lmc_opmode {
 #define IncrementCounter(...) LMC_INCREMENT_COUNTER(__VA_ARGS__)
 #define Assign(...)           LMC_ASSIGN(__VA_ARGS__)
 #endif
-
-int lmc_init2(int argc, char *const *argv);
-int lmc_init1(char const *binary_path);
-void lmc_close(void);
-
-#define lmc_init(...) lmc_overload(lmc_init, __VA_ARGS__)
 
 #include "mockups.h"
 
