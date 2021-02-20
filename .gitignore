@@ -1,2 +1,5 @@
 a.out
 **/__pycache__/**
+libmockc.so*
+build/**
+test/running/**
