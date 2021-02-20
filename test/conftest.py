@@ -3,12 +3,15 @@ import pytest
 import shutil
 
 from config import *
+from symbols import *
 
 def pytest_runtest_setup():
     try:
         os.mkdir(working_dir)
     except:
         pass
+
+    gen_symbols()
 
 def pytest_runtest_teardown():
     try:

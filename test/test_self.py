@@ -14,8 +14,8 @@ def test_makefile_generation():
     mgen.generate()
 
     cgen = CGen('main.c')
-    cgen.open_function('int', 'main')
-    cgen.close_function()
+    with cgen.with_open_function('int', 'main'):
+        pass
     cgen.write()
 
     assert os.system('make -C {}'.format(working_dir)) == 0
