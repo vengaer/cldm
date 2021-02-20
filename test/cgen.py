@@ -45,6 +45,7 @@ class CGen():
             csym = '"'
 
         self.__append_src_content('#include {}{}{}'.format(osym, name, csym))
+        return self
 
     def __close_scope(self, semicolon=False):
         if self.indent == 0:
@@ -55,9 +56,11 @@ class CGen():
     def open_struct(self, name):
         self.__append_src_content('struct {} {{'.format(name))
         self.indent = self.indent + 1
+        return self
 
     def close_struct(self):
         self.__close_scope(True)
+        return self
 
     def open_function(self, rettype, name, params=['void']):
         if len(params) == 1 and params[0] == 'void':
@@ -69,12 +72,15 @@ class CGen():
             if name != 'main':
                 self.__append_header_content('{} {}({});'.format(rettype, name, ', '.join([p + ' a{}'.format(i) for i, p in enumerate(params)])))
         self.indent = self.indent + 1
+        return self
 
     def close_function(self):
         self.__close_scope()
+        return self
 
     def append_return(self, retval):
         self.__append_src_content('return {};'.format(retval))
+        return self
 
     def generate_matching_symbols(self):
         db = read_db()
@@ -97,9 +103,11 @@ class CGen():
                     self.append_return(sym.get('return', '({}){{ 0 }}'.format(sym['rettype'])))
 
         os.system('make -B -C {}'.format(project_root))
+        return self
 
     def append_line(self, line):
         self.__append_src_content(line)
+        return self
 
     def write(self):
         with open(self.srcfile, 'w') as fd:

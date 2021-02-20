@@ -5,6 +5,7 @@ from pathlib import Path
 from cgen import *
 from config import *
 from makegen import *
+from util import *
 
 def test_makefile_generation():
     target = 'makegen_test'
@@ -18,5 +19,5 @@ def test_makefile_generation():
         pass
     cgen.write()
 
-    assert os.system('make -C {}'.format(working_dir)) == 0
-    assert os.system(working_dir / target) == 0
+    assert exec_bash('make -C {}'.format(working_dir))[0] == 0
+    assert exec_bash(working_dir / target)[0] == 0

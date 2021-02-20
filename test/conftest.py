@@ -13,6 +13,7 @@ def pytest_runtest_setup():
 
     gen_symbols()
 
+'''
 def pytest_runtest_teardown():
     try:
         os.unlink(symfile)
@@ -22,3 +23,4 @@ def pytest_runtest_teardown():
     shutil.rmtree(working_dir)
 
     os.system('make -sC {} clean'.format(project_root))
+'''
