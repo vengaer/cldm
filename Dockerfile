@@ -5,5 +5,5 @@ RUN pacman -Syu --needed --noconfirm make clang gcc git python python-pytest
 
 ENV CC=gcc
 
-COPY . /lmc
-WORKDIR /lmc
+COPY . /cmock
+WORKDIR /cmock

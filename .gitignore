@@ -1,8 +1,8 @@
 a.out
 **/__pycache__/**
-libmockc.so*
+libcmock.so*
 build/**
 test/running/**
-libmockc/mockups.h
-libmockc/lmc_config.h
+cmock/mockups.h
+cmock/cmock_config.h
 .help.stamp

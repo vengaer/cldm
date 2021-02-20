@@ -10,7 +10,7 @@ def test_readme_ex0():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('lmc.h', system_header=False)   \
+    cgen.append_include('cmock.h', system_header=False) \
         .append_include('assert.h')                     \
         .append_include('stdlib.h')
 
@@ -38,7 +38,7 @@ def test_readme_ex1():
     target = 'readme_test'
 
     cgen = CGen(symfile)
-    cgen.append_include('lmc.h', system_header=False)                           \
+    cgen.append_include('cmock.h', system_header=False)                         \
         .append_line('MOCK_FUNCTION(int *, get_resource, int);')
     cgen.write()
 
@@ -53,7 +53,7 @@ def test_readme_ex1():
         .write()
 
     cgen = CGen('main.c')
-    cgen.append_include('lmc.h', system_header=False)                           \
+    cgen.append_include('cmock.h', system_header=False)                         \
         .append_include('resource.h', system_header=False)                      \
         .append_include('assert.h')
     with cgen.with_open_function('int', 'main'):
@@ -66,14 +66,14 @@ def test_readme_ex1():
 
     assert exec_bash('make -B -C {}'.format(project_root))[0] == 0
     assert exec_bash('gcc -shared -fPIC -o {d}/libresource.so {d}/resource.c'.format(d=working_dir))[0] == 0
-    assert exec_bash('gcc -o {d}/a.out {d}/main.c -L{d} -L{root} -lresource -lmockc -I{root}/libmockc'.format(d=working_dir, root=project_root))[0] == 0
-    assert exec_bash('LD_PRELOAD={root}/libmockc.so LD_LIBRARY_PATH={wd} {wd}/a.out'.format(root=project_root, wd=working_dir))[0] == 0
+    assert exec_bash('gcc -o {d}/a.out {d}/main.c -L{d} -L{root} -lresource -lcmock -I{root}/cmock'.format(d=working_dir, root=project_root))[0] == 0
+    assert exec_bash('LD_PRELOAD={root}/libcmock.so LD_LIBRARY_PATH={wd} {wd}/a.out'.format(root=project_root, wd=working_dir))[0] == 0
 
 def test_readme_ex2():
     target = 'readme_test'
 
     cgen = CGen(symfile)
-    cgen.append_include('lmc.h', system_header=False)                           \
+    cgen.append_include('cmock.h', system_header=False)                         \
         .append_line('MOCK_FUNCTION(int *, get_resource, int);')
     cgen.write()
 
@@ -88,7 +88,7 @@ def test_readme_ex2():
         .write()
 
     cgen = CGen('main.c')
-    cgen.append_include('lmc.h', system_header=False)                           \
+    cgen.append_include('cmock.h', system_header=False)                         \
         .append_include('resource.h', system_header=False)                      \
         .append_include('assert.h')
     with cgen.with_open_function('int', 'main'):
@@ -100,5 +100,5 @@ def test_readme_ex2():
     cgen.write()
 
     assert exec_bash('make -B -C {}'.format(project_root))[0] == 0
-    assert exec_bash('gcc -o {d}/a.out {d}/main.c {d}/resource.c -L{d} -L{root} -lmockc -I{root}/libmockc'.format(d=working_dir, root=project_root))[0] == 0
-    assert exec_bash('LD_PRELOAD={root}/libmockc.so LD_LIBRARY_PATH={wd} {wd}/a.out'.format(root=project_root, wd=working_dir))[0] != 0
+    assert exec_bash('gcc -o {d}/a.out {d}/main.c {d}/resource.c -L{d} -L{root} -lcmock -I{root}/cmock'.format(d=working_dir, root=project_root))[0] == 0
+    assert exec_bash('LD_PRELOAD={root}/libcmock.so LD_LIBRARY_PATH={wd} {wd}/a.out'.format(root=project_root, wd=working_dir))[0] != 0

@@ -14,7 +14,7 @@ def test_preload():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('lmc.h', system_header=False)
+    cgen.append_include('cmock.h', system_header=False)
     cgen.append_include('syms.h', system_header=False)
     with cgen.with_open_function('int', 'main'):
         cgen.append_line('EXPECT_CALL(bar).WILL_REPEATEDLY(RETURN(28));')
@@ -38,8 +38,8 @@ def test_gmock_compat():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_line('#define LMC_GMOCK_COMPAT')
-    cgen.append_include('lmc.h', system_header=False)
+    cgen.append_line('#define CMOCK_GMOCK_COMPAT')
+    cgen.append_include('cmock.h', system_header=False)
     cgen.append_include('syms.h', system_header=False)
     with cgen.with_open_function('int', 'main'):
         cgen.append_line('EXPECT_CALL(bar).WillRepeatedly(Return(28));')
@@ -63,7 +63,7 @@ def test_symbol_fallback():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('lmc.h', system_header=False)       \
+    cgen.append_include('cmock.h', system_header=False)     \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')
 
@@ -92,7 +92,7 @@ def test_invoke():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('lmc.h', system_header=False)       \
+    cgen.append_include('cmock.h', system_header=False)     \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')
 
@@ -123,7 +123,7 @@ def test_increment_counter():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('lmc.h', system_header=False)       \
+    cgen.append_include('cmock.h', system_header=False)     \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')
 
@@ -154,7 +154,7 @@ def test_invoke_with_fallback():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('lmc.h', system_header=False)       \
+    cgen.append_include('cmock.h', system_header=False)     \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')
 
@@ -186,7 +186,7 @@ def test_will_once():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('lmc.h', system_header=False)       \
+    cgen.append_include('cmock.h', system_header=False)     \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')
 
@@ -215,7 +215,7 @@ def test_atoi_mock():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('lmc.h', system_header=False)       \
+    cgen.append_include('cmock.h', system_header=False)     \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')                          \
         .append_include('stdlib.h')

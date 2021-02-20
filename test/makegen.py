@@ -6,7 +6,7 @@ from config import *
 def gen_default_makefile(mgen, target, symbol_tu):
     mgen.adjust('CFLAGS', '-fPIC', Mod.REMOVE)
     mgen.adjust('LDFLAGS', '-shared', Mod.REMOVE)
-    mgen.adjust('LDFLAGS', '-L. -L{} -lmockc'.format(project_root), Mod.APPEND)
+    mgen.adjust('LDFLAGS', '-L. -L{} -lcmock'.format(project_root), Mod.APPEND)
     mgen.adjust('LDLIBS', '-ltest', Mod.APPEND)
     mgen.add_rule('libtest.so', '$(builddir)/syms.o', '$(QUIET)$(CC) -o $@ $^ -shared $(LDFLAGS) $(LDLIBS)', '[LD] $@')
     mgen.add_rule('$(builddir)/syms.o', str(working_dir / symbol_tu), '$(QUIET)$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -fPIC', '[CC] $@')

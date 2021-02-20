@@ -6,7 +6,7 @@ ECHO        ?= echo
 TOUCH       ?= touch
 PYTEST      ?= pytest
 
-sostem      := libmockc
+sostem      := libcmock
 sover       := 0
 socompat    := 0
 
@@ -15,18 +15,18 @@ oext        := o
 soext       := so
 
 builddir    := build
-srcdir      := $(sostem)
+srcdir      := $(patsubst lib%,%,$(sostem))
 testdir     := test
 
 target      := $(sostem).$(soext).$(sover)
 link        := $(sostem).$(soext)
 
-config      := $(srcdir)/lmc_config.h
+config      := $(srcdir)/cmock_config.h
 
 MOCKUPS     ?= $(abspath $(srcdir)/mockups.h)
 
 CFLAGS      ?= -std=c11 -Wall -Wextra -Wpedantic -fPIC -c
-CPPFLAGS    ?= -DLMC_LIBC=$(shell ldd /usr/bin/env | grep -oP "\s*\K/.*libc\.so(\.\d+)?")
+CPPFLAGS    ?= -DCMOCK_LIBC=$(shell ldd /usr/bin/env | grep -oP "\s*\K/.*libc\.so(\.\d+)?")
 LDFLAGS     ?= -shared -Wl,-soname,$(sostem).$(soext).$(socompat)
 LDLIBS      ?= -ldl
 LNFLAGS     ?= -sf
@@ -59,7 +59,7 @@ $(builddir)/%.$(oext): $(srcdir)/%.$(cext) $(config) | $(builddir)
 
 $(config): $(MOCKUPS)
 	$(info [GEN] $@)
-	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef LMC_CONFIG_H\n#define LMC_CONFIG_H\n#include "$^"\n#endif' > $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CMOCK_CONFIG_H\n#define CMOCK_CONFIG_H\n#include "$^"\n#endif' > $@
 
 .PHONY: test
 test:
@@ -73,9 +73,9 @@ clean:
 	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(target) $(link) $(help) $(config)
 
 $(help): FORCE
-	$(info +============+)
-	$(info |  libmockc  |)
-	$(info +============+)
+	$(info +=========+)
+	$(info |  cmock  |)
+	$(info +=========+)
 	$(info Linker-based function mocking)
 	$(info )
 	$(info Building:)
@@ -86,7 +86,7 @@ $(help): FORCE
 	$(info Testing (requires pytest):)
 	$(info Run 'make test')
 	$(info )
-	$(info For more info: gitlab.com/vilhelmengstrom/libmockc)
+	$(info For more info: gitlab.com/vilhelmengstrom/cmock)
 	$(QUIET)$(TOUCH) $@
 
 .PHONY: help
