@@ -57,9 +57,9 @@ $(builddir)/%.$(oext): $(srcdir)/%.$(cext) $(config) | $(builddir)
 	$(info [CC]  $@)
 	$(QUIET)$(CC) -o $@ $(filter-out $(config),$^) $(CFLAGS) $(CPPFLAGS)
 
-$(config):
+$(config): $(MOCKUPS)
 	$(info [GEN] $@)
-	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef LMC_CONFIG_H\n#define LMC_CONFIG_H\n#include "$(MOCKUPS)"\n#endif' > $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef LMC_CONFIG_H\n#define LMC_CONFIG_H\n#include "$^"\n#endif' > $@
 
 .PHONY: test
 test:
