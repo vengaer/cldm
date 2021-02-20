@@ -237,7 +237,43 @@ def test_atoi_mock():
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
     rv, output, _ = exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))
-    print(output)
     assert rv == 1
     assert output.decode('utf-8').strip().split('\n') == ['5', '1']
 
+
+def test_max_params():
+    target = 'mockups_test'
+
+    typelist = 'int ' * 127
+    typelist = [t for t in typelist.strip().split(' ')]
+    cgen = CGen(symfile)
+    cgen.append_include('cmock.h', system_header=False)                         \
+        .append_line('MOCK_FUNCTION(int, foo, {});'.format(', '.join(typelist)))
+    cgen.write()
+
+    cgen = CGen('syms.c')
+    with cgen.with_open_function('int', 'foo', typelist):
+        for i, _ in enumerate(typelist):
+            cgen.append_line('(void)a{};'.format(i))
+        cgen.append_return('8')
+    cgen.write()
+
+    cgen = CGen('syms.h')
+    cgen.append_line('int foo({});'.format(', '.join([t + ' a{}'.format(i) for i, t in enumerate(typelist)])))
+    cgen.write()
+
+    cgen = CGen('main.c')
+    cgen.append_include('cmock.h', system_header=False)                         \
+        .append_include('syms.h', system_header=False)
+    with cgen.with_open_function('int', 'main'):
+        cgen.append_line('EXPECT_CALL(foo).WILL_ONCE(RETURN(38));')             \
+            .append_return(CGen.default_call('foo', typelist))
+    cgen.write()
+
+    mgen = Makegen(target, src='main.c')
+    gen_default_makefile(mgen, target, 'syms.c')
+    mgen.generate()
+
+    assert exec_bash('make -C {}'.format(project_root))[0] == 0
+    assert exec_bash('make -C {}'.format(working_dir))[0] == 0
+    assert exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))[0] == 38

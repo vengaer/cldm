@@ -34,7 +34,7 @@ class CGen():
         self.header.append('{}\n'.format(string))
 
     def default_call(name, params=['void']):
-        return '{}({});'.format(name, '' if len(params) == 1 and params[0] == 'void' else ', '.join(['({}){{ 0 }}'.format(t) for t in params]))
+        return '{}({})'.format(name, '' if len(params) == 1 and params[0] == 'void' else ', '.join(['({}){{ 0 }}'.format(t) for t in params]))
 
     def append_include(self, name, system_header=True):
         if system_header:
