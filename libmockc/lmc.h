@@ -497,7 +497,7 @@ enum lmc_opmode {
     }
 
 #ifdef LMC_GENERATE_SYMBOLS
-#define lmc_mock_function(call_prefix, call_postop, utype, rettype, name, ...)                          \
+#define lmc_mock_function(rvinit, call_prefix, retstatement, utype, rettype, name, ...)                 \
     lmc_generate_mock_ctx(utype, rettype, name, __VA_ARGS__);                                           \
     struct lmc_mock_ ## name ## _ctx lmc_mock_ ## name = {                                              \
         .info = {                                                                                       \
@@ -515,6 +515,7 @@ enum lmc_opmode {
         }                                                                                               \
     };                                                                                                  \
     rettype name(lmc_genparams(__VA_ARGS__)) {                                                          \
+        rvinit;                                                                                         \
         if(!lmc_mock_ ## name.expired) {                                                                \
             if(lmc_mock_ ## name.once) {                                                                \
                 lmc_mock_ ## name.expired = 1;                                                          \
@@ -522,32 +523,34 @@ enum lmc_opmode {
             switch(lmc_mock_ ## name.opdata.mode) {                                                     \
                 case LMC_OP_INVOKE:                                                                     \
                     call_prefix lmc_mock_ ## name.opdata.invoke(lmc_arglist(lmc_count(__VA_ARGS__)));   \
-                    call_postop;                                                                        \
+                    retstatement;                                                                       \
                     break;                                                                              \
                 case LMC_OP_RETURN:                                                                     \
                     call_prefix lmc_mock_ ## name.opdata.retval;                                        \
-                    call_postop;                                                                        \
+                    retstatement;                                                                       \
                     break;                                                                              \
                 case LMC_OP_INCREMENT:                                                                  \
                     call_prefix ++lmc_mock_ ## name.opdata.counter;                                     \
-                    call_postop;                                                                        \
+                    retstatement;                                                                       \
                     break;                                                                              \
                 default:                                                                                \
                     lmc_assert(0, "Invalid opmode");                                                    \
             }                                                                                           \
         }                                                                                               \
         extern void *lmc_symbol(char const*);                                                           \
+        extern void lmc_close_dlhandle(void);                                                           \
         rettype(* lmc_handle_ ## name)(__VA_ARGS__);                                                    \
         dlerror();                                                                                      \
         *(void **) (& lmc_handle_ ## name) = lmc_symbol(#name);                                         \
         char const *lmc_error_ ## name = dlerror();                                                     \
         lmc_assert(!lmc_error_ ## name, lmc_error_ ## name);                                            \
         call_prefix lmc_handle_ ## name(lmc_arglist(lmc_count(__VA_ARGS__)));                           \
-        call_postop;                                                                                    \
+        lmc_close_dlhandle();                                                                           \
+        retstatement;                                                                                   \
     }                                                                                                   \
     void lmc_trailing_ ## name (void)
 
-#define lmc_mock_function1(call_prefix, call_postop, utype, rettype, name)                              \
+#define lmc_mock_function1(rvinit, call_prefix, retstatement, utype, rettype, name)                     \
     lmc_generate_mock_ctx(utype, rettype, name, void);                                                  \
     struct lmc_mock_ ## name ## _ctx lmc_mock_ ## name = {                                              \
         .info = {                                                                                       \
@@ -565,6 +568,7 @@ enum lmc_opmode {
         }                                                                                               \
     };                                                                                                  \
     rettype name(void) {                                                                                \
+        rvinit;                                                                                         \
         if(!lmc_mock_ ## name.expired) {                                                                \
             if(lmc_mock_ ## name.once) {                                                                \
                 lmc_mock_ ## name.expired = 1;                                                          \
@@ -572,36 +576,38 @@ enum lmc_opmode {
             switch(lmc_mock_ ## name.opdata.mode) {                                                     \
                 case LMC_OP_INVOKE:                                                                     \
                     call_prefix lmc_mock_ ## name.opdata.invoke();                                      \
-                    call_postop;                                                                        \
+                    retstatement;                                                                       \
                     break;                                                                              \
                 case LMC_OP_RETURN:                                                                     \
                     call_prefix lmc_mock_ ## name.opdata.retval;                                        \
-                    call_postop;                                                                        \
+                    retstatement;                                                                       \
                     break;                                                                              \
                 case LMC_OP_INCREMENT:                                                                  \
                     call_prefix ++lmc_mock_ ## name.opdata.counter;                                     \
-                    call_postop;                                                                        \
+                    retstatement;                                                                       \
                     break;                                                                              \
                 default:                                                                                \
                     lmc_assert(0, "Invalid opmode");                                                    \
             }                                                                                           \
         }                                                                                               \
         extern void *lmc_symbol(char const*);                                                           \
+        extern void lmc_close_dlhandle(void);                                                           \
         rettype(* lmc_handle_ ## name)(void);                                                           \
         dlerror();                                                                                      \
         *(void **) (& lmc_handle_ ## name) = lmc_symbol(#name);                                         \
         char const *lmc_error_ ## name = dlerror();                                                     \
         lmc_assert(!lmc_error_ ## name, lmc_error_ ## name);                                            \
         call_prefix lmc_handle_ ## name ();                                                             \
-        call_postop;                                                                                    \
+        lmc_close_dlhandle();                                                                           \
+        retstatement;                                                                                   \
     }                                                                                                   \
     void lmc_trailing_ ## name (void)
 #else
 
-#define lmc_mock_function(call_prefix, call_postop, utype, rettype, name, ...)                          \
+#define lmc_mock_function(rvinit, call_prefix, retstatement, utype, rettype, name, ...)                 \
     lmc_generate_mock_ctx(utype, rettype, name, __VA_ARGS__)
 
-#define lmc_mock_function1(call_prefix, call_postop, utype, rettype, name)                              \
+#define lmc_mock_function1(rvinit, call_prefix, retstatement, utype, rettype, name)                     \
     lmc_generate_mock_ctx(utype, rettype, name, void)
 #endif
 
@@ -613,14 +619,17 @@ enum lmc_opmode {
 #endif
 
 #define LMC_MOCK_FUNCTION(rettype, ...) \
-    lmc_cat_expand(lmc_mock_function, lmc_count(__VA_ARGS__))(return, (void)0, rettype, rettype, __VA_ARGS__)
+    lmc_cat_expand(lmc_mock_function, lmc_count(__VA_ARGS__))(rettype lmc_cat_expand(lmc_rv_, __LINE__), \
+                                                              lmc_cat_expand(lmc_rv_, __LINE__) =,       \
+                                                              return lmc_cat_expand(lmc_rv_, __LINE__),  \
+                                                              rettype, rettype, __VA_ARGS__)
 
 #define LMC_MOCK_FUNCTION0(rettype, ...) \
     lmc_cat_expand(lmc_mock_function0_, lmc_count(__VA_ARGS__))(rettype, __VA_ARGS__)
 
 
 #define LMC_MOCK_FUNCTION_VOID(...)     \
-    lmc_cat_expand(lmc_mock_function, lmc_count(__VA_ARGS__))((void), return, int, void, __VA_ARGS__)
+    lmc_cat_expand(lmc_mock_function, lmc_count(__VA_ARGS__))((void)0, (void), return, int, void, __VA_ARGS__)
 
 #define LMC_MOCK_FUNCTION_VOID0(...)    \
     lmc_cat_expand(lmc_mock_function_void0_, lmc_count(__VA_ARGS__))(__VA_ARGS__)

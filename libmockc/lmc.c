@@ -1,33 +1,113 @@
 #define LMC_GENERATE_SYMBOLS
 #include "lmc.h"
 
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <dirent.h>
+#include <regex.h>
+
+enum { PATH_SIZE = 2048 };
+
 static void *dlhandle;
 struct lmc_mock_info *mockinfo;
 
-int lmc_init1(char const *binary_path) {
-    dlhandle = dlopen(binary_path, RTLD_LAZY);
-    if(!dlhandle) {
-        char const *err = dlerror();
-        lmc_assert(!err, err);
+static void lmc_replace(char to, char from, char *buffer) {
+    char *c = strchr(buffer, from);
+
+    while(c) {
+        *c = to;
+        c = strchr(c + 1, from);
     }
-    return 0;
 }
 
-int lmc_init2(int argc, char *const *argv) {
-    (void)argc;
-    return lmc_init1(argv[1]);
-}
-
-void lmc_close(void) {
+void lmc_close_dlhandle(void) {
     if(dlhandle) {
         dlclose(dlhandle);
+        dlhandle = 0;
     }
 }
 
-_Bool lmc_is_open(void) {
-    return dlhandle;
+static void *lmc_dllookup(char const *symname) {
+    char buffer[PATH_SIZE];
+    char const *path = getenv("LD_LIBRARY_PATH");
+
+    lmc_assert((size_t)snprintf(buffer, sizeof(buffer), "%s", path) < sizeof(buffer), "LD_LIBRARY_PATH overflows buffer");
+    lmc_replace(' ', ':', buffer);
+
+    char *iter;
+    void *sym;
+
+    struct {
+        regex_t rgx;
+        bool compiled;
+    } sopattern = { .compiled = false }, lmcpattern = { .compiled = false };
+
+    DIR *dirhandle;
+    struct dirent *dir;
+
+    if(regcomp(&sopattern.rgx, ".+\\.so(\\.[0-9]+)?", REG_EXTENDED)) {
+        fputs("Shared object match regex could not be compiled\n", stderr);
+        goto cleanup;
+    }
+    sopattern.compiled = true;
+
+    if(regcomp(&lmcpattern.rgx, "libmockc\\.so(\\.[0-9]+)?", REG_EXTENDED)) {
+        fputs("Shared object exclusion regex could not be compiled\n", stderr);
+        goto cleanup;
+    }
+    lmcpattern.compiled = true;
+
+
+    lmc_for_each_word(iter, buffer) {
+        dirhandle = opendir(iter);
+
+        lmc_assert(dirhandle, "Could not open directory");
+        while((dir = readdir(dirhandle))) {
+
+            if(regexec(&sopattern.rgx, dir->d_name, 0, 0, 0) == 0) {
+                if(regexec(&lmcpattern.rgx, dir->d_name, 0, 0, 0) == 0) {
+                    continue;
+                }
+
+                dlhandle = dlopen(dir->d_name, RTLD_LAZY);
+                if(!dlhandle) {
+                    fprintf(stderr, "Could not open shared library %s\n", dir->d_name);
+                    goto cleanup;
+                }
+
+                dlerror();
+                sym = dlsym(dlhandle, symname);
+
+                if(sym) {
+                    goto cleanup;
+                }
+
+                lmc_close_dlhandle();
+            }
+        }
+
+        closedir(dirhandle);
+        dirhandle = 0;
+    }
+
+cleanup:
+    if(sopattern.compiled) {
+        regfree(&sopattern.rgx);
+    }
+    if(lmcpattern.compiled) {
+        regfree(&lmcpattern.rgx);
+    }
+    if(dirhandle) {
+        closedir(dirhandle);
+    }
+
+    lmc_assert(sym, "Dynamic symbol lookup error");
+    return sym;
 }
 
 void *lmc_symbol(char const *symname) {
-    return dlsym(dlhandle, symname);
+    return lmc_dllookup(symname);
 }
