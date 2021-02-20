@@ -99,6 +99,9 @@ class CGen():
                     for i, _ in enumerate(sym.get('params', [])):
                         self.__append_src_content('(void)a{};'.format(i))
 
+                for call in sym.get('exec', []):
+                    self.__append_src_content(call)
+
                 if sym['rettype'] != 'void':
                     self.append_return(sym.get('return', '({}){{ 0 }}'.format(sym['rettype'])))
 
