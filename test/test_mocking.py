@@ -9,9 +9,18 @@ from makegen import *
 from symbols import *
 from util import *
 
+def gen_default_makefile(mgen, target, symbol_tu):
+    mgen.adjust('CFLAGS', '-fPIC', Mod.REMOVE)
+    mgen.adjust('LDFLAGS', '-shared', Mod.REMOVE)
+    mgen.adjust('LDFLAGS', '-rdynamic -L. -L{} -lmockc'.format(project_root), Mod.APPEND)
+    mgen.adjust('LDLIBS', '-ltest', Mod.APPEND)
+    mgen.add_rule('libtest.so', '$(builddir)/syms.o', '$(QUIET)$(CC) -o $@ $^ -shared $(LDFLAGS) $(LDLIBS)', '[LD] $@')
+    mgen.add_rule('$(builddir)/syms.o', str(working_dir / symbol_tu), '$(QUIET)$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -fPIC', '[CC] $@')
+    mgen.add_prereq(target, 'libtest.so')
+
 def test_preload():
     target = 'makegen_test'
-    symfile = 'syms.c'
+    symbol_tu = 'syms.c'
 
     db = read_db()
     cgen = CGen('main.c')
@@ -22,18 +31,12 @@ def test_preload():
         cgen.append_return(CGen.default_call('bar', db['symbols']['bar']['params']))
     cgen.write()
 
-    cgen = CGen(symfile)
+    cgen = CGen(symbol_tu)
     cgen.generate_matching_symbols()
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    mgen.adjust('CFLAGS', '-fPIC', Mod.REMOVE)
-    mgen.adjust('LDFLAGS', '-shared', Mod.REMOVE)
-    mgen.adjust('LDFLAGS', '-rdynamic -L. -L{} -lmockc'.format(project_root), Mod.APPEND)
-    mgen.adjust('LDLIBS', '-ltest', Mod.APPEND)
-    mgen.add_rule('libtest.so', '$(builddir)/syms.o', '$(QUIET)$(CC) -o $@ $^ -shared $(LDFLAGS) $(LDLIBS)', '[LD] $@')
-    mgen.add_rule('$(builddir)/syms.o', str(working_dir / symfile), '$(QUIET)$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -fPIC', '[CC] $@')
-    mgen.add_prereq(target, 'libtest.so')
+    gen_default_makefile(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -41,7 +44,7 @@ def test_preload():
 
 def test_gmock_compat():
     target = 'makegen_test'
-    symfile = 'syms.c'
+    symbol_tu = 'syms.c'
 
     db = read_db()
     cgen = CGen('main.c')
@@ -53,18 +56,12 @@ def test_gmock_compat():
         cgen.append_return(CGen.default_call('bar', db['symbols']['bar']['params']))
     cgen.write()
 
-    cgen = CGen(symfile)
+    cgen = CGen(symbol_tu)
     cgen.generate_matching_symbols()
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    mgen.adjust('CFLAGS', '-fPIC', Mod.REMOVE)
-    mgen.adjust('LDFLAGS', '-shared', Mod.REMOVE)
-    mgen.adjust('LDFLAGS', '-rdynamic -L. -L{} -lmockc'.format(project_root), Mod.APPEND)
-    mgen.adjust('LDLIBS', '-ltest', Mod.APPEND)
-    mgen.add_rule('libtest.so', '$(builddir)/syms.o', '$(QUIET)$(CC) -o $@ $^ -shared $(LDFLAGS) $(LDLIBS)', '[LD] $@')
-    mgen.add_rule('$(builddir)/syms.o', str(working_dir / symfile), '$(QUIET)$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -fPIC', '[CC] $@')
-    mgen.add_prereq(target, 'libtest.so')
+    gen_default_makefile(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -72,7 +69,7 @@ def test_gmock_compat():
 
 def test_symbol_fallback():
     target = 'makegen_test'
-    symfile = 'syms.c'
+    symbol_tu = 'syms.c'
 
     db = read_db()
     cgen = CGen('main.c')
@@ -84,18 +81,12 @@ def test_symbol_fallback():
         cgen.append_return('ret2()')
     cgen.write()
 
-    cgen = CGen(symfile)
+    cgen = CGen(symbol_tu)
     cgen.generate_matching_symbols()
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    mgen.adjust('CFLAGS', '-fPIC', Mod.REMOVE)
-    mgen.adjust('LDFLAGS', '-shared', Mod.REMOVE)
-    mgen.adjust('LDFLAGS', '-rdynamic -L. -L{} -lmockc'.format(project_root), Mod.APPEND)
-    mgen.adjust('LDLIBS', '-ltest', Mod.APPEND)
-    mgen.add_rule('libtest.so', '$(builddir)/syms.o', '$(QUIET)$(CC) -o $@ $^ -shared $(LDFLAGS) $(LDLIBS)', '[LD] $@')
-    mgen.add_rule('$(builddir)/syms.o', str(working_dir / symfile), '$(QUIET)$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -fPIC', '[CC] $@')
-    mgen.add_prereq(target, 'libtest.so')
+    gen_default_makefile(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -106,7 +97,7 @@ def test_symbol_fallback():
 
 def test_invoke():
     target = 'makegen_test'
-    symfile = 'syms.c'
+    symbol_tu = 'syms.c'
     mockmsg = 'mockfoo called'
 
     db = read_db()
@@ -123,18 +114,12 @@ def test_invoke():
             .append_line('foo({});'.format(', '.join(['({}){{ 0 }}'.format(a) for a in db['symbols']['foo']['params']])))
     cgen.write()
 
-    cgen = CGen(symfile)
+    cgen = CGen(symbol_tu)
     cgen.generate_matching_symbols()
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    mgen.adjust('CFLAGS', '-fPIC', Mod.REMOVE)
-    mgen.adjust('LDFLAGS', '-shared', Mod.REMOVE)
-    mgen.adjust('LDFLAGS', '-rdynamic -L. -L{} -lmockc'.format(project_root), Mod.APPEND)
-    mgen.adjust('LDLIBS', '-ltest', Mod.APPEND)
-    mgen.add_rule('libtest.so', '$(builddir)/syms.o', '$(QUIET)$(CC) -o $@ $^ -shared $(LDFLAGS) $(LDLIBS)', '[LD] $@')
-    mgen.add_rule('$(builddir)/syms.o', str(working_dir / symfile), '$(QUIET)$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -fPIC', '[CC] $@')
-    mgen.add_prereq(target, 'libtest.so')
+    gen_default_makefile(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -144,7 +129,7 @@ def test_invoke():
 
 def test_increment_counter():
     target = 'makegen_test'
-    symfile = 'syms.c'
+    symbol_tu = 'syms.c'
 
     db = read_db()
     cgen = CGen('main.c')
@@ -159,18 +144,12 @@ def test_increment_counter():
             .append_line('printf("%d\\n", ret2());')
     cgen.write()
 
-    cgen = CGen(symfile)
+    cgen = CGen(symbol_tu)
     cgen.generate_matching_symbols()
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    mgen.adjust('CFLAGS', '-fPIC', Mod.REMOVE)
-    mgen.adjust('LDFLAGS', '-shared', Mod.REMOVE)
-    mgen.adjust('LDFLAGS', '-rdynamic -L. -L{} -lmockc'.format(project_root), Mod.APPEND)
-    mgen.adjust('LDLIBS', '-ltest', Mod.APPEND)
-    mgen.add_rule('libtest.so', '$(builddir)/syms.o', '$(QUIET)$(CC) -o $@ $^ -shared $(LDFLAGS) $(LDLIBS)', '[LD] $@')
-    mgen.add_rule('$(builddir)/syms.o', str(working_dir / symfile), '$(QUIET)$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -fPIC', '[CC] $@')
-    mgen.add_prereq(target, 'libtest.so')
+    gen_default_makefile(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -180,7 +159,7 @@ def test_increment_counter():
 
 def test_invoke_with_fallback():
     target = 'makegen_test'
-    symfile = 'syms.c'
+    symbol_tu = 'syms.c'
     mockmsg = 'mockfoo called'
 
     db = read_db()
@@ -198,18 +177,12 @@ def test_invoke_with_fallback():
             .append_return('ret2()')
     cgen.write()
 
-    cgen = CGen(symfile)
+    cgen = CGen(symbol_tu)
     cgen.generate_matching_symbols()
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    mgen.adjust('CFLAGS', '-fPIC', Mod.REMOVE)
-    mgen.adjust('LDFLAGS', '-shared', Mod.REMOVE)
-    mgen.adjust('LDFLAGS', '-rdynamic -L. -L{} -lmockc'.format(project_root), Mod.APPEND)
-    mgen.adjust('LDLIBS', '-ltest', Mod.APPEND)
-    mgen.add_rule('libtest.so', '$(builddir)/syms.o', '$(QUIET)$(CC) -o $@ $^ -shared $(LDFLAGS) $(LDLIBS)', '[LD] $@')
-    mgen.add_rule('$(builddir)/syms.o', str(working_dir / symfile), '$(QUIET)$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -fPIC', '[CC] $@')
-    mgen.add_prereq(target, 'libtest.so')
+    gen_default_makefile(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -219,7 +192,7 @@ def test_invoke_with_fallback():
 
 def test_will_once():
     target = 'makegen_test'
-    symfile = 'syms.c'
+    symbol_tu = 'syms.c'
 
     db = read_db()
     cgen = CGen('main.c')
@@ -233,18 +206,12 @@ def test_will_once():
             .append_line('printf("%d\\n", ret2());')
     cgen.write()
 
-    cgen = CGen(symfile)
+    cgen = CGen(symbol_tu)
     cgen.generate_matching_symbols()
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    mgen.adjust('CFLAGS', '-fPIC', Mod.REMOVE)
-    mgen.adjust('LDFLAGS', '-shared', Mod.REMOVE)
-    mgen.adjust('LDFLAGS', '-rdynamic -L. -L{} -lmockc'.format(project_root), Mod.APPEND)
-    mgen.adjust('LDLIBS', '-ltest', Mod.APPEND)
-    mgen.add_rule('libtest.so', '$(builddir)/syms.o', '$(QUIET)$(CC) -o $@ $^ -shared $(LDFLAGS) $(LDLIBS)', '[LD] $@')
-    mgen.add_rule('$(builddir)/syms.o', str(working_dir / symfile), '$(QUIET)$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -fPIC', '[CC] $@')
-    mgen.add_prereq(target, 'libtest.so')
+    gen_default_makefile(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
