@@ -23,7 +23,11 @@ pipeline {
             }
             steps {
                 echo '-- Starting Build --'
-                make
+
+                echo 'Generating empty mockups.h file'
+                sh 'touch libmockc/mockups.h'
+
+                sh 'make'
             }
         }
         stage('Test') {
@@ -32,7 +36,7 @@ pipeline {
             }
             steps {
                 echo '-- Running Tests --'
-                make test
+                sh 'make test'
             }
         }
         stage('Gitlab Success') {
