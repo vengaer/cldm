@@ -3,3 +3,4 @@ a.out
 libmockc.so*
 build/**
 test/running/**
+libmockc/mockups.h
