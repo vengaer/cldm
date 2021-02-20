@@ -30,20 +30,20 @@ int main(void) {
 
 ## Using libmockc
 
-Building libmockc requires some configuration. Specifically, it must know the signatures of the mocks it is to generate. Once this is done, the build system should handle the rest. The usage can be summarized as follows:
+Building libmockc requires some configuration. Specifically, the signatures of the mocks to be generated need to be known. Once these have been specified, the build system handles the rest. The procedure can be summarized as follows:
 
-1. Describe functions to be mocked
+1. Define functions to be mocked
 2. Build libmockc via make
 3. Preload the generated shared library
 4. Include the `lmc.h` header
 
-The process is described in detail below.
+The entire procedure is described in detail below.
 
 #### Defining the Mocks
 
-In order for libmockc to know the names and the signatures of the functions to mock, these must be specified by the user. To do this, create a file called `mockups.h` in the `libmockc` directory and use the `MOCK_FUNCTION` and `MOCK_FUNCTION_VOID` macro families.
+In order for libmockc to know the signatures of the functions to mock, these must be specified by the user. To do this, create a file called `mockups.h` in the `libmockc` directory and use the `MOCK_FUNCTION` and `MOCK_FUNCTION_VOID` macro families.
 
-The "signature" of the `MOCK_FUNCTION` macro would be described as:
+The "signature" of the `MOCK_FUNCTION` macro is as follows:
 ```c
 MOCK_FUNCTION(return_type, function_name [,param_type[,param_type[,...]]]).
 ```
@@ -103,11 +103,11 @@ This generates the actual shared object, `libmockc.so`.
 
 ##### Build Options
 
-By default, the library will expose macros without prefixes (e.g. `MOCK_FUNCTION`, `WILL_ONCE`, etc.). The pollution of the global namespace may be reduced by defining `LMC_PREFIX_ONLY` before including `lmc.h`. This will expose only the [prefix versions](#prefix-macros) of the macros. Similarly, defining `LMC_GMOCK_COMPAT` exposes [aliases](#gmock-like-macros) for the macros that should be familiar to gmock users.
+By default, the library exposes macros without prefixes (e.g. `MOCK_FUNCTION`, `WILL_ONCE`, etc.). The pollution of the global namespace may be reduced by defining `LMC_PREFIX_ONLY` before including `lmc.h`. This will expose only the [prefix versions](#prefix-macros) of the macros. Similarly, defining `LMC_GMOCK_COMPAT` exposes [aliases](#gmock-style-macros) for the macros that should be familiar to gmock users.
 
 #### Using the Library
 
-The mocking approach relies on preloading the shared object, making ld prioritize symbols defined in the library over the others loaded at runtime. The usage, in a nutshell, would be to build the final binary with the `-lmockc` flag and invoking it with
+The mocking approach relies on preloading the shared object, making ld prioritize symbols defined in the library over others loaded at runtime. The usage, in a nutshell, would be to build the final binary with the `-lmockc` flag and invoking it with
 
 ```sh
 LD_PRELOAD=/path/to/libmockc.so /path/to/binary
@@ -134,6 +134,8 @@ int *get_resource(int id);
 
 `resource.c`
 ```c
+static int resource_array[256];
+
 int *get_resource(int id) {
     return &resource_array[id];
 }
@@ -164,6 +166,8 @@ gcc -o a.out main.c -L. -L/path/to/project/root -lresource -lmockc -I/path/to/pr
 LD_PRELOAD=/path/to/project/root/libmockc.so LD_LIBRARY_PATH=. ./a.out
 ```
 
+Here, `path/to/project/root` refers to the root of the libmockc project.
+
 ###### Building Incorrectly
 
 As mentioned, linking the symbols to be mocked into the actual binary will cause the mocking to fail. As a result, given that the code above is used, the following will _NOT_ work.
@@ -179,10 +183,10 @@ LD_PRELOAD=/path/to/project/root/libmockc.so ./a.out
 ### Mock Generators
 
 ###### `MOCK_FUNCTION(return_type, function_name [,param_type[,param_type[,...]]])`
-Generates mocking code for a function called *function_name*, returning *return_type* and taking parameters of the types specified. Any choice of parameter types is valid, including none, **EXCEPT** for a single void parameter. Furthermore, return_type may not be `void` (see `MOCK_FUNCTION_VOID`).
+Generates mocking code for a function called *function_name*, returning an instance of *return_type* and taking parameters of the *param_type*s specified. Any choice of type and number of parameters is valid, including none, **EXCEPT** for a single void parameter. Furthermore, *return_type* may not be `void`, here `MOCK_FUNCTION_VOID` should be used instead.
 
 ###### `MOCK_FUNCTION0(return_type, function_name, void)`
-Like `MOCK_FUNCTION` but allows for explicitly specifying the single `void` parameter. The code generated is identical to that of `MOCK_FUNCTION(return_type, function_name)`.
+Like `MOCK_FUNCTION` but allows for explicitly specifying the single `void` parameter for functions taking no parameters. The code generated is identical to that of `MOCK_FUNCTION(return_type, function_name)`.
 
 ###### `MOCK_FUNCTION_VOID(function_name [,param_type[,param_type[,...]]])`
 Generates mocking code for the function *function_name*, returning `void`. Any choice of parameters except for a single `void` one is supported.
@@ -193,10 +197,10 @@ Like `MOCK_FUNCTION_VOID` but allows for explicitly specifying the single `void`
 ### Behavior Specifiers
 
 ###### `EXPECT_CALL(function_name)`
-First half of setting up a mocking behavior for the function *function_name*. Combined with `WILL_ONCE` or `WILL_REPEATEDLY` to generate a well-formed statement. Mocking code must have been generated using a `MOCK_FUNCTION` or `MOCK_FUNCTION_VOID` macro.
+First half of setting up a mocking behavior for the function *function_name*. Combined with `WILL_ONCE` or `WILL_REPEATEDLY` to generate a well-formed statement. Mocking code for *function_name* must have been generated using a `MOCK_FUNCTION` or `MOCK_FUNCTION_VOID` macro.
 
 ###### `WILL_ONCE(matcher)`
-One of the potential second halves for setting up a mocking behavior, must appear appended to an `EXPECT_CALL` invocation (separated by a period (.)). `WILL_ONCE` causes the next immediate call to the function being mocked to generate a call to the mock instead. Any subsequent call invokes the original, unmocked function.
+One of the potential second halves for setting up a mocking behavior, must appear appended to an `EXPECT_CALL` invocation (separated by a period (.)). `WILL_ONCE` causes the next immediate call to the function being mocked to generate a call described by the *matcher* parameter instead. Any subsequent call invokes the original, unmocked function.
 
 ###### `WILL_REPEATEDLY(matcher)`
 One of the potential second halves for setting up a mocking behavior. `WILL_REPEATEDLY` works much like `WILL_ONCE`, the only difference being that all subsequent calls to the function begin mocked will generate calls to the mock instead.
@@ -204,17 +208,17 @@ One of the potential second halves for setting up a mocking behavior. `WILL_REPE
 ### Matchers
 
 ###### `INVOKE(function_name)`
-A matcher to be used with a behavior specifier such as `WILL_ONCE`.  Causes any call to the mocked function resulting in a call to the function *function_name* instead. Naturally, the signature of *function_name* and the mocked function must be the compatible.
+A matcher to be used with a behavior specifier such as `WILL_ONCE`.  Causes any attempted call to the mocked function to result in a call to the function *function_name* instead. Naturally, the signature of *function_name* and the mocked function must be the compatible.
 
 ###### `RETURN(value)`
 A matcher causing any call to the mocked function to immediately return *value* instead.
 
 ###### `INCREMENT_COUNTER(initial_value)`
-A matcher that causes any call to the mocked function to increment and return a counter, in that order. The parameter *start_value* sets the initial value of the counter. The use of `INCREMENT_COUNTER` is well-formed only if the mocked function returns an integral type. Note that that max value of the counter is subject to the limits of the return type (e.g. for a `signed char`, the counter could not be increment past `SCHAR_MAX`).
+A matcher that causes any call to the mocked function to increment and return a counter, in that order. The parameter *initial_value* specified the initial value of said counter. The use of `INCREMENT_COUNTER` is well-formed only if the mocked function returns an integral type. Note that that max value of the counter is subject to the limits of the return type (e.g. for a `signed char`, the counter could not be increment past `SCHAR_MAX`).
 
 ### Prefix Macros
 
-If `LMC_PREFIX_ONLY` is defined prior to including the header, the default macros are not exposed. Instead, only their prefix counterpart are generated.
+If `LMC_PREFIX_ONLY` is defined prior to including the header, the default macros are not exposed. Instead, only their prefix counterparts are generated.
 
 ###### `LMC_MOCK_FUNCTION(return_type, function_name [,param_type[,param_type[,...]]])`
 Prefixed alias for `MOCK_FUNCTION`. 
@@ -248,7 +252,7 @@ Prefixed alias for `INCREMENT_COUNTER`.
 
 ### Gmock-Style Macros
 
-If `LMC_GMOCK_COMPAT` is defined, the header will expose aliases named after their gmock counterpart.
+If `LMC_GMOCK_COMPAT` is defined, the header exposes aliases named after their gmock counterpart.
 
 ###### `WillOnce(matcher)`
 gmock-style alias for `WILL_ONCE`.
