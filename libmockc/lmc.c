@@ -1,3 +1,4 @@
+#define LMC_GENERATE_SYMBOLS
 #include "lmc.h"
 
 static void *dlhandle;

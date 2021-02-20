@@ -481,20 +481,25 @@ enum lmc_opmode {
     LMC_OP_INCREMENT,
 };
 
+#define lmc_generate_mock_ctx(utype, rettype, name, ...)    \
+    struct lmc_mock_ ## name ## _ctx {                      \
+        struct lmc_mock_info info;                          \
+        _Bool expired;                                      \
+        _Bool once;                                         \
+        struct lmc_mock_ ## name ## _opdata{                \
+            enum lmc_opmode mode;                           \
+            union {                                         \
+                rettype(*invoke)(__VA_ARGS__);              \
+                utype retval;                               \
+                utype counter;                              \
+            };                                              \
+        } opdata;                                           \
+    }
+
+#ifdef LMC_GENERATE_SYMBOLS
 #define lmc_mock_function(call_prefix, call_postop, utype, rettype, name, ...)                          \
-    struct lmc_mock_ ## name ## _ctx {                                                                  \
-        struct lmc_mock_info info;                                                                      \
-        _Bool expired;                                                                                  \
-        _Bool once;                                                                                     \
-        struct lmc_mock_ ## name ## _opdata{                                                            \
-            enum lmc_opmode mode;                                                                       \
-            union {                                                                                     \
-                rettype(*invoke)(__VA_ARGS__);                                                          \
-                utype retval;                                                                           \
-                utype counter;                                                                          \
-            };                                                                                          \
-        } opdata;                                                                                       \
-    } lmc_mock_ ## name = {                                                                             \
+    lmc_generate_mock_ctx(utype, rettype, name, __VA_ARGS__);                                           \
+    struct lmc_mock_ ## name ## _ctx lmc_mock_ ## name = {                                              \
         .info = {                                                                                       \
             .addr = &lmc_mock_ ## name,                                                                 \
             .expired_offset = offsetof(struct lmc_mock_ ## name ## _ctx, expired),                      \
@@ -545,19 +550,8 @@ enum lmc_opmode {
     void lmc_trailing_ ## name (void)
 
 #define lmc_mock_function1(call_prefix, call_postop, utype, rettype, name)                              \
-    struct lmc_mock_ ## name ## _ctx {                                                                  \
-        struct lmc_mock_info info;                                                                      \
-        _Bool expired;                                                                                  \
-        _Bool once;                                                                                     \
-        struct lmc_mock_ ## name ## _opdata{                                                            \
-            enum lmc_opmode mode;                                                                       \
-            union {                                                                                     \
-                rettype(*invoke)(void);                                                                 \
-                utype retval;                                                                           \
-                utype counter;                                                                          \
-            };                                                                                          \
-        } opdata;                                                                                       \
-    } lmc_mock_ ## name = {                                                                             \
+    lmc_generate_mock_ctx(utype, rettype, name, void);                                                  \
+    struct lmc_mock_ ## name ## _ctx lmc_mock_ ## name = {                                              \
         .info = {                                                                                       \
             .addr = &lmc_mock_ ## name,                                                                 \
             .expired_offset = offsetof(struct lmc_mock_ ## name ## _ctx, expired),                      \
@@ -606,6 +600,14 @@ enum lmc_opmode {
         call_postop;                                                                                    \
     }                                                                                                   \
     void lmc_trailing_ ## name (void)
+#else
+
+#define lmc_mock_function(call_prefix, call_postop, utype, rettype, name, ...)                          \
+    lmc_generate_mock_ctx(utype, rettype, name, __VA_ARGS__)
+
+#define lmc_mock_function1(call_prefix, call_postop, utype, rettype, name)                              \
+    lmc_generate_mock_ctx(utype, rettype, name, void)
+#endif
 
 #define LMC_MOCK_FUNCTION(rettype, ...) \
     lmc_cat_expand(lmc_mock_function, lmc_count(__VA_ARGS__))(return, (void)0, rettype, rettype, __VA_ARGS__)
@@ -663,5 +665,7 @@ int lmc_init1(char const *binary_path);
 void lmc_close(void);
 
 #define lmc_init(...) lmc_overload(lmc_init, __VA_ARGS__)
+
+#include "mockups.h"
 
 #endif /* LMC_H */
