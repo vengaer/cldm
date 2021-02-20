@@ -32,7 +32,7 @@ pipeline {
         }
         stage('Test') {
             agent {
-                docket { image "${DOCKER_IMAGE}" }
+                docker { image "${DOCKER_IMAGE}" }
             }
             steps {
                 echo '-- Running Tests --'
