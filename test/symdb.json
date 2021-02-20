@@ -1,5 +1,5 @@
 {
-    "includes": ["stddef.h"],
+    "includes": ["stddef.h", "stdio.h"],
     "structs": {
         "s0": {
             "members": {
