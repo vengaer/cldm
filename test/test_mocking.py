@@ -70,17 +70,20 @@ def test_gmock_compat():
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
     assert exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))[0] == 28
 
-'''
 def test_symbol_fallback():
     target = 'makegen_test'
     symfile = 'syms.c'
+    defaultid = 'Default function call'
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('lmc.h', system_header=False)
-    cgen.append_include('syms.h', system_header=False)
+    cgen.append_include('lmc.h', system_header=False)       \
+        .append_include('syms.h', system_header=False)      \
+        .append_include('stdio.h')
+
     with cgen.with_open_function('int', 'main'):
-        cgen.append_return('ret2()')
+        cgen.append_line('puts("{}");'.format(defaultid))   \
+            .append_return('ret2()')
     cgen.write()
 
     cgen = CGen(symfile)
@@ -97,6 +100,7 @@ def test_symbol_fallback():
     mgen.add_prereq(target, 'libtest.so')
     mgen.generate()
 
-    assert exec_bash('make -C {}'.format(working_dir)) == 0
-    assert exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target)) == 2
-'''
+    assert exec_bash('make -C {}'.format(working_dir))[0] == 0
+    rv, output, _ = exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))
+    assert rv == db['symbols']['ret2']['return']
+    assert output.decode('utf-8').replace('\n', '') == defaultid
