@@ -15,6 +15,7 @@
         "func0": {"rettype": "void", "params": ["void"]},
         "func1": {"rettype": "char const *", "params": ["char const *restrict", "size_t", "char const *restrict"]},
         "func2": {"rettype": "int *", "params": []},
-        "func3": {"rettype": "struct s0 *", "params": ["char const *", "struct s0"]}
+        "func3": {"rettype": "struct s0 *", "params": ["char const *", "struct s0"]},
+        "ret2": {"rettype": "int", "params": ["void"], "return": 2}
     }
 }

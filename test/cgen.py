@@ -94,7 +94,7 @@ class CGen():
                         self.__append_src_content('(void)a{};'.format(i))
 
                 if sym['rettype'] != 'void':
-                    self.append_return('({}){{ 0 }}'.format(sym['rettype']))
+                    self.append_return(sym.get('return', '({}){{ 0 }}'.format(sym['rettype'])))
 
         os.system('make -B -C {}'.format(project_root))
 
