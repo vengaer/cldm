@@ -70,7 +70,7 @@ $(builddir):
 
 .PHONY: clean
 clean:
-	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(target) $(link) $(help)
+	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(target) $(link) $(help) $(config)
 
 $(help): FORCE
 	$(info +============+)
