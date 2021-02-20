@@ -49,6 +49,9 @@
 #define lmc_cat(a, b) a ## b
 #define lmc_cat_expand(a,b) lmc_cat(a,b)
 
+#define lmc_str(a) #a
+#define lmc_str_expand(a) lmc_str(a)
+
 #define lmc_genparams_1(type)        type a1
 #define lmc_genparams_2(type, ...)   type a2,   lmc_genparams_1(__VA_ARGS__)
 #define lmc_genparams_3(type, ...)   type a3,   lmc_genparams_2(__VA_ARGS__)
@@ -672,6 +675,6 @@ enum lmc_opmode {
 #define Assign(...)           LMC_ASSIGN(__VA_ARGS__)
 #endif
 
-#include "mockups.h"
+#include "lmc_config.h"
 
 #endif /* LMC_H */

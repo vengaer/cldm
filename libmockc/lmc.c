@@ -11,9 +11,6 @@
 #include <regex.h>
 #include <sys/stat.h>
 
-#define lmc_str(a) #a
-#define lmc_str_expand(a) lmc_str(a)
-
 enum { PATH_SIZE = 2048 };
 
 static void *dlhandle;

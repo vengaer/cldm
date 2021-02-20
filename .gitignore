@@ -4,3 +4,4 @@ libmockc.so*
 build/**
 test/running/**
 libmockc/mockups.h
+libmockc/lmc_config.h
