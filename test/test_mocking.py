@@ -217,4 +217,37 @@ def test_invoke_with_fallback():
     assert rv == db['symbols']['ret2']['return']
     assert output.decode('utf-8').strip().split('\n') == [mockmsg, re.search(r'puts\("(.*)"\)', db['symbols']['ret2']['exec'][0]).group(1)]
 
+def test_will_once():
+    target = 'makegen_test'
+    symfile = 'syms.c'
 
+    db = read_db()
+    cgen = CGen('main.c')
+    cgen.append_include('lmc.h', system_header=False)       \
+        .append_include('syms.h', system_header=False)      \
+        .append_include('stdio.h')
+
+    with cgen.with_open_function('int', 'main'):
+        cgen.append_line('EXPECT_CALL(ret2).WILL_ONCE(RETURN(5));') \
+            .append_line('printf("%d\\n", ret2());')                \
+            .append_line('printf("%d\\n", ret2());')
+    cgen.write()
+
+    cgen = CGen(symfile)
+    cgen.generate_matching_symbols()
+    cgen.write()
+
+    mgen = Makegen(target, src='main.c')
+    mgen.adjust('CFLAGS', '-fPIC', Mod.REMOVE)
+    mgen.adjust('LDFLAGS', '-shared', Mod.REMOVE)
+    mgen.adjust('LDFLAGS', '-rdynamic -L. -L{} -lmockc'.format(project_root), Mod.APPEND)
+    mgen.adjust('LDLIBS', '-ltest', Mod.APPEND)
+    mgen.add_rule('libtest.so', '$(builddir)/syms.o', '$(QUIET)$(CC) -o $@ $^ -shared $(LDFLAGS) $(LDLIBS)', '[LD] $@')
+    mgen.add_rule('$(builddir)/syms.o', str(working_dir / symfile), '$(QUIET)$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -fPIC', '[CC] $@')
+    mgen.add_prereq(target, 'libtest.so')
+    mgen.generate()
+
+    assert exec_bash('make -C {}'.format(working_dir))[0] == 0
+    rv, output, _ = exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))
+    assert rv == 0
+    assert output.decode('utf-8').strip().split('\n') == ['5', re.search(r'puts\("(.*)"\)', db['symbols']['ret2']['exec'][0]).group(1), '2']
