@@ -5,3 +5,4 @@ build/**
 test/running/**
 libmockc/mockups.h
 libmockc/lmc_config.h
+.help.stamp

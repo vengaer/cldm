@@ -3,6 +3,7 @@ LN          ?= ln
 MKDIR       ?= mkdir
 RM          ?= rm
 ECHO        ?= echo
+TOUCH       ?= touch
 PYTEST      ?= pytest
 
 sostem      := libmockc
@@ -36,6 +37,8 @@ PYTESTFLAGS ?= -v --rootdir=$(testdir)
 
 QUIET       ?= @
 
+help        := .help.stamp
+
 src         := $(wildcard $(srcdir)/*.$(cext))
 obj         := $(patsubst $(srcdir)/%.$(cext),$(builddir)/%.$(oext),$(src))
 
@@ -67,4 +70,26 @@ $(builddir):
 
 .PHONY: clean
 clean:
-	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(target) $(link)
+	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(target) $(link) $(help)
+
+$(help): FORCE
+	$(info +============+)
+	$(info |  libmockc  |)
+	$(info +============+)
+	$(info Linker-based function mocking)
+	$(info )
+	$(info Building:)
+	$(info Create $(MOCKUPS) and specify which functions to mock)
+	$(info Run 'make' (without any targets))
+	$(info The path to mockups file may be modified by passing the MOCKUPS variable)
+	$(info )
+	$(info Testing (requires pytest):)
+	$(info Run 'make test')
+	$(info )
+	$(info For more info: gitlab.com/vilhelmengstrom/libmockc)
+	$(QUIET)$(TOUCH) $@
+
+.PHONY: help
+help: $(help)
+
+FORCE:
