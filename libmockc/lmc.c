@@ -1,6 +1,7 @@
 #define LMC_GENERATE_SYMBOLS
 #include "lmc.h"
 
+#include <errno.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -8,6 +9,10 @@
 
 #include <dirent.h>
 #include <regex.h>
+#include <sys/stat.h>
+
+#define lmc_str(a) #a
+#define lmc_str_expand(a) lmc_str(a)
 
 enum { PATH_SIZE = 2048 };
 
@@ -30,6 +35,17 @@ void lmc_close_dlhandle(void) {
     }
 }
 
+static void *lmc_search_so(char const *libname, char const *symname) {
+    dlhandle = dlopen(libname, RTLD_LAZY);
+    if(!dlhandle) {
+        fprintf(stderr, "Could not open shared library %s\n", libname);
+        return 0;
+    }
+
+    dlerror();
+    return dlsym(dlhandle, symname);
+}
+
 static void *lmc_dllookup(char const *symname) {
     char buffer[PATH_SIZE];
     char const *path = getenv("LD_LIBRARY_PATH");
@@ -38,15 +54,28 @@ static void *lmc_dllookup(char const *symname) {
     lmc_replace(' ', ':', buffer);
 
     char *iter;
-    void *sym;
+    void *sym = 0;
 
     struct {
         regex_t rgx;
         bool compiled;
     } sopattern = { .compiled = false }, lmcpattern = { .compiled = false };
 
-    DIR *dirhandle;
+    DIR *dirhandle = 0;
     struct dirent *dir;
+
+    /* Try libc first */
+    if(!sym) {
+        char const *libc_path = lmc_str_expand(LMC_LIBC);
+        struct stat sb;
+        if(stat(libc_path, &sb) == 0) {
+            sym = lmc_search_so(libc_path, symname);
+        }
+    }
+
+    if(sym) {
+        goto cleanup;
+    }
 
     if(regcomp(&sopattern.rgx, ".+\\.so(\\.[0-9]+)?", REG_EXTENDED)) {
         fputs("Shared object match regex could not be compiled\n", stderr);
@@ -60,7 +89,6 @@ static void *lmc_dllookup(char const *symname) {
     }
     lmcpattern.compiled = true;
 
-
     lmc_for_each_word(iter, buffer) {
         dirhandle = opendir(iter);
 
@@ -72,14 +100,7 @@ static void *lmc_dllookup(char const *symname) {
                     continue;
                 }
 
-                dlhandle = dlopen(dir->d_name, RTLD_LAZY);
-                if(!dlhandle) {
-                    fprintf(stderr, "Could not open shared library %s\n", dir->d_name);
-                    goto cleanup;
-                }
-
-                dlerror();
-                sym = dlsym(dlhandle, symname);
+                sym = lmc_search_so(dir->d_name, symname);
 
                 if(sym) {
                     goto cleanup;
@@ -103,7 +124,6 @@ cleanup:
     if(dirhandle) {
         closedir(dirhandle);
     }
-
     lmc_assert(sym, "Dynamic symbol lookup error");
     return sym;
 }

@@ -20,7 +20,7 @@ target      := $(sostem).$(soext).$(sover)
 link        := $(sostem).$(soext)
 
 CFLAGS      ?= -std=c11 -Wall -Wextra -Wpedantic -fPIC -c
-CPPFLAGS    ?=
+CPPFLAGS    ?= -DLMC_LIBC=$(shell ldd /usr/bin/ls | grep -oP "\s*\K/.*libc\.so(\.\d+)?")
 LDFLAGS     ?= -shared -Wl,-soname,$(sostem).$(soext).$(socompat)
 LDLIBS      ?= -ldl
 LNFLAGS     ?= -sf
