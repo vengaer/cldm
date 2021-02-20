@@ -47,7 +47,7 @@ static void *lmc_dllookup(char const *symname) {
     char buffer[PATH_SIZE];
     char const *path = getenv("LD_LIBRARY_PATH");
 
-    lmc_assert((size_t)snprintf(buffer, sizeof(buffer), "%s", path) < sizeof(buffer), "LD_LIBRARY_PATH overflows buffer");
+    lmc_assert((size_t)snprintf(buffer, sizeof(buffer), "%s", path) < sizeof(buffer), "LD_LIBRARY_PATH %s overflows buffer", path);
     lmc_replace(' ', ':', buffer);
 
     char *iter;
@@ -89,7 +89,7 @@ static void *lmc_dllookup(char const *symname) {
     lmc_for_each_word(iter, buffer) {
         dirhandle = opendir(iter);
 
-        lmc_assert(dirhandle, "Could not open directory");
+        lmc_assert(dirhandle, "Could not open directory %s", iter);
         while((dir = readdir(dirhandle))) {
 
             if(regexec(&sopattern.rgx, dir->d_name, 0, 0, 0) == 0) {
@@ -121,7 +121,7 @@ cleanup:
     if(dirhandle) {
         closedir(dirhandle);
     }
-    lmc_assert(sym, "Dynamic symbol lookup error");
+    lmc_assert(sym, "Lookup of symbol %s failed", symname);
     return sym;
 }
 

@@ -439,6 +439,134 @@
 #define lmc_mock_function126(...) lmc_mock_function(__VA_ARGS__)
 #define lmc_mock_function127(...) lmc_mock_function(__VA_ARGS__)
 
+#define lmc_assert1(...)   lmc_assert_no_msg(__VA_ARGS__)
+#define lmc_assert2(...)   lmc_assert_msg(__VA_ARGS__)
+#define lmc_assert3(...)   lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert4(...)   lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert5(...)   lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert6(...)   lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert7(...)   lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert8(...)   lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert9(...)   lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert10(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert11(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert12(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert13(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert14(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert15(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert16(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert17(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert18(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert19(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert20(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert21(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert22(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert23(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert24(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert25(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert26(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert27(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert28(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert29(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert30(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert31(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert32(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert33(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert34(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert35(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert36(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert37(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert38(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert39(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert40(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert41(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert42(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert43(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert44(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert45(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert46(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert47(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert48(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert49(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert50(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert51(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert52(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert53(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert54(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert55(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert56(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert57(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert58(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert59(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert60(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert61(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert62(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert63(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert64(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert65(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert66(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert67(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert68(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert69(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert70(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert71(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert72(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert73(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert74(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert75(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert76(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert77(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert78(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert79(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert80(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert81(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert82(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert83(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert84(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert85(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert86(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert87(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert88(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert89(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert90(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert91(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert92(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert93(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert94(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert95(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert96(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert97(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert98(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert99(...)  lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert100(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert101(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert102(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert103(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert104(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert105(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert106(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert107(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert108(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert109(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert110(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert111(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert112(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert113(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert114(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert115(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert116(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert117(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert118(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert119(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert120(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert121(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert122(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert123(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert124(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert125(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert126(...) lmc_assert_variadic(__VA_ARGS__)
+#define lmc_assert127(...) lmc_assert_variadic(__VA_ARGS__)
+
 #define lmc_mock_function0_1(rettype, name) LMC_MOCK_FUNCTION(rettype, name)
 #define lmc_mock_function0_2(rettype, name, _) LMC_MOCK_FUNCTION(rettype, name)
 
@@ -446,13 +574,25 @@
 #define lmc_mock_function_void0_2(name, _) LMC_MOCK_FUNCTION_VOID(name)
 
 
-#define lmc_assert(condition, msg)                                                                      \
-    do {                                                                                                \
-        if(!(condition)) {                                                                              \
-            fprintf(stderr, "%s:%d assertion '%s' failed: %s\n", __FILE__, __LINE__, #condition, msg);  \
-            _Exit(1);                                                                                   \
-        }                                                                                               \
+#define lmc_assert_trigger(condition, ...)  \
+    do {                                    \
+        if(!(condition)) {                  \
+            fprintf(stderr, __VA_ARGS__);   \
+            _Exit(1);                       \
+        }                                   \
     } while (0)
+
+#define lmc_assert_no_msg(condition)    \
+    lmc_assert_trigger(condition, "%s:%d assertion '%s' failed\n")
+
+#define lmc_assert_msg(condition, msg)  \
+    lmc_assert_trigger(condition, "%s:%d assertion '%s' failed " msg "\n", __FILE__, __LINE__, #condition)
+
+#define lmc_assert_variadic(condition, fmt, ...) \
+    lmc_assert_trigger(condition, "%s:%d assertion '%s' failed " fmt "\n", __FILE__, __LINE__, #condition, __VA_ARGS__)
+
+#define lmc_assert(...) \
+    lmc_cat_expand(lmc_assert, lmc_count(__VA_ARGS__))(__VA_ARGS__)
 
 #define lmc_overload(name, ...) \
     lmc_cat_expand(name, lmc_count(__VA_ARGS__))(__VA_ARGS__)
@@ -537,7 +677,7 @@ enum lmc_opmode {
                     retstatement;                                                                       \
                     break;                                                                              \
                 default:                                                                                \
-                    lmc_assert(0, "Invalid opmode");                                                    \
+                    lmc_assert(0, "Invalid opmode %d", lmc_mock_ ## name.opdata.mode);                  \
             }                                                                                           \
         }                                                                                               \
         extern void *lmc_symbol(char const*);                                                           \
@@ -546,7 +686,7 @@ enum lmc_opmode {
         dlerror();                                                                                      \
         *(void **) (& lmc_handle_ ## name) = lmc_symbol(#name);                                         \
         char const *lmc_error_ ## name = dlerror();                                                     \
-        lmc_assert(!lmc_error_ ## name, lmc_error_ ## name);                                            \
+        lmc_assert(!lmc_error_ ## name, "%s", lmc_error_ ## name);                                      \
         call_prefix lmc_handle_ ## name(lmc_arglist(lmc_count(__VA_ARGS__)));                           \
         lmc_close_dlhandle();                                                                           \
         retstatement;                                                                                   \
@@ -590,7 +730,7 @@ enum lmc_opmode {
                     retstatement;                                                                       \
                     break;                                                                              \
                 default:                                                                                \
-                    lmc_assert(0, "Invalid opmode");                                                    \
+                    lmc_assert(0, "Invalid opmode %d", lmc_mock_ ## name.opdata.mode);                  \
             }                                                                                           \
         }                                                                                               \
         extern void *lmc_symbol(char const*);                                                           \
@@ -599,7 +739,7 @@ enum lmc_opmode {
         dlerror();                                                                                      \
         *(void **) (& lmc_handle_ ## name) = lmc_symbol(#name);                                         \
         char const *lmc_error_ ## name = dlerror();                                                     \
-        lmc_assert(!lmc_error_ ## name, lmc_error_ ## name);                                            \
+        lmc_assert(!lmc_error_ ## name, "%s", lmc_error_ ## name);                                      \
         call_prefix lmc_handle_ ## name ();                                                             \
         lmc_close_dlhandle();                                                                           \
         retstatement;                                                                                   \
