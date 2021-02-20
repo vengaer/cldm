@@ -660,7 +660,7 @@ enum lmc_opmode {
 #define Assign(...)           LMC_ASSIGN(__VA_ARGS__)
 #endif
 
-int lmc_init2(int argc, char const **argv);
+int lmc_init2(int argc, char *const *argv);
 int lmc_init1(char const *binary_path);
 void lmc_close(void);
 
