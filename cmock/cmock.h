@@ -42,7 +42,7 @@
                          a104, a105, a106, a107, a108, a109, a110, a111,    \
                          a112, a113, a114, a115, a116, a117, a118, a119,    \
                          a120, a121, a122, a123, a124, a125, a126, a127,    \
-                         a128, ...) a128
+                         a128, ...)  a128
 
 #define cmock_count_expand(...) cmock_count_pick(__VA_ARGS__)
 #define cmock_count(...) cmock_count_expand(__VA_ARGS__, cmock_count_sequence)
@@ -585,7 +585,7 @@
     } while (0)
 
 #define cmock_assert_no_msg(condition)    \
-    cmock_assert_trigger(condition, "%s:%d assertion '%s' failed\n")
+    cmock_assert_trigger(condition, "%s:%d assertion '%s' failed\n", __FILE__, __LINE__, #condition)
 
 #define cmock_assert_msg(condition, msg)  \
     cmock_assert_trigger(condition, "%s:%d assertion '%s' failed " msg "\n", __FILE__, __LINE__, #condition)
@@ -594,7 +594,7 @@
     cmock_assert_trigger(condition, "%s:%d assertion '%s' failed " fmt "\n", __FILE__, __LINE__, #condition, __VA_ARGS__)
 
 #define cmock_assert(...) \
-    cmock_cat_expand(cmock_assert, cmock_count(__VA_ARGS__))(__VA_ARGS__)
+    cmock_overload(cmock_assert, __VA_ARGS__)
 
 #define cmock_overload(name, ...) \
     cmock_cat_expand(name, cmock_count(__VA_ARGS__))(__VA_ARGS__)
