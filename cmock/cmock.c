@@ -43,7 +43,7 @@ static void *cmock_search_so(char const *libname, char const *symname) {
     return dlsym(dlhandle, symname);
 }
 
-static void *cmock_dllookup(char const *symname) {
+void *cmock_dllookup(char const *symname) {
     char buffer[PATH_SIZE];
     char const *path = getenv("LD_LIBRARY_PATH");
 
@@ -123,8 +123,4 @@ cleanup:
     }
     cmock_assert(sym, "Lookup of symbol %s failed", symname);
     return sym;
-}
-
-void *cmock_symbol(char const *symname) {
-    return cmock_dllookup(symname);
 }

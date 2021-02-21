@@ -679,11 +679,11 @@ enum cmock_opmode {
                     cmock_assert(0, "Invalid opmode %d", cmock_mock_ ## name.opdata.mode);                  \
             }                                                                                               \
         }                                                                                                   \
-        extern void *cmock_symbol(char const*);                                                             \
+        extern void *cmock_dllookup(char const*);                                                           \
         extern void cmock_close_dlhandle(void);                                                             \
         rettype(* cmock_handle_ ## name)(__VA_ARGS__);                                                      \
         dlerror();                                                                                          \
-        *(void **) (& cmock_handle_ ## name) = cmock_symbol(#name);                                         \
+        *(void **) (& cmock_handle_ ## name) = cmock_dllookup(#name);                                       \
         char const *cmock_error_ ## name = dlerror();                                                       \
         cmock_assert(!cmock_error_ ## name, "%s", cmock_error_ ## name);                                    \
         call_prefix cmock_handle_ ## name(cmock_arglist(cmock_count(__VA_ARGS__)));                         \
@@ -730,11 +730,11 @@ enum cmock_opmode {
                     cmock_assert(0, "Invalid opmode %d", cmock_mock_ ## name.opdata.mode);      \
             }                                                                                   \
         }                                                                                       \
-        extern void *cmock_symbol(char const*);                                                 \
+        extern void *cmock_dllookup(char const*);                                               \
         extern void cmock_close_dlhandle(void);                                                 \
         rettype(* cmock_handle_ ## name)(void);                                                 \
         dlerror();                                                                              \
-        *(void **) (& cmock_handle_ ## name) = cmock_symbol(#name);                             \
+        *(void **) (& cmock_handle_ ## name) = cmock_dllookup(#name);                           \
         char const *cmock_error_ ## name = dlerror();                                           \
         cmock_assert(!cmock_error_ ## name, "%s", cmock_error_ ## name);                        \
         call_prefix cmock_handle_ ## name ();                                                   \
