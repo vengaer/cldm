@@ -599,10 +599,9 @@
 #define cmock_overload(name, ...) \
     cmock_cat_expand(name, cmock_count(__VA_ARGS__))(__VA_ARGS__)
 
-#define cmock_will(do_once, ...)                                                                    \
+#define cmock_will(invocations, ...)                                                                \
         __VA_ARGS__;                                                                                \
-        memset((unsigned char *)mockinfo->addr + mockinfo->expired_offset, 0, sizeof(_Bool));       \
-        memset((unsigned char *)mockinfo->addr + mockinfo->once_offset, do_once, sizeof(_Bool));    \
+        *(int *)((unsigned char *)mockinfo->addr + mockinfo->invocations_offset) = invocations;     \
     } while (0)
 
 #define cmock_set_opmode(mode)                                                              \
@@ -616,8 +615,7 @@
 
 struct cmock_mock_info {
     void *addr;
-    unsigned expired_offset;
-    unsigned once_offset;
+    unsigned invocations_offset;
     unsigned opmode_offset;
 };
 
@@ -630,8 +628,7 @@ enum cmock_opmode {
 #define cmock_generate_mock_ctx(utype, rettype, name, ...)  \
     struct cmock_mock_ ## name ## _ctx {                    \
         struct cmock_mock_info info;                        \
-        _Bool expired;                                      \
-        _Bool once;                                         \
+        int invocations;                                    \
         struct cmock_mock_ ## name ## _opdata{              \
             enum cmock_opmode mode;                         \
             union {                                         \
@@ -648,13 +645,11 @@ enum cmock_opmode {
     struct cmock_mock_ ## name ## _ctx cmock_mock_ ## name = {                                              \
         .info = {                                                                                           \
             .addr = &cmock_mock_ ## name,                                                                   \
-            .expired_offset = offsetof(struct cmock_mock_ ## name ## _ctx, expired),                        \
-            .once_offset = offsetof(struct cmock_mock_ ## name ## _ctx, once),                              \
+            .invocations_offset = offsetof(struct cmock_mock_ ## name ## _ctx, invocations),                \
             .opmode_offset = offsetof(struct cmock_mock_ ## name ## _ctx, opdata) +                         \
                              offsetof(struct cmock_mock_ ## name ## _opdata, mode)                          \
         },                                                                                                  \
-        .expired = 1,                                                                                       \
-        .once = 0,                                                                                          \
+        .invocations = 0,                                                                                   \
         .opdata = {                                                                                         \
             .mode = CMOCK_OP_INVOKE,                                                                        \
             .invoke = 0                                                                                     \
@@ -662,9 +657,9 @@ enum cmock_opmode {
     };                                                                                                      \
     rettype name(cmock_genparams(__VA_ARGS__)) {                                                            \
         rvinit;                                                                                             \
-        if(!cmock_mock_ ## name.expired) {                                                                  \
-            if(cmock_mock_ ## name.once) {                                                                  \
-                cmock_mock_ ## name.expired = 1;                                                            \
+        if(cmock_mock_ ## name.invocations) {                                                               \
+            if(cmock_mock_ ## name.invocations != -1) {                                                     \
+                --cmock_mock_ ## name.invocations;                                                          \
             }                                                                                               \
             switch(cmock_mock_ ## name.opdata.mode) {                                                       \
                 case CMOCK_OP_INVOKE:                                                                       \
@@ -696,57 +691,55 @@ enum cmock_opmode {
     }                                                                                                       \
     void cmock_trailing_ ## name (void)
 
-#define cmock_mock_function1(rvinit, call_prefix, retstatement, utype, rettype, name)       \
-    cmock_generate_mock_ctx(utype, rettype, name, void);                                    \
-    struct cmock_mock_ ## name ## _ctx cmock_mock_ ## name = {                              \
-        .info = {                                                                           \
-            .addr = &cmock_mock_ ## name,                                                   \
-            .expired_offset = offsetof(struct cmock_mock_ ## name ## _ctx, expired),        \
-            .once_offset = offsetof(struct cmock_mock_ ## name ## _ctx, once),              \
-            .opmode_offset = offsetof(struct cmock_mock_ ## name ## _ctx, opdata) +         \
-                             offsetof(struct cmock_mock_ ## name ## _opdata, mode)          \
-        },                                                                                  \
-        .expired = 1,                                                                       \
-        .once = 0,                                                                          \
-        .opdata = {                                                                         \
-            .mode = CMOCK_OP_INVOKE,                                                        \
-            .invoke = 0                                                                     \
-        }                                                                                   \
-    };                                                                                      \
-    rettype name(void) {                                                                    \
-        rvinit;                                                                             \
-        if(!cmock_mock_ ## name.expired) {                                                  \
-            if(cmock_mock_ ## name.once) {                                                  \
-                cmock_mock_ ## name.expired = 1;                                            \
-            }                                                                               \
-            switch(cmock_mock_ ## name.opdata.mode) {                                       \
-                case CMOCK_OP_INVOKE:                                                       \
-                    call_prefix cmock_mock_ ## name.opdata.invoke();                        \
-                    retstatement;                                                           \
-                    break;                                                                  \
-                case CMOCK_OP_RETURN:                                                       \
-                    call_prefix cmock_mock_ ## name.opdata.retval;                          \
-                    retstatement;                                                           \
-                    break;                                                                  \
-                case CMOCK_OP_INCREMENT:                                                    \
-                    call_prefix ++cmock_mock_ ## name.opdata.counter;                       \
-                    retstatement;                                                           \
-                    break;                                                                  \
-                default:                                                                    \
-                    cmock_assert(0, "Invalid opmode %d", cmock_mock_ ## name.opdata.mode);  \
-            }                                                                               \
-        }                                                                                   \
-        extern void *cmock_symbol(char const*);                                             \
-        extern void cmock_close_dlhandle(void);                                             \
-        rettype(* cmock_handle_ ## name)(void);                                             \
-        dlerror();                                                                          \
-        *(void **) (& cmock_handle_ ## name) = cmock_symbol(#name);                         \
-        char const *cmock_error_ ## name = dlerror();                                       \
-        cmock_assert(!cmock_error_ ## name, "%s", cmock_error_ ## name);                    \
-        call_prefix cmock_handle_ ## name ();                                               \
-        cmock_close_dlhandle();                                                             \
-        retstatement;                                                                       \
-    }                                                                                       \
+#define cmock_mock_function1(rvinit, call_prefix, retstatement, utype, rettype, name)           \
+    cmock_generate_mock_ctx(utype, rettype, name, void);                                        \
+    struct cmock_mock_ ## name ## _ctx cmock_mock_ ## name = {                                  \
+        .info = {                                                                               \
+            .addr = &cmock_mock_ ## name,                                                       \
+            .invocations_offset = offsetof(struct cmock_mock_ ## name ## _ctx, invocations),    \
+            .opmode_offset = offsetof(struct cmock_mock_ ## name ## _ctx, opdata) +             \
+                             offsetof(struct cmock_mock_ ## name ## _opdata, mode)              \
+        },                                                                                      \
+        .invocations = 0,                                                                       \
+        .opdata = {                                                                             \
+            .mode = CMOCK_OP_INVOKE,                                                            \
+            .invoke = 0                                                                         \
+        }                                                                                       \
+    };                                                                                          \
+    rettype name(void) {                                                                        \
+        rvinit;                                                                                 \
+        if(cmock_mock_ ## name.invocations) {                                                   \
+            if(cmock_mock_ ## name.invocations != -1) {                                         \
+                --cmock_mock_ ## name.invocations;                                              \
+            }                                                                                   \
+            switch(cmock_mock_ ## name.opdata.mode) {                                           \
+                case CMOCK_OP_INVOKE:                                                           \
+                    call_prefix cmock_mock_ ## name.opdata.invoke();                            \
+                    retstatement;                                                               \
+                    break;                                                                      \
+                case CMOCK_OP_RETURN:                                                           \
+                    call_prefix cmock_mock_ ## name.opdata.retval;                              \
+                    retstatement;                                                               \
+                    break;                                                                      \
+                case CMOCK_OP_INCREMENT:                                                        \
+                    call_prefix ++cmock_mock_ ## name.opdata.counter;                           \
+                    retstatement;                                                               \
+                    break;                                                                      \
+                default:                                                                        \
+                    cmock_assert(0, "Invalid opmode %d", cmock_mock_ ## name.opdata.mode);      \
+            }                                                                                   \
+        }                                                                                       \
+        extern void *cmock_symbol(char const*);                                                 \
+        extern void cmock_close_dlhandle(void);                                                 \
+        rettype(* cmock_handle_ ## name)(void);                                                 \
+        dlerror();                                                                              \
+        *(void **) (& cmock_handle_ ## name) = cmock_symbol(#name);                             \
+        char const *cmock_error_ ## name = dlerror();                                           \
+        cmock_assert(!cmock_error_ ## name, "%s", cmock_error_ ## name);                        \
+        call_prefix cmock_handle_ ## name ();                                                   \
+        cmock_close_dlhandle();                                                                 \
+        retstatement;                                                                           \
+    }                                                                                           \
     void cmock_trailing_ ## name (void)
 #else
 
@@ -789,7 +782,7 @@ enum cmock_opmode {
         cmock_mock_ ## name
 
 #define CMOCK_WILL_ONCE(...) cmock_will(1, __VA_ARGS__)
-#define CMOCK_WILL_REPEATEDLY(...) cmock_will(0, __VA_ARGS__)
+#define CMOCK_WILL_REPEATEDLY(...) cmock_will(-1, __VA_ARGS__)
 
 #define CMOCK_INVOKE(func) cmock_setop(invoke, &func, CMOCK_OP_INVOKE)
 #define CMOCK_RETURN(value) cmock_setop(retval, value, CMOCK_OP_RETURN)
