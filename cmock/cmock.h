@@ -53,263 +53,265 @@
 #define cmock_str(a) #a
 #define cmock_str_expand(a) cmock_str(a)
 
-#define cmock_genparams_1(type)        type a1
-#define cmock_genparams_2(type, ...)   type a2,   cmock_genparams_1(__VA_ARGS__)
-#define cmock_genparams_3(type, ...)   type a3,   cmock_genparams_2(__VA_ARGS__)
-#define cmock_genparams_4(type, ...)   type a4,   cmock_genparams_3(__VA_ARGS__)
-#define cmock_genparams_5(type, ...)   type a5,   cmock_genparams_4(__VA_ARGS__)
-#define cmock_genparams_6(type, ...)   type a6,   cmock_genparams_5(__VA_ARGS__)
-#define cmock_genparams_7(type, ...)   type a7,   cmock_genparams_6(__VA_ARGS__)
-#define cmock_genparams_8(type, ...)   type a8,   cmock_genparams_7(__VA_ARGS__)
-#define cmock_genparams_9(type, ...)   type a9,   cmock_genparams_8(__VA_ARGS__)
-#define cmock_genparams_10(type, ...)  type a10,  cmock_genparams_9(__VA_ARGS__)
-#define cmock_genparams_11(type, ...)  type a11,  cmock_genparams_10(__VA_ARGS__)
-#define cmock_genparams_12(type, ...)  type a12,  cmock_genparams_11(__VA_ARGS__)
-#define cmock_genparams_13(type, ...)  type a13,  cmock_genparams_12(__VA_ARGS__)
-#define cmock_genparams_14(type, ...)  type a14,  cmock_genparams_13(__VA_ARGS__)
-#define cmock_genparams_15(type, ...)  type a15,  cmock_genparams_14(__VA_ARGS__)
-#define cmock_genparams_16(type, ...)  type a16,  cmock_genparams_15(__VA_ARGS__)
-#define cmock_genparams_17(type, ...)  type a17,  cmock_genparams_16(__VA_ARGS__)
-#define cmock_genparams_18(type, ...)  type a18,  cmock_genparams_17(__VA_ARGS__)
-#define cmock_genparams_19(type, ...)  type a19,  cmock_genparams_18(__VA_ARGS__)
-#define cmock_genparams_20(type, ...)  type a20,  cmock_genparams_19(__VA_ARGS__)
-#define cmock_genparams_21(type, ...)  type a21,  cmock_genparams_20(__VA_ARGS__)
-#define cmock_genparams_22(type, ...)  type a22,  cmock_genparams_21(__VA_ARGS__)
-#define cmock_genparams_23(type, ...)  type a23,  cmock_genparams_22(__VA_ARGS__)
-#define cmock_genparams_24(type, ...)  type a24,  cmock_genparams_23(__VA_ARGS__)
-#define cmock_genparams_25(type, ...)  type a25,  cmock_genparams_24(__VA_ARGS__)
-#define cmock_genparams_26(type, ...)  type a26,  cmock_genparams_25(__VA_ARGS__)
-#define cmock_genparams_27(type, ...)  type a27,  cmock_genparams_26(__VA_ARGS__)
-#define cmock_genparams_28(type, ...)  type a28,  cmock_genparams_27(__VA_ARGS__)
-#define cmock_genparams_29(type, ...)  type a29,  cmock_genparams_28(__VA_ARGS__)
-#define cmock_genparams_30(type, ...)  type a30,  cmock_genparams_29(__VA_ARGS__)
-#define cmock_genparams_31(type, ...)  type a31,  cmock_genparams_30(__VA_ARGS__)
-#define cmock_genparams_32(type, ...)  type a32,  cmock_genparams_31(__VA_ARGS__)
-#define cmock_genparams_33(type, ...)  type a33,  cmock_genparams_32(__VA_ARGS__)
-#define cmock_genparams_34(type, ...)  type a34,  cmock_genparams_33(__VA_ARGS__)
-#define cmock_genparams_35(type, ...)  type a35,  cmock_genparams_34(__VA_ARGS__)
-#define cmock_genparams_36(type, ...)  type a36,  cmock_genparams_35(__VA_ARGS__)
-#define cmock_genparams_37(type, ...)  type a37,  cmock_genparams_36(__VA_ARGS__)
-#define cmock_genparams_38(type, ...)  type a38,  cmock_genparams_37(__VA_ARGS__)
-#define cmock_genparams_39(type, ...)  type a39,  cmock_genparams_38(__VA_ARGS__)
-#define cmock_genparams_40(type, ...)  type a40,  cmock_genparams_39(__VA_ARGS__)
-#define cmock_genparams_41(type, ...)  type a41,  cmock_genparams_40(__VA_ARGS__)
-#define cmock_genparams_42(type, ...)  type a42,  cmock_genparams_41(__VA_ARGS__)
-#define cmock_genparams_43(type, ...)  type a43,  cmock_genparams_42(__VA_ARGS__)
-#define cmock_genparams_44(type, ...)  type a44,  cmock_genparams_43(__VA_ARGS__)
-#define cmock_genparams_45(type, ...)  type a45,  cmock_genparams_44(__VA_ARGS__)
-#define cmock_genparams_46(type, ...)  type a46,  cmock_genparams_45(__VA_ARGS__)
-#define cmock_genparams_47(type, ...)  type a47,  cmock_genparams_46(__VA_ARGS__)
-#define cmock_genparams_48(type, ...)  type a48,  cmock_genparams_47(__VA_ARGS__)
-#define cmock_genparams_49(type, ...)  type a49,  cmock_genparams_48(__VA_ARGS__)
-#define cmock_genparams_50(type, ...)  type a50,  cmock_genparams_49(__VA_ARGS__)
-#define cmock_genparams_51(type, ...)  type a51,  cmock_genparams_50(__VA_ARGS__)
-#define cmock_genparams_52(type, ...)  type a52,  cmock_genparams_51(__VA_ARGS__)
-#define cmock_genparams_53(type, ...)  type a53,  cmock_genparams_52(__VA_ARGS__)
-#define cmock_genparams_54(type, ...)  type a54,  cmock_genparams_53(__VA_ARGS__)
-#define cmock_genparams_55(type, ...)  type a55,  cmock_genparams_54(__VA_ARGS__)
-#define cmock_genparams_56(type, ...)  type a56,  cmock_genparams_55(__VA_ARGS__)
-#define cmock_genparams_57(type, ...)  type a57,  cmock_genparams_56(__VA_ARGS__)
-#define cmock_genparams_58(type, ...)  type a58,  cmock_genparams_57(__VA_ARGS__)
-#define cmock_genparams_59(type, ...)  type a59,  cmock_genparams_58(__VA_ARGS__)
-#define cmock_genparams_60(type, ...)  type a60,  cmock_genparams_59(__VA_ARGS__)
-#define cmock_genparams_61(type, ...)  type a61,  cmock_genparams_60(__VA_ARGS__)
-#define cmock_genparams_62(type, ...)  type a62,  cmock_genparams_61(__VA_ARGS__)
-#define cmock_genparams_63(type, ...)  type a63,  cmock_genparams_62(__VA_ARGS__)
-#define cmock_genparams_64(type, ...)  type a64,  cmock_genparams_63(__VA_ARGS__)
-#define cmock_genparams_65(type, ...)  type a65,  cmock_genparams_64(__VA_ARGS__)
-#define cmock_genparams_66(type, ...)  type a66,  cmock_genparams_65(__VA_ARGS__)
-#define cmock_genparams_67(type, ...)  type a67,  cmock_genparams_66(__VA_ARGS__)
-#define cmock_genparams_68(type, ...)  type a68,  cmock_genparams_67(__VA_ARGS__)
-#define cmock_genparams_69(type, ...)  type a69,  cmock_genparams_68(__VA_ARGS__)
-#define cmock_genparams_70(type, ...)  type a70,  cmock_genparams_69(__VA_ARGS__)
-#define cmock_genparams_71(type, ...)  type a71,  cmock_genparams_70(__VA_ARGS__)
-#define cmock_genparams_72(type, ...)  type a72,  cmock_genparams_71(__VA_ARGS__)
-#define cmock_genparams_73(type, ...)  type a73,  cmock_genparams_72(__VA_ARGS__)
-#define cmock_genparams_74(type, ...)  type a74,  cmock_genparams_73(__VA_ARGS__)
-#define cmock_genparams_75(type, ...)  type a75,  cmock_genparams_74(__VA_ARGS__)
-#define cmock_genparams_76(type, ...)  type a76,  cmock_genparams_75(__VA_ARGS__)
-#define cmock_genparams_77(type, ...)  type a77,  cmock_genparams_76(__VA_ARGS__)
-#define cmock_genparams_78(type, ...)  type a78,  cmock_genparams_77(__VA_ARGS__)
-#define cmock_genparams_79(type, ...)  type a79,  cmock_genparams_78(__VA_ARGS__)
-#define cmock_genparams_80(type, ...)  type a80,  cmock_genparams_79(__VA_ARGS__)
-#define cmock_genparams_81(type, ...)  type a81,  cmock_genparams_80(__VA_ARGS__)
-#define cmock_genparams_82(type, ...)  type a82,  cmock_genparams_81(__VA_ARGS__)
-#define cmock_genparams_83(type, ...)  type a83,  cmock_genparams_82(__VA_ARGS__)
-#define cmock_genparams_84(type, ...)  type a84,  cmock_genparams_83(__VA_ARGS__)
-#define cmock_genparams_85(type, ...)  type a85,  cmock_genparams_84(__VA_ARGS__)
-#define cmock_genparams_86(type, ...)  type a86,  cmock_genparams_85(__VA_ARGS__)
-#define cmock_genparams_87(type, ...)  type a87,  cmock_genparams_86(__VA_ARGS__)
-#define cmock_genparams_88(type, ...)  type a88,  cmock_genparams_87(__VA_ARGS__)
-#define cmock_genparams_89(type, ...)  type a89,  cmock_genparams_88(__VA_ARGS__)
-#define cmock_genparams_90(type, ...)  type a90,  cmock_genparams_89(__VA_ARGS__)
-#define cmock_genparams_91(type, ...)  type a91,  cmock_genparams_90(__VA_ARGS__)
-#define cmock_genparams_92(type, ...)  type a92,  cmock_genparams_91(__VA_ARGS__)
-#define cmock_genparams_93(type, ...)  type a93,  cmock_genparams_92(__VA_ARGS__)
-#define cmock_genparams_94(type, ...)  type a94,  cmock_genparams_93(__VA_ARGS__)
-#define cmock_genparams_95(type, ...)  type a95,  cmock_genparams_94(__VA_ARGS__)
-#define cmock_genparams_96(type, ...)  type a96,  cmock_genparams_95(__VA_ARGS__)
-#define cmock_genparams_97(type, ...)  type a97,  cmock_genparams_96(__VA_ARGS__)
-#define cmock_genparams_98(type, ...)  type a98,  cmock_genparams_97(__VA_ARGS__)
-#define cmock_genparams_99(type, ...)  type a99,  cmock_genparams_98(__VA_ARGS__)
-#define cmock_genparams_100(type, ...) type a100, cmock_genparams_99(__VA_ARGS__)
-#define cmock_genparams_101(type, ...) type a101, cmock_genparams_100(__VA_ARGS__)
-#define cmock_genparams_102(type, ...) type a102, cmock_genparams_101(__VA_ARGS__)
-#define cmock_genparams_103(type, ...) type a103, cmock_genparams_102(__VA_ARGS__)
-#define cmock_genparams_104(type, ...) type a104, cmock_genparams_103(__VA_ARGS__)
-#define cmock_genparams_105(type, ...) type a105, cmock_genparams_104(__VA_ARGS__)
-#define cmock_genparams_106(type, ...) type a106, cmock_genparams_105(__VA_ARGS__)
-#define cmock_genparams_107(type, ...) type a107, cmock_genparams_106(__VA_ARGS__)
-#define cmock_genparams_108(type, ...) type a108, cmock_genparams_107(__VA_ARGS__)
-#define cmock_genparams_109(type, ...) type a109, cmock_genparams_108(__VA_ARGS__)
-#define cmock_genparams_110(type, ...) type a110, cmock_genparams_109(__VA_ARGS__)
-#define cmock_genparams_111(type, ...) type a111, cmock_genparams_110(__VA_ARGS__)
-#define cmock_genparams_112(type, ...) type a112, cmock_genparams_111(__VA_ARGS__)
-#define cmock_genparams_113(type, ...) type a113, cmock_genparams_112(__VA_ARGS__)
-#define cmock_genparams_114(type, ...) type a114, cmock_genparams_113(__VA_ARGS__)
-#define cmock_genparams_115(type, ...) type a115, cmock_genparams_114(__VA_ARGS__)
-#define cmock_genparams_116(type, ...) type a116, cmock_genparams_115(__VA_ARGS__)
-#define cmock_genparams_117(type, ...) type a117, cmock_genparams_116(__VA_ARGS__)
-#define cmock_genparams_118(type, ...) type a118, cmock_genparams_117(__VA_ARGS__)
-#define cmock_genparams_119(type, ...) type a119, cmock_genparams_118(__VA_ARGS__)
-#define cmock_genparams_120(type, ...) type a120, cmock_genparams_119(__VA_ARGS__)
-#define cmock_genparams_121(type, ...) type a121, cmock_genparams_120(__VA_ARGS__)
-#define cmock_genparams_122(type, ...) type a122, cmock_genparams_121(__VA_ARGS__)
-#define cmock_genparams_123(type, ...) type a123, cmock_genparams_122(__VA_ARGS__)
-#define cmock_genparams_124(type, ...) type a124, cmock_genparams_123(__VA_ARGS__)
-#define cmock_genparams_125(type, ...) type a125, cmock_genparams_124(__VA_ARGS__)
-#define cmock_genparams_126(type, ...) type a126, cmock_genparams_125(__VA_ARGS__)
-#define cmock_genparams_127(type, ...) type a127, cmock_genparams_126(__VA_ARGS__)
+#define cmock_arrsize(arr) (sizeof(arr) / sizeof(arr[0]))
+
+#define cmock_genparams_1(type)        type a0
+#define cmock_genparams_2(type, ...)   type a1,   cmock_genparams_1(__VA_ARGS__)
+#define cmock_genparams_3(type, ...)   type a2,   cmock_genparams_2(__VA_ARGS__)
+#define cmock_genparams_4(type, ...)   type a3,   cmock_genparams_3(__VA_ARGS__)
+#define cmock_genparams_5(type, ...)   type a4,   cmock_genparams_4(__VA_ARGS__)
+#define cmock_genparams_6(type, ...)   type a5,   cmock_genparams_5(__VA_ARGS__)
+#define cmock_genparams_7(type, ...)   type a6,   cmock_genparams_6(__VA_ARGS__)
+#define cmock_genparams_8(type, ...)   type a7,   cmock_genparams_7(__VA_ARGS__)
+#define cmock_genparams_9(type, ...)   type a8,   cmock_genparams_8(__VA_ARGS__)
+#define cmock_genparams_10(type, ...)  type a9,   cmock_genparams_9(__VA_ARGS__)
+#define cmock_genparams_11(type, ...)  type a10,  cmock_genparams_10(__VA_ARGS__)
+#define cmock_genparams_12(type, ...)  type a11,  cmock_genparams_11(__VA_ARGS__)
+#define cmock_genparams_13(type, ...)  type a12,  cmock_genparams_12(__VA_ARGS__)
+#define cmock_genparams_14(type, ...)  type a13,  cmock_genparams_13(__VA_ARGS__)
+#define cmock_genparams_15(type, ...)  type a14,  cmock_genparams_14(__VA_ARGS__)
+#define cmock_genparams_16(type, ...)  type a15,  cmock_genparams_15(__VA_ARGS__)
+#define cmock_genparams_17(type, ...)  type a16,  cmock_genparams_16(__VA_ARGS__)
+#define cmock_genparams_18(type, ...)  type a17,  cmock_genparams_17(__VA_ARGS__)
+#define cmock_genparams_19(type, ...)  type a18,  cmock_genparams_18(__VA_ARGS__)
+#define cmock_genparams_20(type, ...)  type a19,  cmock_genparams_19(__VA_ARGS__)
+#define cmock_genparams_21(type, ...)  type a20,  cmock_genparams_20(__VA_ARGS__)
+#define cmock_genparams_22(type, ...)  type a21,  cmock_genparams_21(__VA_ARGS__)
+#define cmock_genparams_23(type, ...)  type a22,  cmock_genparams_22(__VA_ARGS__)
+#define cmock_genparams_24(type, ...)  type a23,  cmock_genparams_23(__VA_ARGS__)
+#define cmock_genparams_25(type, ...)  type a24,  cmock_genparams_24(__VA_ARGS__)
+#define cmock_genparams_26(type, ...)  type a25,  cmock_genparams_25(__VA_ARGS__)
+#define cmock_genparams_27(type, ...)  type a26,  cmock_genparams_26(__VA_ARGS__)
+#define cmock_genparams_28(type, ...)  type a27,  cmock_genparams_27(__VA_ARGS__)
+#define cmock_genparams_29(type, ...)  type a28,  cmock_genparams_28(__VA_ARGS__)
+#define cmock_genparams_30(type, ...)  type a29,  cmock_genparams_29(__VA_ARGS__)
+#define cmock_genparams_31(type, ...)  type a30,  cmock_genparams_30(__VA_ARGS__)
+#define cmock_genparams_32(type, ...)  type a31,  cmock_genparams_31(__VA_ARGS__)
+#define cmock_genparams_33(type, ...)  type a32,  cmock_genparams_32(__VA_ARGS__)
+#define cmock_genparams_34(type, ...)  type a33,  cmock_genparams_33(__VA_ARGS__)
+#define cmock_genparams_35(type, ...)  type a34,  cmock_genparams_34(__VA_ARGS__)
+#define cmock_genparams_36(type, ...)  type a35,  cmock_genparams_35(__VA_ARGS__)
+#define cmock_genparams_37(type, ...)  type a36,  cmock_genparams_36(__VA_ARGS__)
+#define cmock_genparams_38(type, ...)  type a37,  cmock_genparams_37(__VA_ARGS__)
+#define cmock_genparams_39(type, ...)  type a38,  cmock_genparams_38(__VA_ARGS__)
+#define cmock_genparams_40(type, ...)  type a39,  cmock_genparams_39(__VA_ARGS__)
+#define cmock_genparams_41(type, ...)  type a40,  cmock_genparams_40(__VA_ARGS__)
+#define cmock_genparams_42(type, ...)  type a41,  cmock_genparams_41(__VA_ARGS__)
+#define cmock_genparams_43(type, ...)  type a42,  cmock_genparams_42(__VA_ARGS__)
+#define cmock_genparams_44(type, ...)  type a43,  cmock_genparams_43(__VA_ARGS__)
+#define cmock_genparams_45(type, ...)  type a44,  cmock_genparams_44(__VA_ARGS__)
+#define cmock_genparams_46(type, ...)  type a45,  cmock_genparams_45(__VA_ARGS__)
+#define cmock_genparams_47(type, ...)  type a46,  cmock_genparams_46(__VA_ARGS__)
+#define cmock_genparams_48(type, ...)  type a47,  cmock_genparams_47(__VA_ARGS__)
+#define cmock_genparams_49(type, ...)  type a48,  cmock_genparams_48(__VA_ARGS__)
+#define cmock_genparams_50(type, ...)  type a49,  cmock_genparams_49(__VA_ARGS__)
+#define cmock_genparams_51(type, ...)  type a50,  cmock_genparams_50(__VA_ARGS__)
+#define cmock_genparams_52(type, ...)  type a51,  cmock_genparams_51(__VA_ARGS__)
+#define cmock_genparams_53(type, ...)  type a52,  cmock_genparams_52(__VA_ARGS__)
+#define cmock_genparams_54(type, ...)  type a53,  cmock_genparams_53(__VA_ARGS__)
+#define cmock_genparams_55(type, ...)  type a54,  cmock_genparams_54(__VA_ARGS__)
+#define cmock_genparams_56(type, ...)  type a55,  cmock_genparams_55(__VA_ARGS__)
+#define cmock_genparams_57(type, ...)  type a56,  cmock_genparams_56(__VA_ARGS__)
+#define cmock_genparams_58(type, ...)  type a57,  cmock_genparams_57(__VA_ARGS__)
+#define cmock_genparams_59(type, ...)  type a58,  cmock_genparams_58(__VA_ARGS__)
+#define cmock_genparams_60(type, ...)  type a59,  cmock_genparams_59(__VA_ARGS__)
+#define cmock_genparams_61(type, ...)  type a60,  cmock_genparams_60(__VA_ARGS__)
+#define cmock_genparams_62(type, ...)  type a61,  cmock_genparams_61(__VA_ARGS__)
+#define cmock_genparams_63(type, ...)  type a62,  cmock_genparams_62(__VA_ARGS__)
+#define cmock_genparams_64(type, ...)  type a63,  cmock_genparams_63(__VA_ARGS__)
+#define cmock_genparams_65(type, ...)  type a64,  cmock_genparams_64(__VA_ARGS__)
+#define cmock_genparams_66(type, ...)  type a65,  cmock_genparams_65(__VA_ARGS__)
+#define cmock_genparams_67(type, ...)  type a66,  cmock_genparams_66(__VA_ARGS__)
+#define cmock_genparams_68(type, ...)  type a67,  cmock_genparams_67(__VA_ARGS__)
+#define cmock_genparams_69(type, ...)  type a68,  cmock_genparams_68(__VA_ARGS__)
+#define cmock_genparams_70(type, ...)  type a69,  cmock_genparams_69(__VA_ARGS__)
+#define cmock_genparams_71(type, ...)  type a70,  cmock_genparams_70(__VA_ARGS__)
+#define cmock_genparams_72(type, ...)  type a71,  cmock_genparams_71(__VA_ARGS__)
+#define cmock_genparams_73(type, ...)  type a72,  cmock_genparams_72(__VA_ARGS__)
+#define cmock_genparams_74(type, ...)  type a73,  cmock_genparams_73(__VA_ARGS__)
+#define cmock_genparams_75(type, ...)  type a74,  cmock_genparams_74(__VA_ARGS__)
+#define cmock_genparams_76(type, ...)  type a75,  cmock_genparams_75(__VA_ARGS__)
+#define cmock_genparams_77(type, ...)  type a76,  cmock_genparams_76(__VA_ARGS__)
+#define cmock_genparams_78(type, ...)  type a77,  cmock_genparams_77(__VA_ARGS__)
+#define cmock_genparams_79(type, ...)  type a78,  cmock_genparams_78(__VA_ARGS__)
+#define cmock_genparams_80(type, ...)  type a79,  cmock_genparams_79(__VA_ARGS__)
+#define cmock_genparams_81(type, ...)  type a80,  cmock_genparams_80(__VA_ARGS__)
+#define cmock_genparams_82(type, ...)  type a81,  cmock_genparams_81(__VA_ARGS__)
+#define cmock_genparams_83(type, ...)  type a82,  cmock_genparams_82(__VA_ARGS__)
+#define cmock_genparams_84(type, ...)  type a83,  cmock_genparams_83(__VA_ARGS__)
+#define cmock_genparams_85(type, ...)  type a84,  cmock_genparams_84(__VA_ARGS__)
+#define cmock_genparams_86(type, ...)  type a85,  cmock_genparams_85(__VA_ARGS__)
+#define cmock_genparams_87(type, ...)  type a86,  cmock_genparams_86(__VA_ARGS__)
+#define cmock_genparams_88(type, ...)  type a87,  cmock_genparams_87(__VA_ARGS__)
+#define cmock_genparams_89(type, ...)  type a88,  cmock_genparams_88(__VA_ARGS__)
+#define cmock_genparams_90(type, ...)  type a89,  cmock_genparams_89(__VA_ARGS__)
+#define cmock_genparams_91(type, ...)  type a90,  cmock_genparams_90(__VA_ARGS__)
+#define cmock_genparams_92(type, ...)  type a91,  cmock_genparams_91(__VA_ARGS__)
+#define cmock_genparams_93(type, ...)  type a92,  cmock_genparams_92(__VA_ARGS__)
+#define cmock_genparams_94(type, ...)  type a93,  cmock_genparams_93(__VA_ARGS__)
+#define cmock_genparams_95(type, ...)  type a94,  cmock_genparams_94(__VA_ARGS__)
+#define cmock_genparams_96(type, ...)  type a95,  cmock_genparams_95(__VA_ARGS__)
+#define cmock_genparams_97(type, ...)  type a96,  cmock_genparams_96(__VA_ARGS__)
+#define cmock_genparams_98(type, ...)  type a97,  cmock_genparams_97(__VA_ARGS__)
+#define cmock_genparams_99(type, ...)  type a98,  cmock_genparams_98(__VA_ARGS__)
+#define cmock_genparams_100(type, ...) type a99,  cmock_genparams_99(__VA_ARGS__)
+#define cmock_genparams_101(type, ...) type a100, cmock_genparams_100(__VA_ARGS__)
+#define cmock_genparams_102(type, ...) type a101, cmock_genparams_101(__VA_ARGS__)
+#define cmock_genparams_103(type, ...) type a102, cmock_genparams_102(__VA_ARGS__)
+#define cmock_genparams_104(type, ...) type a103, cmock_genparams_103(__VA_ARGS__)
+#define cmock_genparams_105(type, ...) type a104, cmock_genparams_104(__VA_ARGS__)
+#define cmock_genparams_106(type, ...) type a105, cmock_genparams_105(__VA_ARGS__)
+#define cmock_genparams_107(type, ...) type a106, cmock_genparams_106(__VA_ARGS__)
+#define cmock_genparams_108(type, ...) type a107, cmock_genparams_107(__VA_ARGS__)
+#define cmock_genparams_109(type, ...) type a108, cmock_genparams_108(__VA_ARGS__)
+#define cmock_genparams_110(type, ...) type a109, cmock_genparams_109(__VA_ARGS__)
+#define cmock_genparams_111(type, ...) type a110, cmock_genparams_110(__VA_ARGS__)
+#define cmock_genparams_112(type, ...) type a111, cmock_genparams_111(__VA_ARGS__)
+#define cmock_genparams_113(type, ...) type a112, cmock_genparams_112(__VA_ARGS__)
+#define cmock_genparams_114(type, ...) type a113, cmock_genparams_113(__VA_ARGS__)
+#define cmock_genparams_115(type, ...) type a114, cmock_genparams_114(__VA_ARGS__)
+#define cmock_genparams_116(type, ...) type a115, cmock_genparams_115(__VA_ARGS__)
+#define cmock_genparams_117(type, ...) type a116, cmock_genparams_116(__VA_ARGS__)
+#define cmock_genparams_118(type, ...) type a117, cmock_genparams_117(__VA_ARGS__)
+#define cmock_genparams_119(type, ...) type a118, cmock_genparams_118(__VA_ARGS__)
+#define cmock_genparams_120(type, ...) type a119, cmock_genparams_119(__VA_ARGS__)
+#define cmock_genparams_121(type, ...) type a120, cmock_genparams_120(__VA_ARGS__)
+#define cmock_genparams_122(type, ...) type a121, cmock_genparams_121(__VA_ARGS__)
+#define cmock_genparams_123(type, ...) type a122, cmock_genparams_122(__VA_ARGS__)
+#define cmock_genparams_124(type, ...) type a123, cmock_genparams_123(__VA_ARGS__)
+#define cmock_genparams_125(type, ...) type a124, cmock_genparams_124(__VA_ARGS__)
+#define cmock_genparams_126(type, ...) type a125, cmock_genparams_125(__VA_ARGS__)
+#define cmock_genparams_127(type, ...) type a126, cmock_genparams_126(__VA_ARGS__)
 
 #define cmock_genparams(...) cmock_cat_expand(cmock_genparams_,cmock_count(__VA_ARGS__))(__VA_ARGS__)
 
-#define cmock_arglist_1   a1
-#define cmock_arglist_2   a2,   cmock_arglist_1
-#define cmock_arglist_3   a3,   cmock_arglist_2
-#define cmock_arglist_4   a4,   cmock_arglist_3
-#define cmock_arglist_5   a5,   cmock_arglist_4
-#define cmock_arglist_6   a6,   cmock_arglist_5
-#define cmock_arglist_7   a7,   cmock_arglist_6
-#define cmock_arglist_8   a8,   cmock_arglist_7
-#define cmock_arglist_9   a9,   cmock_arglist_8
-#define cmock_arglist_10  a10,  cmock_arglist_9
-#define cmock_arglist_11  a11,  cmock_arglist_10
-#define cmock_arglist_12  a12,  cmock_arglist_11
-#define cmock_arglist_13  a13,  cmock_arglist_12
-#define cmock_arglist_14  a14,  cmock_arglist_13
-#define cmock_arglist_15  a15,  cmock_arglist_14
-#define cmock_arglist_16  a16,  cmock_arglist_15
-#define cmock_arglist_17  a17,  cmock_arglist_16
-#define cmock_arglist_18  a18,  cmock_arglist_17
-#define cmock_arglist_19  a19,  cmock_arglist_18
-#define cmock_arglist_20  a20,  cmock_arglist_19
-#define cmock_arglist_21  a21,  cmock_arglist_20
-#define cmock_arglist_22  a22,  cmock_arglist_21
-#define cmock_arglist_23  a23,  cmock_arglist_22
-#define cmock_arglist_24  a24,  cmock_arglist_23
-#define cmock_arglist_25  a25,  cmock_arglist_24
-#define cmock_arglist_26  a26,  cmock_arglist_25
-#define cmock_arglist_27  a27,  cmock_arglist_26
-#define cmock_arglist_28  a28,  cmock_arglist_27
-#define cmock_arglist_29  a29,  cmock_arglist_28
-#define cmock_arglist_30  a30,  cmock_arglist_29
-#define cmock_arglist_31  a31,  cmock_arglist_30
-#define cmock_arglist_32  a32,  cmock_arglist_31
-#define cmock_arglist_33  a33,  cmock_arglist_32
-#define cmock_arglist_34  a34,  cmock_arglist_33
-#define cmock_arglist_35  a35,  cmock_arglist_34
-#define cmock_arglist_36  a36,  cmock_arglist_35
-#define cmock_arglist_37  a37,  cmock_arglist_36
-#define cmock_arglist_38  a38,  cmock_arglist_37
-#define cmock_arglist_39  a39,  cmock_arglist_38
-#define cmock_arglist_40  a40,  cmock_arglist_39
-#define cmock_arglist_41  a41,  cmock_arglist_40
-#define cmock_arglist_42  a42,  cmock_arglist_41
-#define cmock_arglist_43  a43,  cmock_arglist_42
-#define cmock_arglist_44  a44,  cmock_arglist_43
-#define cmock_arglist_45  a45,  cmock_arglist_44
-#define cmock_arglist_46  a46,  cmock_arglist_45
-#define cmock_arglist_47  a47,  cmock_arglist_46
-#define cmock_arglist_48  a48,  cmock_arglist_47
-#define cmock_arglist_49  a49,  cmock_arglist_48
-#define cmock_arglist_50  a50,  cmock_arglist_49
-#define cmock_arglist_51  a51,  cmock_arglist_50
-#define cmock_arglist_52  a52,  cmock_arglist_51
-#define cmock_arglist_53  a53,  cmock_arglist_52
-#define cmock_arglist_54  a54,  cmock_arglist_53
-#define cmock_arglist_55  a55,  cmock_arglist_54
-#define cmock_arglist_56  a56,  cmock_arglist_55
-#define cmock_arglist_57  a57,  cmock_arglist_56
-#define cmock_arglist_58  a58,  cmock_arglist_57
-#define cmock_arglist_59  a59,  cmock_arglist_58
-#define cmock_arglist_60  a60,  cmock_arglist_59
-#define cmock_arglist_61  a61,  cmock_arglist_60
-#define cmock_arglist_62  a62,  cmock_arglist_61
-#define cmock_arglist_63  a63,  cmock_arglist_62
-#define cmock_arglist_64  a64,  cmock_arglist_63
-#define cmock_arglist_65  a65,  cmock_arglist_64
-#define cmock_arglist_66  a66,  cmock_arglist_65
-#define cmock_arglist_67  a67,  cmock_arglist_66
-#define cmock_arglist_68  a68,  cmock_arglist_67
-#define cmock_arglist_69  a69,  cmock_arglist_68
-#define cmock_arglist_70  a70,  cmock_arglist_69
-#define cmock_arglist_71  a71,  cmock_arglist_70
-#define cmock_arglist_72  a72,  cmock_arglist_71
-#define cmock_arglist_73  a73,  cmock_arglist_72
-#define cmock_arglist_74  a74,  cmock_arglist_73
-#define cmock_arglist_75  a75,  cmock_arglist_74
-#define cmock_arglist_76  a76,  cmock_arglist_75
-#define cmock_arglist_77  a77,  cmock_arglist_76
-#define cmock_arglist_78  a78,  cmock_arglist_77
-#define cmock_arglist_79  a79,  cmock_arglist_78
-#define cmock_arglist_80  a80,  cmock_arglist_79
-#define cmock_arglist_81  a81,  cmock_arglist_80
-#define cmock_arglist_82  a82,  cmock_arglist_81
-#define cmock_arglist_83  a83,  cmock_arglist_82
-#define cmock_arglist_84  a84,  cmock_arglist_83
-#define cmock_arglist_85  a85,  cmock_arglist_84
-#define cmock_arglist_86  a86,  cmock_arglist_85
-#define cmock_arglist_87  a87,  cmock_arglist_86
-#define cmock_arglist_88  a88,  cmock_arglist_87
-#define cmock_arglist_89  a89,  cmock_arglist_88
-#define cmock_arglist_90  a90,  cmock_arglist_89
-#define cmock_arglist_91  a91,  cmock_arglist_90
-#define cmock_arglist_92  a92,  cmock_arglist_91
-#define cmock_arglist_93  a93,  cmock_arglist_92
-#define cmock_arglist_94  a94,  cmock_arglist_93
-#define cmock_arglist_95  a95,  cmock_arglist_94
-#define cmock_arglist_96  a96,  cmock_arglist_95
-#define cmock_arglist_97  a97,  cmock_arglist_96
-#define cmock_arglist_98  a98,  cmock_arglist_97
-#define cmock_arglist_99  a99,  cmock_arglist_98
-#define cmock_arglist_100 a100, cmock_arglist_99
-#define cmock_arglist_101 a101, cmock_arglist_100
-#define cmock_arglist_102 a102, cmock_arglist_101
-#define cmock_arglist_103 a103, cmock_arglist_102
-#define cmock_arglist_104 a104, cmock_arglist_103
-#define cmock_arglist_105 a105, cmock_arglist_104
-#define cmock_arglist_106 a106, cmock_arglist_105
-#define cmock_arglist_107 a107, cmock_arglist_106
-#define cmock_arglist_108 a108, cmock_arglist_107
-#define cmock_arglist_109 a109, cmock_arglist_108
-#define cmock_arglist_110 a110, cmock_arglist_109
-#define cmock_arglist_111 a111, cmock_arglist_110
-#define cmock_arglist_112 a112, cmock_arglist_111
-#define cmock_arglist_113 a113, cmock_arglist_112
-#define cmock_arglist_114 a114, cmock_arglist_113
-#define cmock_arglist_115 a115, cmock_arglist_114
-#define cmock_arglist_116 a116, cmock_arglist_115
-#define cmock_arglist_117 a117, cmock_arglist_116
-#define cmock_arglist_118 a118, cmock_arglist_117
-#define cmock_arglist_119 a119, cmock_arglist_118
-#define cmock_arglist_120 a120, cmock_arglist_119
-#define cmock_arglist_121 a121, cmock_arglist_120
-#define cmock_arglist_122 a122, cmock_arglist_121
-#define cmock_arglist_123 a123, cmock_arglist_122
-#define cmock_arglist_124 a124, cmock_arglist_123
-#define cmock_arglist_125 a125, cmock_arglist_124
-#define cmock_arglist_126 a126, cmock_arglist_125
-#define cmock_arglist_127 a127, cmock_arglist_126
+#define cmock_arglist_1   a0
+#define cmock_arglist_2   a1,   cmock_arglist_1
+#define cmock_arglist_3   a2,   cmock_arglist_2
+#define cmock_arglist_4   a3,   cmock_arglist_3
+#define cmock_arglist_5   a4,   cmock_arglist_4
+#define cmock_arglist_6   a5,   cmock_arglist_5
+#define cmock_arglist_7   a6,   cmock_arglist_6
+#define cmock_arglist_8   a7,   cmock_arglist_7
+#define cmock_arglist_9   a8,   cmock_arglist_8
+#define cmock_arglist_10  a9,   cmock_arglist_9
+#define cmock_arglist_11  a10,  cmock_arglist_10
+#define cmock_arglist_12  a11,  cmock_arglist_11
+#define cmock_arglist_13  a12,  cmock_arglist_12
+#define cmock_arglist_14  a13,  cmock_arglist_13
+#define cmock_arglist_15  a14,  cmock_arglist_14
+#define cmock_arglist_16  a15,  cmock_arglist_15
+#define cmock_arglist_17  a16,  cmock_arglist_16
+#define cmock_arglist_18  a17,  cmock_arglist_17
+#define cmock_arglist_19  a18,  cmock_arglist_18
+#define cmock_arglist_20  a19,  cmock_arglist_19
+#define cmock_arglist_21  a20,  cmock_arglist_20
+#define cmock_arglist_22  a21,  cmock_arglist_21
+#define cmock_arglist_23  a22,  cmock_arglist_22
+#define cmock_arglist_24  a23,  cmock_arglist_23
+#define cmock_arglist_25  a24,  cmock_arglist_24
+#define cmock_arglist_26  a25,  cmock_arglist_25
+#define cmock_arglist_27  a26,  cmock_arglist_26
+#define cmock_arglist_28  a27,  cmock_arglist_27
+#define cmock_arglist_29  a28,  cmock_arglist_28
+#define cmock_arglist_30  a29,  cmock_arglist_29
+#define cmock_arglist_31  a30,  cmock_arglist_30
+#define cmock_arglist_32  a31,  cmock_arglist_31
+#define cmock_arglist_33  a32,  cmock_arglist_32
+#define cmock_arglist_34  a33,  cmock_arglist_33
+#define cmock_arglist_35  a34,  cmock_arglist_34
+#define cmock_arglist_36  a35,  cmock_arglist_35
+#define cmock_arglist_37  a36,  cmock_arglist_36
+#define cmock_arglist_38  a37,  cmock_arglist_37
+#define cmock_arglist_39  a38,  cmock_arglist_38
+#define cmock_arglist_40  a39,  cmock_arglist_39
+#define cmock_arglist_41  a40,  cmock_arglist_40
+#define cmock_arglist_42  a41,  cmock_arglist_41
+#define cmock_arglist_43  a42,  cmock_arglist_42
+#define cmock_arglist_44  a43,  cmock_arglist_43
+#define cmock_arglist_45  a44,  cmock_arglist_44
+#define cmock_arglist_46  a45,  cmock_arglist_45
+#define cmock_arglist_47  a46,  cmock_arglist_46
+#define cmock_arglist_48  a47,  cmock_arglist_47
+#define cmock_arglist_49  a48,  cmock_arglist_48
+#define cmock_arglist_50  a49,  cmock_arglist_49
+#define cmock_arglist_51  a50,  cmock_arglist_50
+#define cmock_arglist_52  a51,  cmock_arglist_51
+#define cmock_arglist_53  a52,  cmock_arglist_52
+#define cmock_arglist_54  a53,  cmock_arglist_53
+#define cmock_arglist_55  a54,  cmock_arglist_54
+#define cmock_arglist_56  a55,  cmock_arglist_55
+#define cmock_arglist_57  a56,  cmock_arglist_56
+#define cmock_arglist_58  a57,  cmock_arglist_57
+#define cmock_arglist_59  a58,  cmock_arglist_58
+#define cmock_arglist_60  a59,  cmock_arglist_59
+#define cmock_arglist_61  a60,  cmock_arglist_60
+#define cmock_arglist_62  a61,  cmock_arglist_61
+#define cmock_arglist_63  a62,  cmock_arglist_62
+#define cmock_arglist_64  a63,  cmock_arglist_63
+#define cmock_arglist_65  a64,  cmock_arglist_64
+#define cmock_arglist_66  a65,  cmock_arglist_65
+#define cmock_arglist_67  a66,  cmock_arglist_66
+#define cmock_arglist_68  a67,  cmock_arglist_67
+#define cmock_arglist_69  a68,  cmock_arglist_68
+#define cmock_arglist_70  a69,  cmock_arglist_69
+#define cmock_arglist_71  a70,  cmock_arglist_70
+#define cmock_arglist_72  a71,  cmock_arglist_71
+#define cmock_arglist_73  a72,  cmock_arglist_72
+#define cmock_arglist_74  a73,  cmock_arglist_73
+#define cmock_arglist_75  a74,  cmock_arglist_74
+#define cmock_arglist_76  a75,  cmock_arglist_75
+#define cmock_arglist_77  a76,  cmock_arglist_76
+#define cmock_arglist_78  a77,  cmock_arglist_77
+#define cmock_arglist_79  a78,  cmock_arglist_78
+#define cmock_arglist_80  a79,  cmock_arglist_79
+#define cmock_arglist_81  a80,  cmock_arglist_80
+#define cmock_arglist_82  a81,  cmock_arglist_81
+#define cmock_arglist_83  a82,  cmock_arglist_82
+#define cmock_arglist_84  a83,  cmock_arglist_83
+#define cmock_arglist_85  a84,  cmock_arglist_84
+#define cmock_arglist_86  a85,  cmock_arglist_85
+#define cmock_arglist_87  a86,  cmock_arglist_86
+#define cmock_arglist_88  a87,  cmock_arglist_87
+#define cmock_arglist_89  a88,  cmock_arglist_88
+#define cmock_arglist_90  a89,  cmock_arglist_89
+#define cmock_arglist_91  a90,  cmock_arglist_90
+#define cmock_arglist_92  a91,  cmock_arglist_91
+#define cmock_arglist_93  a92,  cmock_arglist_92
+#define cmock_arglist_94  a93,  cmock_arglist_93
+#define cmock_arglist_95  a94,  cmock_arglist_94
+#define cmock_arglist_96  a95,  cmock_arglist_95
+#define cmock_arglist_97  a96,  cmock_arglist_96
+#define cmock_arglist_98  a97,  cmock_arglist_97
+#define cmock_arglist_99  a98,  cmock_arglist_98
+#define cmock_arglist_100 a99,  cmock_arglist_99
+#define cmock_arglist_101 a100, cmock_arglist_100
+#define cmock_arglist_102 a101, cmock_arglist_101
+#define cmock_arglist_103 a102, cmock_arglist_102
+#define cmock_arglist_104 a103, cmock_arglist_103
+#define cmock_arglist_105 a104, cmock_arglist_104
+#define cmock_arglist_106 a105, cmock_arglist_105
+#define cmock_arglist_107 a106, cmock_arglist_106
+#define cmock_arglist_108 a107, cmock_arglist_107
+#define cmock_arglist_109 a108, cmock_arglist_108
+#define cmock_arglist_110 a109, cmock_arglist_109
+#define cmock_arglist_111 a110, cmock_arglist_110
+#define cmock_arglist_112 a111, cmock_arglist_111
+#define cmock_arglist_113 a112, cmock_arglist_112
+#define cmock_arglist_114 a113, cmock_arglist_113
+#define cmock_arglist_115 a114, cmock_arglist_114
+#define cmock_arglist_116 a115, cmock_arglist_115
+#define cmock_arglist_117 a116, cmock_arglist_116
+#define cmock_arglist_118 a117, cmock_arglist_117
+#define cmock_arglist_119 a118, cmock_arglist_118
+#define cmock_arglist_120 a119, cmock_arglist_119
+#define cmock_arglist_121 a120, cmock_arglist_120
+#define cmock_arglist_122 a121, cmock_arglist_121
+#define cmock_arglist_123 a122, cmock_arglist_122
+#define cmock_arglist_124 a123, cmock_arglist_123
+#define cmock_arglist_125 a124, cmock_arglist_124
+#define cmock_arglist_126 a125, cmock_arglist_125
+#define cmock_arglist_127 a126, cmock_arglist_126
 
 #define cmock_arglist(size) cmock_cat(cmock_arglist_, size)
 
@@ -569,6 +571,140 @@
 #define cmock_assert126(...) cmock_assert_variadic(__VA_ARGS__)
 #define cmock_assert127(...) cmock_assert_variadic(__VA_ARGS__)
 
+#define cmock_argframe1(addrs, type)        cmock_argframe_populate_index(addrs, 0)
+#define cmock_argframe2(addrs, type, ...)   cmock_argframe_populate_index(addrs, 1);   cmock_argframe1(addrs, __VA_ARGS__)
+#define cmock_argframe3(addrs, type, ...)   cmock_argframe_populate_index(addrs, 2);   cmock_argframe2(addrs, __VA_ARGS__)
+#define cmock_argframe4(addrs, type, ...)   cmock_argframe_populate_index(addrs, 3);   cmock_argframe3(addrs, __VA_ARGS__)
+#define cmock_argframe5(addrs, type, ...)   cmock_argframe_populate_index(addrs, 4);   cmock_argframe4(addrs, __VA_ARGS__)
+#define cmock_argframe6(addrs, type, ...)   cmock_argframe_populate_index(addrs, 5);   cmock_argframe5(addrs, __VA_ARGS__)
+#define cmock_argframe7(addrs, type, ...)   cmock_argframe_populate_index(addrs, 6);   cmock_argframe6(addrs, __VA_ARGS__)
+#define cmock_argframe8(addrs, type, ...)   cmock_argframe_populate_index(addrs, 7);   cmock_argframe7(addrs, __VA_ARGS__)
+#define cmock_argframe9(addrs, type, ...)   cmock_argframe_populate_index(addrs, 8);   cmock_argframe8(addrs, __VA_ARGS__)
+#define cmock_argframe10(addrs, type, ...)  cmock_argframe_populate_index(addrs, 9);   cmock_argframe9(addrs, __VA_ARGS__)
+#define cmock_argframe11(addrs, type, ...)  cmock_argframe_populate_index(addrs, 10);  cmock_argframe10(addrs, __VA_ARGS__)
+#define cmock_argframe12(addrs, type, ...)  cmock_argframe_populate_index(addrs, 11);  cmock_argframe11(addrs, __VA_ARGS__)
+#define cmock_argframe13(addrs, type, ...)  cmock_argframe_populate_index(addrs, 12);  cmock_argframe12(addrs, __VA_ARGS__)
+#define cmock_argframe14(addrs, type, ...)  cmock_argframe_populate_index(addrs, 13);  cmock_argframe13(addrs, __VA_ARGS__)
+#define cmock_argframe15(addrs, type, ...)  cmock_argframe_populate_index(addrs, 14);  cmock_argframe14(addrs, __VA_ARGS__)
+#define cmock_argframe16(addrs, type, ...)  cmock_argframe_populate_index(addrs, 15);  cmock_argframe15(addrs, __VA_ARGS__)
+#define cmock_argframe17(addrs, type, ...)  cmock_argframe_populate_index(addrs, 16);  cmock_argframe16(addrs, __VA_ARGS__)
+#define cmock_argframe18(addrs, type, ...)  cmock_argframe_populate_index(addrs, 17);  cmock_argframe17(addrs, __VA_ARGS__)
+#define cmock_argframe19(addrs, type, ...)  cmock_argframe_populate_index(addrs, 18);  cmock_argframe18(addrs, __VA_ARGS__)
+#define cmock_argframe20(addrs, type, ...)  cmock_argframe_populate_index(addrs, 19);  cmock_argframe19(addrs, __VA_ARGS__)
+#define cmock_argframe21(addrs, type, ...)  cmock_argframe_populate_index(addrs, 20);  cmock_argframe20(addrs, __VA_ARGS__)
+#define cmock_argframe22(addrs, type, ...)  cmock_argframe_populate_index(addrs, 21);  cmock_argframe21(addrs, __VA_ARGS__)
+#define cmock_argframe23(addrs, type, ...)  cmock_argframe_populate_index(addrs, 22);  cmock_argframe22(addrs, __VA_ARGS__)
+#define cmock_argframe24(addrs, type, ...)  cmock_argframe_populate_index(addrs, 23);  cmock_argframe23(addrs, __VA_ARGS__)
+#define cmock_argframe25(addrs, type, ...)  cmock_argframe_populate_index(addrs, 24);  cmock_argframe24(addrs, __VA_ARGS__)
+#define cmock_argframe26(addrs, type, ...)  cmock_argframe_populate_index(addrs, 25);  cmock_argframe25(addrs, __VA_ARGS__)
+#define cmock_argframe27(addrs, type, ...)  cmock_argframe_populate_index(addrs, 26);  cmock_argframe26(addrs, __VA_ARGS__)
+#define cmock_argframe28(addrs, type, ...)  cmock_argframe_populate_index(addrs, 27);  cmock_argframe27(addrs, __VA_ARGS__)
+#define cmock_argframe29(addrs, type, ...)  cmock_argframe_populate_index(addrs, 28);  cmock_argframe28(addrs, __VA_ARGS__)
+#define cmock_argframe30(addrs, type, ...)  cmock_argframe_populate_index(addrs, 29);  cmock_argframe29(addrs, __VA_ARGS__)
+#define cmock_argframe31(addrs, type, ...)  cmock_argframe_populate_index(addrs, 30);  cmock_argframe30(addrs, __VA_ARGS__)
+#define cmock_argframe32(addrs, type, ...)  cmock_argframe_populate_index(addrs, 31);  cmock_argframe31(addrs, __VA_ARGS__)
+#define cmock_argframe33(addrs, type, ...)  cmock_argframe_populate_index(addrs, 32);  cmock_argframe32(addrs, __VA_ARGS__)
+#define cmock_argframe34(addrs, type, ...)  cmock_argframe_populate_index(addrs, 33);  cmock_argframe33(addrs, __VA_ARGS__)
+#define cmock_argframe35(addrs, type, ...)  cmock_argframe_populate_index(addrs, 34);  cmock_argframe34(addrs, __VA_ARGS__)
+#define cmock_argframe36(addrs, type, ...)  cmock_argframe_populate_index(addrs, 35);  cmock_argframe35(addrs, __VA_ARGS__)
+#define cmock_argframe37(addrs, type, ...)  cmock_argframe_populate_index(addrs, 36);  cmock_argframe36(addrs, __VA_ARGS__)
+#define cmock_argframe38(addrs, type, ...)  cmock_argframe_populate_index(addrs, 37);  cmock_argframe37(addrs, __VA_ARGS__)
+#define cmock_argframe39(addrs, type, ...)  cmock_argframe_populate_index(addrs, 38);  cmock_argframe38(addrs, __VA_ARGS__)
+#define cmock_argframe40(addrs, type, ...)  cmock_argframe_populate_index(addrs, 39);  cmock_argframe39(addrs, __VA_ARGS__)
+#define cmock_argframe41(addrs, type, ...)  cmock_argframe_populate_index(addrs, 40);  cmock_argframe40(addrs, __VA_ARGS__)
+#define cmock_argframe42(addrs, type, ...)  cmock_argframe_populate_index(addrs, 41);  cmock_argframe41(addrs, __VA_ARGS__)
+#define cmock_argframe43(addrs, type, ...)  cmock_argframe_populate_index(addrs, 42);  cmock_argframe42(addrs, __VA_ARGS__)
+#define cmock_argframe44(addrs, type, ...)  cmock_argframe_populate_index(addrs, 43);  cmock_argframe43(addrs, __VA_ARGS__)
+#define cmock_argframe45(addrs, type, ...)  cmock_argframe_populate_index(addrs, 44);  cmock_argframe44(addrs, __VA_ARGS__)
+#define cmock_argframe46(addrs, type, ...)  cmock_argframe_populate_index(addrs, 45);  cmock_argframe45(addrs, __VA_ARGS__)
+#define cmock_argframe47(addrs, type, ...)  cmock_argframe_populate_index(addrs, 46);  cmock_argframe46(addrs, __VA_ARGS__)
+#define cmock_argframe48(addrs, type, ...)  cmock_argframe_populate_index(addrs, 47);  cmock_argframe47(addrs, __VA_ARGS__)
+#define cmock_argframe49(addrs, type, ...)  cmock_argframe_populate_index(addrs, 48);  cmock_argframe48(addrs, __VA_ARGS__)
+#define cmock_argframe50(addrs, type, ...)  cmock_argframe_populate_index(addrs, 49);  cmock_argframe49(addrs, __VA_ARGS__)
+#define cmock_argframe51(addrs, type, ...)  cmock_argframe_populate_index(addrs, 50);  cmock_argframe50(addrs, __VA_ARGS__)
+#define cmock_argframe52(addrs, type, ...)  cmock_argframe_populate_index(addrs, 51);  cmock_argframe51(addrs, __VA_ARGS__)
+#define cmock_argframe53(addrs, type, ...)  cmock_argframe_populate_index(addrs, 52);  cmock_argframe52(addrs, __VA_ARGS__)
+#define cmock_argframe54(addrs, type, ...)  cmock_argframe_populate_index(addrs, 53);  cmock_argframe53(addrs, __VA_ARGS__)
+#define cmock_argframe55(addrs, type, ...)  cmock_argframe_populate_index(addrs, 54);  cmock_argframe54(addrs, __VA_ARGS__)
+#define cmock_argframe56(addrs, type, ...)  cmock_argframe_populate_index(addrs, 55);  cmock_argframe55(addrs, __VA_ARGS__)
+#define cmock_argframe57(addrs, type, ...)  cmock_argframe_populate_index(addrs, 56);  cmock_argframe56(addrs, __VA_ARGS__)
+#define cmock_argframe58(addrs, type, ...)  cmock_argframe_populate_index(addrs, 57);  cmock_argframe57(addrs, __VA_ARGS__)
+#define cmock_argframe59(addrs, type, ...)  cmock_argframe_populate_index(addrs, 58);  cmock_argframe58(addrs, __VA_ARGS__)
+#define cmock_argframe60(addrs, type, ...)  cmock_argframe_populate_index(addrs, 59);  cmock_argframe59(addrs, __VA_ARGS__)
+#define cmock_argframe61(addrs, type, ...)  cmock_argframe_populate_index(addrs, 60);  cmock_argframe60(addrs, __VA_ARGS__)
+#define cmock_argframe62(addrs, type, ...)  cmock_argframe_populate_index(addrs, 61);  cmock_argframe61(addrs, __VA_ARGS__)
+#define cmock_argframe63(addrs, type, ...)  cmock_argframe_populate_index(addrs, 62);  cmock_argframe62(addrs, __VA_ARGS__)
+#define cmock_argframe64(addrs, type, ...)  cmock_argframe_populate_index(addrs, 63);  cmock_argframe63(addrs, __VA_ARGS__)
+#define cmock_argframe65(addrs, type, ...)  cmock_argframe_populate_index(addrs, 64);  cmock_argframe64(addrs, __VA_ARGS__)
+#define cmock_argframe66(addrs, type, ...)  cmock_argframe_populate_index(addrs, 65);  cmock_argframe65(addrs, __VA_ARGS__)
+#define cmock_argframe67(addrs, type, ...)  cmock_argframe_populate_index(addrs, 66);  cmock_argframe66(addrs, __VA_ARGS__)
+#define cmock_argframe68(addrs, type, ...)  cmock_argframe_populate_index(addrs, 67);  cmock_argframe67(addrs, __VA_ARGS__)
+#define cmock_argframe69(addrs, type, ...)  cmock_argframe_populate_index(addrs, 68);  cmock_argframe68(addrs, __VA_ARGS__)
+#define cmock_argframe70(addrs, type, ...)  cmock_argframe_populate_index(addrs, 69);  cmock_argframe69(addrs, __VA_ARGS__)
+#define cmock_argframe71(addrs, type, ...)  cmock_argframe_populate_index(addrs, 70);  cmock_argframe70(addrs, __VA_ARGS__)
+#define cmock_argframe72(addrs, type, ...)  cmock_argframe_populate_index(addrs, 71);  cmock_argframe71(addrs, __VA_ARGS__)
+#define cmock_argframe73(addrs, type, ...)  cmock_argframe_populate_index(addrs, 72);  cmock_argframe72(addrs, __VA_ARGS__)
+#define cmock_argframe74(addrs, type, ...)  cmock_argframe_populate_index(addrs, 73);  cmock_argframe73(addrs, __VA_ARGS__)
+#define cmock_argframe75(addrs, type, ...)  cmock_argframe_populate_index(addrs, 74);  cmock_argframe74(addrs, __VA_ARGS__)
+#define cmock_argframe76(addrs, type, ...)  cmock_argframe_populate_index(addrs, 75);  cmock_argframe75(addrs, __VA_ARGS__)
+#define cmock_argframe77(addrs, type, ...)  cmock_argframe_populate_index(addrs, 76);  cmock_argframe76(addrs, __VA_ARGS__)
+#define cmock_argframe78(addrs, type, ...)  cmock_argframe_populate_index(addrs, 77);  cmock_argframe77(addrs, __VA_ARGS__)
+#define cmock_argframe79(addrs, type, ...)  cmock_argframe_populate_index(addrs, 78);  cmock_argframe78(addrs, __VA_ARGS__)
+#define cmock_argframe80(addrs, type, ...)  cmock_argframe_populate_index(addrs, 79);  cmock_argframe79(addrs, __VA_ARGS__)
+#define cmock_argframe81(addrs, type, ...)  cmock_argframe_populate_index(addrs, 80);  cmock_argframe80(addrs, __VA_ARGS__)
+#define cmock_argframe82(addrs, type, ...)  cmock_argframe_populate_index(addrs, 81);  cmock_argframe81(addrs, __VA_ARGS__)
+#define cmock_argframe83(addrs, type, ...)  cmock_argframe_populate_index(addrs, 82);  cmock_argframe82(addrs, __VA_ARGS__)
+#define cmock_argframe84(addrs, type, ...)  cmock_argframe_populate_index(addrs, 83);  cmock_argframe83(addrs, __VA_ARGS__)
+#define cmock_argframe85(addrs, type, ...)  cmock_argframe_populate_index(addrs, 84);  cmock_argframe84(addrs, __VA_ARGS__)
+#define cmock_argframe86(addrs, type, ...)  cmock_argframe_populate_index(addrs, 85);  cmock_argframe85(addrs, __VA_ARGS__)
+#define cmock_argframe87(addrs, type, ...)  cmock_argframe_populate_index(addrs, 86);  cmock_argframe86(addrs, __VA_ARGS__)
+#define cmock_argframe88(addrs, type, ...)  cmock_argframe_populate_index(addrs, 87);  cmock_argframe87(addrs, __VA_ARGS__)
+#define cmock_argframe89(addrs, type, ...)  cmock_argframe_populate_index(addrs, 88);  cmock_argframe88(addrs, __VA_ARGS__)
+#define cmock_argframe90(addrs, type, ...)  cmock_argframe_populate_index(addrs, 89);  cmock_argframe89(addrs, __VA_ARGS__)
+#define cmock_argframe91(addrs, type, ...)  cmock_argframe_populate_index(addrs, 90);  cmock_argframe90(addrs, __VA_ARGS__)
+#define cmock_argframe92(addrs, type, ...)  cmock_argframe_populate_index(addrs, 91);  cmock_argframe91(addrs, __VA_ARGS__)
+#define cmock_argframe93(addrs, type, ...)  cmock_argframe_populate_index(addrs, 92);  cmock_argframe92(addrs, __VA_ARGS__)
+#define cmock_argframe94(addrs, type, ...)  cmock_argframe_populate_index(addrs, 93);  cmock_argframe93(addrs, __VA_ARGS__)
+#define cmock_argframe95(addrs, type, ...)  cmock_argframe_populate_index(addrs, 94);  cmock_argframe94(addrs, __VA_ARGS__)
+#define cmock_argframe96(addrs, type, ...)  cmock_argframe_populate_index(addrs, 95);  cmock_argframe95(addrs, __VA_ARGS__)
+#define cmock_argframe97(addrs, type, ...)  cmock_argframe_populate_index(addrs, 96);  cmock_argframe96(addrs, __VA_ARGS__)
+#define cmock_argframe98(addrs, type, ...)  cmock_argframe_populate_index(addrs, 97);  cmock_argframe97(addrs, __VA_ARGS__)
+#define cmock_argframe99(addrs, type, ...)  cmock_argframe_populate_index(addrs, 98);  cmock_argframe98(addrs, __VA_ARGS__)
+#define cmock_argframe100(addrs, type, ...) cmock_argframe_populate_index(addrs, 99);  cmock_argframe99(addrs, __VA_ARGS__)
+#define cmock_argframe101(addrs, type, ...) cmock_argframe_populate_index(addrs, 100); cmock_argframe100(addrs, __VA_ARGS__)
+#define cmock_argframe102(addrs, type, ...) cmock_argframe_populate_index(addrs, 101); cmock_argframe101(addrs, __VA_ARGS__)
+#define cmock_argframe103(addrs, type, ...) cmock_argframe_populate_index(addrs, 102); cmock_argframe102(addrs, __VA_ARGS__)
+#define cmock_argframe104(addrs, type, ...) cmock_argframe_populate_index(addrs, 103); cmock_argframe103(addrs, __VA_ARGS__)
+#define cmock_argframe105(addrs, type, ...) cmock_argframe_populate_index(addrs, 104); cmock_argframe104(addrs, __VA_ARGS__)
+#define cmock_argframe106(addrs, type, ...) cmock_argframe_populate_index(addrs, 105); cmock_argframe105(addrs, __VA_ARGS__)
+#define cmock_argframe107(addrs, type, ...) cmock_argframe_populate_index(addrs, 106); cmock_argframe106(addrs, __VA_ARGS__)
+#define cmock_argframe108(addrs, type, ...) cmock_argframe_populate_index(addrs, 107); cmock_argframe107(addrs, __VA_ARGS__)
+#define cmock_argframe109(addrs, type, ...) cmock_argframe_populate_index(addrs, 108); cmock_argframe108(addrs, __VA_ARGS__)
+#define cmock_argframe110(addrs, type, ...) cmock_argframe_populate_index(addrs, 109); cmock_argframe109(addrs, __VA_ARGS__)
+#define cmock_argframe111(addrs, type, ...) cmock_argframe_populate_index(addrs, 110); cmock_argframe110(addrs, __VA_ARGS__)
+#define cmock_argframe112(addrs, type, ...) cmock_argframe_populate_index(addrs, 111); cmock_argframe111(addrs, __VA_ARGS__)
+#define cmock_argframe113(addrs, type, ...) cmock_argframe_populate_index(addrs, 112); cmock_argframe112(addrs, __VA_ARGS__)
+#define cmock_argframe114(addrs, type, ...) cmock_argframe_populate_index(addrs, 113); cmock_argframe113(addrs, __VA_ARGS__)
+#define cmock_argframe115(addrs, type, ...) cmock_argframe_populate_index(addrs, 114); cmock_argframe114(addrs, __VA_ARGS__)
+#define cmock_argframe116(addrs, type, ...) cmock_argframe_populate_index(addrs, 115); cmock_argframe115(addrs, __VA_ARGS__)
+#define cmock_argframe117(addrs, type, ...) cmock_argframe_populate_index(addrs, 116); cmock_argframe116(addrs, __VA_ARGS__)
+#define cmock_argframe118(addrs, type, ...) cmock_argframe_populate_index(addrs, 117); cmock_argframe117(addrs, __VA_ARGS__)
+#define cmock_argframe119(addrs, type, ...) cmock_argframe_populate_index(addrs, 118); cmock_argframe118(addrs, __VA_ARGS__)
+#define cmock_argframe120(addrs, type, ...) cmock_argframe_populate_index(addrs, 119); cmock_argframe119(addrs, __VA_ARGS__)
+#define cmock_argframe121(addrs, type, ...) cmock_argframe_populate_index(addrs, 120); cmock_argframe120(addrs, __VA_ARGS__)
+#define cmock_argframe122(addrs, type, ...) cmock_argframe_populate_index(addrs, 121); cmock_argframe121(addrs, __VA_ARGS__)
+#define cmock_argframe123(addrs, type, ...) cmock_argframe_populate_index(addrs, 122); cmock_argframe122(addrs, __VA_ARGS__)
+#define cmock_argframe124(addrs, type, ...) cmock_argframe_populate_index(addrs, 123); cmock_argframe123(addrs, __VA_ARGS__)
+#define cmock_argframe125(addrs, type, ...) cmock_argframe_populate_index(addrs, 124); cmock_argframe124(addrs, __VA_ARGS__)
+#define cmock_argframe126(addrs, type, ...) cmock_argframe_populate_index(addrs, 125); cmock_argframe125(addrs, __VA_ARGS__)
+#define cmock_argframe127(addrs, type, ...) cmock_argframe_populate_index(addrs, 126); cmock_argframe126(addrs, __VA_ARGS__)
+
+#define cmock_argframe_populate_index(addrs, index)    \
+    addrs[cmock_arrsize(addrs)- index - 1] = (void *)&cmock_cat_expand(a, index)
+
+#define cmock_argframe_populate(addrs, ...) \
+    cmock_cat_expand(cmock_argframe, cmock_count(__VA_ARGS__))(addrs, __VA_ARGS__)
+
 #define cmock_mock_function0_1(rettype, name) CMOCK_MOCK_FUNCTION(rettype, name)
 #define cmock_mock_function0_2(rettype, name, _) CMOCK_MOCK_FUNCTION(rettype, name)
 
@@ -588,10 +724,10 @@
     cmock_assert_trigger(condition, "%s:%d assertion '%s' failed\n", __FILE__, __LINE__, #condition)
 
 #define cmock_assert_msg(condition, msg)  \
-    cmock_assert_trigger(condition, "%s:%d assertion '%s' failed " msg "\n", __FILE__, __LINE__, #condition)
+    cmock_assert_trigger(condition, "%s:%d assertion '%s' failed: " msg "\n", __FILE__, __LINE__, #condition)
 
 #define cmock_assert_variadic(condition, fmt, ...) \
-    cmock_assert_trigger(condition, "%s:%d assertion '%s' failed " fmt "\n", __FILE__, __LINE__, #condition, __VA_ARGS__)
+    cmock_assert_trigger(condition, "%s:%d assertion '%s' failed: " fmt "\n", __FILE__, __LINE__, #condition, __VA_ARGS__)
 
 #define cmock_assert(...) \
     cmock_overload(cmock_assert, __VA_ARGS__)
@@ -624,6 +760,7 @@ enum cmock_opmode {
     CMOCK_OP_INVOKE,
     CMOCK_OP_RETURN,
     CMOCK_OP_INCREMENT,
+    CMOCK_OP_RETARG
 };
 
 #define cmock_generate_mock_ctx(utype, rettype, name, ...)  \
@@ -636,6 +773,7 @@ enum cmock_opmode {
                 rettype(*invoke)(__VA_ARGS__);              \
                 utype retval;                               \
                 utype counter;                              \
+                unsigned argindex;                          \
             };                                              \
         } opdata;                                           \
     }
@@ -658,6 +796,8 @@ enum cmock_opmode {
     };                                                                                                      \
     rettype name(cmock_genparams(__VA_ARGS__)) {                                                            \
         rvinit;                                                                                             \
+        void const *argaddrs[cmock_count(__VA_ARGS__)];                                                     \
+        cmock_argframe_populate(argaddrs, __VA_ARGS__);                                                     \
         if(cmock_mock_ ## name.invocations) {                                                               \
             if(cmock_mock_ ## name.invocations != -1) {                                                     \
                 --cmock_mock_ ## name.invocations;                                                          \
@@ -665,19 +805,23 @@ enum cmock_opmode {
             switch(cmock_mock_ ## name.opdata.mode) {                                                       \
                 case CMOCK_OP_INVOKE:                                                                       \
                     call_prefix cmock_mock_ ## name.opdata.invoke(cmock_arglist(cmock_count(__VA_ARGS__))); \
-                    retstatement;                                                                           \
                     break;                                                                                  \
                 case CMOCK_OP_RETURN:                                                                       \
                     call_prefix cmock_mock_ ## name.opdata.retval;                                          \
-                    retstatement;                                                                           \
                     break;                                                                                  \
                 case CMOCK_OP_INCREMENT:                                                                    \
                     call_prefix ++cmock_mock_ ## name.opdata.counter;                                       \
-                    retstatement;                                                                           \
+                    break;                                                                                  \
+                case CMOCK_OP_RETARG:                                                                       \
+                    cmock_assert(cmock_mock_ ## name.opdata.argindex < cmock_arrsize(argaddrs),             \
+                                 "Attempt to access parameter %u in function taking only %zu",              \
+                                 cmock_mock_ ## name.opdata.argindex + 1, cmock_arrsize(argaddrs));         \
+                    call_prefix *(utype *)argaddrs[cmock_mock_ ## name.opdata.argindex];                    \
                     break;                                                                                  \
                 default:                                                                                    \
                     cmock_assert(0, "Invalid opmode %d", cmock_mock_ ## name.opdata.mode);                  \
             }                                                                                               \
+            retstatement;                                                                                   \
         }                                                                                                   \
         extern void *cmock_dllookup(char const*);                                                           \
         extern void cmock_close_dlhandle(void);                                                             \
@@ -716,19 +860,17 @@ enum cmock_opmode {
             switch(cmock_mock_ ## name.opdata.mode) {                                           \
                 case CMOCK_OP_INVOKE:                                                           \
                     call_prefix cmock_mock_ ## name.opdata.invoke();                            \
-                    retstatement;                                                               \
                     break;                                                                      \
                 case CMOCK_OP_RETURN:                                                           \
                     call_prefix cmock_mock_ ## name.opdata.retval;                              \
-                    retstatement;                                                               \
                     break;                                                                      \
                 case CMOCK_OP_INCREMENT:                                                        \
                     call_prefix ++cmock_mock_ ## name.opdata.counter;                           \
-                    retstatement;                                                               \
                     break;                                                                      \
                 default:                                                                        \
                     cmock_assert(0, "Invalid opmode %d", cmock_mock_ ## name.opdata.mode);      \
             }                                                                                   \
+            retstatement;                                                                       \
         }                                                                                       \
         extern void *cmock_dllookup(char const*);                                               \
         extern void cmock_close_dlhandle(void);                                                 \
@@ -789,6 +931,7 @@ enum cmock_opmode {
 
 #define CMOCK_INVOKE(func) cmock_setop(invoke, func, CMOCK_OP_INVOKE)
 #define CMOCK_RETURN(value) cmock_setop(retval, value, CMOCK_OP_RETURN)
+#define CMOCK_RETURN_ARG(index) cmock_setop(argindex, index, CMOCK_OP_RETARG)
 #define CMOCK_INCREMENT_COUNTER(init) cmock_setop(counter, init, CMOCK_OP_INCREMENT)
 
 #ifndef CMOCK_PREFIX_ONLY
@@ -803,6 +946,7 @@ enum cmock_opmode {
 #define WILL_INVOKE_DEFAULT()    CMOCK_WILL_INVOKE_DEFAULT()
 #define INVOKE(...)              CMOCK_INVOKE(__VA_ARGS__)
 #define RETURN(...)              CMOCK_RETURN(__VA_ARGS__)
+#define RETURN_ARG(...)          CMOCK_RETURN_ARG(__VA_ARGS__)
 #define INCREMENT_COUNTER(...)   CMOCK_INCREMENT_COUNTER(__VA_ARGS__)
 #endif
 
@@ -813,6 +957,7 @@ enum cmock_opmode {
 #define WillInvokeDefault()   CMOCK_WILL_INVOKE_DEFAULT()
 #define Invoke(...)           CMOCK_INVOKE(__VA_ARGS__)
 #define Return(...)           CMOCK_RETURN(__VA_ARGS__)
+#define ReturnArg(...)        CMOCK_RETURN_ARG(__VA_ARGS__)
 #define IncrementCounter(...) CMOCK_INCREMENT_COUNTER(__VA_ARGS__)
 #endif
 
