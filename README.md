@@ -1,4 +1,4 @@
-# cmock
+# cMock
 
 LD-based function mocking in pure C. The interface is inspired by [gmock](https://github.com/google/googletest).
 
@@ -199,28 +199,28 @@ Like `MOCK_FUNCTION_VOID` but allows for explicitly specifying the single `void`
 ###### `EXPECT_CALL(function_name)`
 First half of setting up a mocking behavior for the function *function_name*. Combined with `WILL_ONCE` or `WILL_REPEATEDLY` to generate a well-formed statement. Mocking code for *function_name* must have been generated using a `MOCK_FUNCTION` or `MOCK_FUNCTION_VOID` macro.
 
-###### `WILL_ONCE(matcher)`
-One of the potential second halves for setting up a mocking behavior, must appear appended to an `EXPECT_CALL` invocation (separated by a period (.)). `WILL_ONCE` causes the next immediate call to the function being mocked to generate a call described by the *matcher* parameter instead. Any subsequent call invokes the original, unmocked function.
+###### `WILL_ONCE(action)`
+One of the potential second halves for setting up a mocking behavior, must appear appended to an `EXPECT_CALL` invocation (separated by a period (.)). `WILL_ONCE` causes the next immediate call to the function being mocked to generate a call described by the *action* parameter instead. Any subsequent call invokes the original, unmocked function.
 
-###### `WILL_REPEATEDLY(matcher)`
+###### `WILL_REPEATEDLY(action)`
 One of the potential second halves for setting up a mocking behavior. `WILL_REPEATEDLY` works much like `WILL_ONCE`, the only difference being that all subsequent calls to the function begin mocked will generate calls to the mock instead.
 
-###### `WILL_N_TIMES(n, matcher)`
-Works much like `WILL_ONCE` but specifies that the *n* next function calls should generate a call described by the *matcher*. After *n* calls have been made, the default behavior of the function is restored.
+###### `WILL_N_TIMES(n, action)`
+Works much like `WILL_ONCE` but specifies that the *n* next function calls should generate a call described by the *action*. After *n* calls have been made, the default behavior of the function is restored.
 
 ###### `WILL_INVOKE_DEFAULT()`
 Specifies that any subsequent calls to the function to be mocked should invoke the actual function instead of generating calls to the mock. May be used to undo the effects of `WILL_REPEATEDLY`.
 
-### Matchers
+### Actions
 
 ###### `INVOKE(function_name)`
-A matcher to be used with a behavior specifier such as `WILL_ONCE`.  Causes any attempted call to the mocked function to result in a call to the function *function_name* instead. Naturally, the signature of *function_name* and the mocked function must be the compatible.
+An action to be used with a behavior specifier such as `WILL_ONCE`.  Causes any attempted call to the mocked function to result in a call to the function *function_name* instead. Naturally, the signature of *function_name* and the mocked function must be the compatible.
 
 ###### `RETURN(value)`
-A matcher causing any call to the mocked function to immediately return *value* instead.
+An action causing any call to the mocked function to immediately return *value* instead.
 
 ###### `INCREMENT_COUNTER(initial_value)`
-A matcher that causes any call to the mocked function to increment and return a counter, in that order. The parameter *initial_value* specified the initial value of said counter. The use of `INCREMENT_COUNTER` is well-formed only if the mocked function returns an integral type. Note that that max value of the counter is subject to the limits of the return type (e.g. for a `signed char`, the counter could not be increment past `SCHAR_MAX`).
+An action that causes any call to the mocked function to increment and return a counter, in that order. The parameter *initial_value* specified the initial value of said counter. The use of `INCREMENT_COUNTER` is well-formed only if the mocked function returns an integral type. Note that that max value of the counter is subject to the limits of the return type (e.g. for a `signed char`, the counter could not be increment past `SCHAR_MAX`).
 
 ### Prefix Macros
 
@@ -241,13 +241,13 @@ Prefixed alias for `MOCK_FUNCTION_VOID0`.
 ###### `CMOCK_EXPECT_CALL(function_name)`
 Prefixed alias for `EXPECT_CALL`.
 
-###### `CMOCK_WILL_ONCE(matcher)`
+###### `CMOCK_WILL_ONCE(action)`
 Prefixed alias for `WILL_ONCE`.
 
-###### `CMOCK_WILL_REPEATEDLY(matcher)`
+###### `CMOCK_WILL_REPEATEDLY(action)`
 Prefixed alias for `WILL_REPEATEDLY`.
 
-###### `CMOCK_WILL_N_TIMES(n, matcher)`
+###### `CMOCK_WILL_N_TIMES(n, action)`
 Prefixed alias for `WILL_N_TIMES`.
 
 ###### `CMOCK_WILL_INVOKE_DEFAULT()`
@@ -266,13 +266,13 @@ Prefixed alias for `INCREMENT_COUNTER`.
 
 If `CMOCK_GMOCK_COMPAT` is defined, the header exposes aliases named according to the "gmock-style".
 
-###### `WillOnce(matcher)`
+###### `WillOnce(action)`
 gmock-style alias for `WILL_ONCE`.
 
-###### `WillRepeatedly(matcher)`
+###### `WillRepeatedly(action)`
 gmock-style alias for `WILL_REPEATEDLY`.
 
-###### `WillNTimes(n, matcher)`
+###### `WillNTimes(n, action)`
 gmock-style alias for `WILL_N_TIMES`.
 
 ###### `WillInvokeDefault()`
