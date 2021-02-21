@@ -32,31 +32,6 @@ def test_preload():
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
     assert exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))[0] == 28
 
-def test_gmock_compat():
-    target = 'mockups_test'
-    symbol_tu = 'syms.c'
-
-    db = read_db()
-    cgen = CGen('main.c')
-    cgen.append_line('#define CMOCK_GMOCK_COMPAT')
-    cgen.append_include('cmock.h', system_header=False)
-    cgen.append_include('syms.h', system_header=False)
-    with cgen.with_open_function('int', 'main'):
-        cgen.append_line('EXPECT_CALL(bar).WillRepeatedly(Return(28));')
-        cgen.append_return(CGen.default_call('bar', db['symbols']['bar']['params']))
-    cgen.write()
-
-    cgen = CGen(symbol_tu)
-    cgen.generate_matching_symbols()
-    cgen.write()
-
-    mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
-    mgen.generate()
-
-    assert exec_bash('make -C {}'.format(working_dir))[0] == 0
-    assert exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))[0] == 28
-
 def test_symbol_fallback():
     target = 'mockups_test'
     symbol_tu = 'syms.c'
