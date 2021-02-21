@@ -206,7 +206,10 @@ One of the potential second halves for setting up a mocking behavior, must appea
 One of the potential second halves for setting up a mocking behavior. `WILL_REPEATEDLY` works much like `WILL_ONCE`, the only difference being that all subsequent calls to the function begin mocked will generate calls to the mock instead.
 
 ###### `WILL_N_TIMES(n, matcher)`
-One of the potential second halves for setting up a mocking behavior. Works much like `WILL_ONCE` but specifies that the *n* next function calls should generate a call described by the *matcher*. After *n* calls have been made, the default behavior of the function is restored.
+Works much like `WILL_ONCE` but specifies that the *n* next function calls should generate a call described by the *matcher*. After *n* calls have been made, the default behavior of the function is restored.
+
+###### `WILL_INVOKE_DEFAULT()`
+Specifies that any subsequent calls to the function to be mocked should invoke the actual function instead of generating calls to the mock. May be used to undo the effects of `WILL_REPEATEDLY`.
 
 ### Matchers
 
@@ -247,6 +250,9 @@ Prefixed alias for `WILL_REPEATEDLY`.
 ###### `CMOCK_WILL_N_TIMES(n, matcher)`
 Prefixed alias for `WILL_N_TIMES`.
 
+###### `CMOCK_WILL_INVOKE_DEFAULT()`
+Prefixed alias for `WILL_INVOKE_DEFAULT`.
+
 ###### `CMOCK_INVOKE(function_name)`
 Prefixed alias for `INVOKE`.
 
@@ -268,6 +274,9 @@ gmock-style alias for `WILL_REPEATEDLY`.
 
 ###### `WillNTimes(n, matcher)`
 gmock-style alias for `WILL_N_TIMES`.
+
+###### `WillInvokeDefault()`
+gmock-style alias for `WILL_INVOKE_DEFAULT`.
 
 ###### `Invoke(function_name)`
 gmock-style alias for `INVOKE`.
