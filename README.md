@@ -287,7 +287,7 @@ gmock-style alias for `WILL_INVOKE_DEFAULT`.
 ###### `Invoke(function_name)`
 gmock-style alias for `INVOKE`.
 
-###### `Return(value)n
+###### `Return(value)`
 gmock-style alias for `RETURN`.
 
 ###### `ReturnArg(n)`
