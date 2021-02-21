@@ -174,7 +174,7 @@ As mentioned, linking the symbols to be mocked into the actual binary will cause
 
 ```sh
 make -C /path/to/project/root
-gcc -o a.out main.c resource.c -L. -L/path/to/project/root -lcmock -I/path/to/project/root/cmock/
+gcc -o a.out main.c resource.c -L/path/to/project/root -lcmock -I/path/to/project/root/cmock/
 LD_PRELOAD=/path/to/project/root/libcmock.so ./a.out
 ```
 
@@ -183,7 +183,7 @@ LD_PRELOAD=/path/to/project/root/libcmock.so ./a.out
 ### Mock Generators
 
 ###### `MOCK_FUNCTION(return_type, function_name [,param_type[,param_type[,...]]])`
-Generates mocking code for a function called *function_name*, returning an instance of *return_type* and taking parameters of the *param_type*s specified. Any choice of type and number of parameters is valid, including none, **EXCEPT** for a single void parameter. Furthermore, *return_type* may not be `void`, here `MOCK_FUNCTION_VOID` should be used instead.
+Generates mocking code for a function called *function_name*, returning an instance of *return_type* and taking parameters of the *param_type*s specified. Any choice of type and number of parameters is valid, including none, **except** for a single void parameter. Furthermore, *return_type* may not be `void`, here `MOCK_FUNCTION_VOID` should be used instead.
 
 ###### `MOCK_FUNCTION0(return_type, function_name, void)`
 Like `MOCK_FUNCTION` but allows for explicitly specifying the single `void` parameter for functions taking no parameters. The code generated is identical to that of `MOCK_FUNCTION(return_type, function_name)`.

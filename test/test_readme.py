@@ -100,5 +100,5 @@ def test_readme_ex2():
     cgen.write()
 
     assert exec_bash('make -B -C {}'.format(project_root))[0] == 0
-    assert exec_bash('gcc -o {d}/a.out {d}/main.c {d}/resource.c -L{d} -L{root} -lcmock -I{root}/cmock'.format(d=working_dir, root=project_root))[0] == 0
+    assert exec_bash('gcc -o {d}/a.out {d}/main.c {d}/resource.c -L{root} -lcmock -I{root}/cmock'.format(d=working_dir, root=project_root))[0] == 0
     assert exec_bash('LD_PRELOAD={root}/libcmock.so LD_LIBRARY_PATH={wd} {wd}/a.out'.format(root=project_root, wd=working_dir))[0] != 0
