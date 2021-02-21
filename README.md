@@ -219,6 +219,9 @@ An action to be used with a behavior specifier such as `WILL_ONCE`.  Causes any 
 ###### `RETURN(value)`
 An action causing any call to the mocked function to immediately return *value* instead.
 
+###### `RETURN_ARG(index)`
+Returns the *index*th 0-indexed function argument. The behavior of this action is well-defined only if the return type and the type of the *indexed*th parameter are of the same type.
+
 ###### `INCREMENT_COUNTER(initial_value)`
 An action that causes any call to the mocked function to increment and return a counter, in that order. The parameter *initial_value* specified the initial value of said counter. The use of `INCREMENT_COUNTER` is well-formed only if the mocked function returns an integral type. Note that that max value of the counter is subject to the limits of the return type (e.g. for a `signed char`, the counter could not be increment past `SCHAR_MAX`).
 
@@ -259,6 +262,9 @@ Prefixed alias for `INVOKE`.
 ###### `CMOCK_RETURN(value)`
 Prefixed alias for `RETURN`.
 
+###### `CMOCK_RETURN_ARG(index)`
+Prefixed alias for `RETURN_ARG`.
+
 ###### `CMOCK_INCREMENT_COUNTER(initial_value)`
 Prefixed alias for `INCREMENT_COUNTER`.
 
@@ -283,6 +289,9 @@ gmock-style alias for `INVOKE`.
 
 ###### `Return(value)`
 gmock-style alias for `RETURN`.
+
+###### `ReturnArg(index)`
+gmock-style alias for `RETURN_ARG`.
 
 ###### `IncrementCounter(initial_value)`
 gmock-style alias for `INCREMENT_COUNTER`.
