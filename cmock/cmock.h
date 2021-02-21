@@ -599,9 +599,10 @@
 #define cmock_overload(name, ...) \
     cmock_cat_expand(name, cmock_count(__VA_ARGS__))(__VA_ARGS__)
 
-#define cmock_will(invocations, ...)                                                                \
-        __VA_ARGS__;                                                                                \
-        *(int *)((unsigned char *)mockinfo->addr + mockinfo->invocations_offset) = invocations;     \
+#define cmock_will(invocations, ...)                                                                    \
+        __VA_ARGS__;                                                                                    \
+        *(int *)((unsigned char *)mockinfo->addr + mockinfo->invocations_offset) = invocations;         \
+        cmock_assert((*(int *)((unsigned char *)mockinfo->addr + mockinfo->invocations_offset)) > -2);  \
     } while (0)
 
 #define cmock_set_opmode(mode)                                                              \
@@ -783,6 +784,7 @@ enum cmock_opmode {
 
 #define CMOCK_WILL_ONCE(...) cmock_will(1, __VA_ARGS__)
 #define CMOCK_WILL_REPEATEDLY(...) cmock_will(-1, __VA_ARGS__)
+#define CMOCK_WILL_N_TIMES(n, ...) cmock_will(n, __VA_ARGS__)
 
 #define CMOCK_INVOKE(func) cmock_setop(invoke, &func, CMOCK_OP_INVOKE)
 #define CMOCK_RETURN(value) cmock_setop(retval, value, CMOCK_OP_RETURN)
@@ -796,6 +798,7 @@ enum cmock_opmode {
 #define EXPECT_CALL(...)         CMOCK_EXPECT_CALL(__VA_ARGS__)
 #define WILL_ONCE(...)           CMOCK_WILL_ONCE(__VA_ARGS__)
 #define WILL_REPEATEDLY(...)     CMOCK_WILL_REPEATEDLY(__VA_ARGS__)
+#define WILL_N_TIMES(...)        CMOCK_WILL_N_TIMES(__VA_ARGS__)
 #define INVOKE(...)              CMOCK_INVOKE(__VA_ARGS__)
 #define RETURN(...)              CMOCK_RETURN(__VA_ARGS__)
 #define INCREMENT_COUNTER(...)   CMOCK_INCREMENT_COUNTER(__VA_ARGS__)
@@ -804,6 +807,7 @@ enum cmock_opmode {
 #ifdef CMOCK_GMOCK_COMPAT
 #define WillOnce(...)         CMOCK_WILL_ONCE(__VA_ARGS__)
 #define WillRepeatedly(...)   CMOCK_WILL_REPEATEDLY(__VA_ARGS__)
+#define WillNTimes(...)       CMOCK_WILL_N_TIMES(__VA_ARGS__)
 #define Invoke(...)           CMOCK_INVOKE(__VA_ARGS__)
 #define Return(...)           CMOCK_RETURN(__VA_ARGS__)
 #define IncrementCounter(...) CMOCK_INCREMENT_COUNTER(__VA_ARGS__)
