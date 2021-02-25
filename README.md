@@ -214,16 +214,16 @@ Specifies that any subsequent calls to the function to be mocked should invoke t
 ### Actions
 
 ###### `INVOKE(function_name)`
-An action to be used with a behavior specifier such as `WILL_ONCE`.  Causes any attempted call to the mocked function to result in a call to the function *function_name* instead. Naturally, the signature of *function_name* and the mocked function must be the compatible.
+An action to be used with a behavior specifier such as `WILL_ONCE`.  Causes any attempted call to the mocked function to result in a call to thn function *function_name* instead. Naturally, the signature of *function_name* and the mocked function must be the compatible.
 
 ###### `RETURN(value)`
 An action causing any call to the mocked function to immediately return *value* instead.
 
-###### `RETURN_ARG(index)`
-Returns the *index*th 0-indexed function parameter. The behavior of this action is well-defined only if the return type and the type of the *indexed*th parameter are of the same type.
+###### `RETURN_ARG(n)`
+Returns the *n*th 0-indexed function parameter. The behavior of this action is well-defined only if the return type and the type of the *n*th parameter are the same.
 
-###### `RETURN_POINTEE(index)`
-Dereferences the *index*th 0-indexed function parameter and returns the resulting value. The behavior is well-defined only if the *index*th parameter is a pointer to an instance of the return type.
+###### `RETURN_POINTEE(n)`
+Dereferences the *n*th 0-indexed function parameter and returns the resulting value. The behavior is well-defined only if the *n*th parameter is a pointer to an instance of the return type.
 
 ###### `INCREMENT_COUNTER(initial_value)`
 An action that causes any call to the mocked function to increment and return a counter, in that order. The parameter *initial_value* specified the initial value of said counter. The use of `INCREMENT_COUNTER` is well-formed only if the mocked function returns an integral type. Note that that max value of the counter is subject to the limits of the return type (e.g. for a `signed char`, the counter could not be increment past `SCHAR_MAX`).
@@ -265,7 +265,7 @@ Prefixed alias for `INVOKE`.
 ###### `CMOCK_RETURN(value)`
 Prefixed alias for `RETURN`.
 
-###### `CMOCK_RETURN_ARG(index)`
+###### `CMOCK_RETURN_ARG(n)`
 Prefixed alias for `RETURN_ARG`.
 
 ###### `CMOCK_INCREMENT_COUNTER(initial_value)`
@@ -293,7 +293,7 @@ gmock-style alias for `INVOKE`.
 ###### `Return(value)`
 gmock-style alias for `RETURN`.
 
-###### `ReturnArg(index)`
+###### `ReturnArg(n)`
 gmock-style alias for `RETURN_ARG`.
 
 ###### `IncrementCounter(initial_value)`
