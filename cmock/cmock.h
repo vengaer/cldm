@@ -700,7 +700,7 @@
 #define cmock_argframe127(addrs, type, ...) cmock_argframe_populate_index(addrs, 126); cmock_argframe126(addrs, __VA_ARGS__)
 
 #define cmock_argframe_populate_index(addrs, index)    \
-    addrs[cmock_arrsize(addrs)- index - 1] = (void *)&cmock_cat_expand(a, index)
+    addrs[cmock_arrsize(addrs)- index - 1] = (void const *)&cmock_cat_expand(a, index)
 
 #define cmock_argframe_populate(addrs, ...) \
     cmock_cat_expand(cmock_argframe, cmock_count(__VA_ARGS__))(addrs, __VA_ARGS__)
