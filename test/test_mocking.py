@@ -354,10 +354,10 @@ def test_return_pointee():
         .append_include('stdio.h')
 
     with cgen.with_open_function('int', 'main'):
-        cgen.append_line('int i = 10, j = 12;')                                     \
-            .append_line('EXPECT_CALL(retpointee).WILL_REPEATEDLY(RETURN_ARG(1));') \
-            .append_line('printf("%d\\n", retpointee(&i, &j));')                    \
-            .append_line('EXPECT_CALL(retpointee).WILL_REPEATEDLY(RETURN_ARG(2));') \
+        cgen.append_line('int i = 10, j = 12;')                                         \
+            .append_line('EXPECT_CALL(retpointee).WILL_REPEATEDLY(RETURN_POINTEE(0));') \
+            .append_line('printf("%d\\n", retpointee(&i, &j));')                        \
+            .append_line('EXPECT_CALL(retpointee).WILL_REPEATEDLY(RETURN_POINTEE(1));') \
             .append_line('printf("%d\\n", retpointee(&i, &j));')
     cgen.write()
 
