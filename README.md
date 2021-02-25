@@ -220,7 +220,10 @@ An action to be used with a behavior specifier such as `WILL_ONCE`.  Causes any 
 An action causing any call to the mocked function to immediately return *value* instead.
 
 ###### `RETURN_ARG(index)`
-Returns the *index*th 0-indexed function argument. The behavior of this action is well-defined only if the return type and the type of the *indexed*th parameter are of the same type.
+Returns the *index*th 0-indexed function parameter. The behavior of this action is well-defined only if the return type and the type of the *indexed*th parameter are of the same type.
+
+###### `RETURN_POINTEE(index)`
+Dereferences the *index*th 0-indexed function parameter and returns the resulting value. The behavior is well-defined only if the *index*th parameter is a pointer to an instance of the return type.
 
 ###### `INCREMENT_COUNTER(initial_value)`
 An action that causes any call to the mocked function to increment and return a counter, in that order. The parameter *initial_value* specified the initial value of said counter. The use of `INCREMENT_COUNTER` is well-formed only if the mocked function returns an integral type. Note that that max value of the counter is subject to the limits of the return type (e.g. for a `signed char`, the counter could not be increment past `SCHAR_MAX`).

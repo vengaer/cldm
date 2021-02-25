@@ -760,7 +760,8 @@ enum cmock_opmode {
     CMOCK_OP_INVOKE,
     CMOCK_OP_RETURN,
     CMOCK_OP_INCREMENT,
-    CMOCK_OP_RETARG
+    CMOCK_OP_RETARG,
+    CMOCK_OP_RETPOINTEE
 };
 
 #define cmock_generate_mock_ctx(utype, rettype, name, ...)  \
@@ -817,6 +818,12 @@ enum cmock_opmode {
                                  "Attempt to access parameter %u in function taking only %zu",              \
                                  cmock_mock_ ## name.opdata.argindex + 1, cmock_arrsize(argaddrs));         \
                     call_prefix *(utype *)argaddrs[cmock_mock_ ## name.opdata.argindex];                    \
+                    break;                                                                                  \
+                case CMOCK_OP_RETPOINTEE:                                                                   \
+                    cmock_assert(cmock_mock_ ## name.opdata.argindex < cmock_arrsize(argaddrs),             \
+                                 "Attempt to access parameter %u in function taking only %zu",              \
+                                 cmock_mock_ ## name.opdata.argindex + 1, cmock_arrsize(argaddrs));         \
+                    call_prefix **(utype **)argaddrs[cmock_mock_ ## name.opdata.argindex];                  \
                     break;                                                                                  \
                 default:                                                                                    \
                     cmock_assert(0, "Invalid opmode %d", cmock_mock_ ## name.opdata.mode);                  \
@@ -929,9 +936,10 @@ enum cmock_opmode {
 #define CMOCK_WILL_N_TIMES(n, ...) cmock_will(n, __VA_ARGS__)
 #define CMOCK_WILL_INVOKE_DEFAULT() cmock_will(0, opdata.invoke = CMOCK_OP_INVOKE)
 
-#define CMOCK_INVOKE(func) cmock_setop(invoke, func, CMOCK_OP_INVOKE)
-#define CMOCK_RETURN(value) cmock_setop(retval, value, CMOCK_OP_RETURN)
-#define CMOCK_RETURN_ARG(index) cmock_setop(argindex, index, CMOCK_OP_RETARG)
+#define CMOCK_INVOKE(func)            cmock_setop(invoke, func, CMOCK_OP_INVOKE)
+#define CMOCK_RETURN(value)           cmock_setop(retval, value, CMOCK_OP_RETURN)
+#define CMOCK_RETURN_ARG(index)       cmock_setop(argindex, index, CMOCK_OP_RETARG)
+#define CMOCK_RETURN_POINTEE(index)   cmock_setop(argindex, index, CMOCK_OP_RETPOINTEE)
 #define CMOCK_INCREMENT_COUNTER(init) cmock_setop(counter, init, CMOCK_OP_INCREMENT)
 
 #ifndef CMOCK_PREFIX_ONLY
@@ -947,6 +955,7 @@ enum cmock_opmode {
 #define INVOKE(...)              CMOCK_INVOKE(__VA_ARGS__)
 #define RETURN(...)              CMOCK_RETURN(__VA_ARGS__)
 #define RETURN_ARG(...)          CMOCK_RETURN_ARG(__VA_ARGS__)
+#define RETURN_POINTEE(...)      CMOCK_RETURN_POINTEE(__VA_ARGS__)
 #define INCREMENT_COUNTER(...)   CMOCK_INCREMENT_COUNTER(__VA_ARGS__)
 #endif
 
@@ -958,6 +967,7 @@ enum cmock_opmode {
 #define Invoke(...)           CMOCK_INVOKE(__VA_ARGS__)
 #define Return(...)           CMOCK_RETURN(__VA_ARGS__)
 #define ReturnArg(...)        CMOCK_RETURN_ARG(__VA_ARGS__)
+#define ReturnPointee(...)    CMOCK_RETURN_POINTEE(__VA_ARGS__)
 #define IncrementCounter(...) CMOCK_INCREMENT_COUNTER(__VA_ARGS__)
 #endif
 

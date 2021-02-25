@@ -18,6 +18,7 @@
         "func3": {"rettype": "struct s0 *", "params": ["char const *", "struct s0"]},
         "ret2": {"rettype": "int", "params": ["void"], "return": 2, "exec": ["puts(\"default ret2\");"]},
         "atoi": {"rettype": "int", "params": ["char const *"], "generate": false},
-        "retarg": {"rettype": "int", "params": ["char const *", "void *", "int"], "return": 0}
+        "retarg": {"rettype": "int", "params": ["char const *", "void *", "int"], "return": 0},
+        "retpointee": {"rettype": "int", "params": ["int *", "int *"], "return": 0}
     }
 }
