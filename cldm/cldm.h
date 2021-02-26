@@ -753,10 +753,22 @@
     opdata.field = value;               \
     cldm_set_opmode(mode)
 
+#define cldm_assign2(lhs, rhs)          \
+    cldm_setop(act.assign_ctx, ((struct cldm_assign_ctx){ &lhs, &rhs, sizeof(lhs) }), CLDM_OP_ASSIGN)
+
+#define cldm_assign3(lhs, rhs, type)    \
+    cldm_assign2(lhs, (type){ rhs })
+
 struct cldm_mock_info {
     void *addr;
     unsigned invocations_offset;
     unsigned opmode_offset;
+};
+
+struct cldm_assign_ctx {
+    void *lhs;
+    void const *rhs;
+    unsigned size;
 };
 
 enum cldm_opmode {
@@ -764,7 +776,8 @@ enum cldm_opmode {
     CLDM_OP_RETURN,
     CLDM_OP_INCREMENT,
     CLDM_OP_RETARG,
-    CLDM_OP_RETPOINTEE
+    CLDM_OP_RETPOINTEE,
+    CLDM_OP_ASSIGN
 };
 
 #define cldm_generate_mock_ctx(utype, rettype, name, ...)   \
@@ -778,6 +791,7 @@ enum cldm_opmode {
                 utype retval;                               \
                 utype counter;                              \
                 unsigned argindex;                          \
+                struct cldm_assign_ctx assign_ctx;          \
             } act;                                          \
         } opdata;                                           \
     }
@@ -828,6 +842,11 @@ enum cldm_opmode {
                                  cldm_mock_ ## name.opdata.act.argindex + 1, cldm_arrsize(argaddrs));           \
                     call_prefix **(utype **)argaddrs[cldm_mock_ ## name.opdata.act.argindex];                   \
                     break;                                                                                      \
+                case CLDM_OP_ASSIGN:                                                                            \
+                    memcpy(cldm_mock_ ## name.opdata.act.assign_ctx.lhs,                                        \
+                           cldm_mock_ ## name.opdata.act.assign_ctx.rhs,                                        \
+                           cldm_mock_ ## name.opdata.act.assign_ctx.size);                                      \
+                    break;                                                                                      \
                 default:                                                                                        \
                     cldm_assert(0, "Invalid opmode %d", cldm_mock_ ## name.opdata.mode);                        \
             }                                                                                                   \
@@ -876,6 +895,11 @@ enum cldm_opmode {
                     break;                                                                      \
                 case CLDM_OP_INCREMENT:                                                         \
                     call_prefix ++cldm_mock_ ## name.opdata.act.counter;                        \
+                    break;                                                                      \
+                case CLDM_OP_ASSIGN:                                                            \
+                    memcpy(cldm_mock_ ## name.opdata.act.assign_ctx.lhs,                        \
+                           cldm_mock_ ## name.opdata.act.assign_ctx.rhs,                        \
+                           cldm_mock_ ## name.opdata.act.assign_ctx.size);                      \
                     break;                                                                      \
                 default:                                                                        \
                     cldm_assert(0, "Invalid opmode %d", cldm_mock_ ## name.opdata.mode);        \
@@ -944,6 +968,7 @@ enum cldm_opmode {
 #define CLDM_RETURN_ARG(index)       cldm_setop(act.argindex, index, CLDM_OP_RETARG)
 #define CLDM_RETURN_POINTEE(index)   cldm_setop(act.argindex, index, CLDM_OP_RETPOINTEE)
 #define CLDM_INCREMENT_COUNTER(init) cldm_setop(act.counter, init, CLDM_OP_INCREMENT)
+#define CLDM_ASSIGN(...)             cldm_overload(cldm_assign,__VA_ARGS__)
 
 #ifndef CLDM_PREFIX_ONLY
 #define MOCK_FUNCTION(...)       CLDM_MOCK_FUNCTION(__VA_ARGS__)
@@ -960,6 +985,7 @@ enum cldm_opmode {
 #define RETURN_ARG(...)          CLDM_RETURN_ARG(__VA_ARGS__)
 #define RETURN_POINTEE(...)      CLDM_RETURN_POINTEE(__VA_ARGS__)
 #define INCREMENT_COUNTER(...)   CLDM_INCREMENT_COUNTER(__VA_ARGS__)
+#define ASSIGN(...)              CLDM_ASSIGN(__VA_ARGS__)
 #endif
 
 #ifdef CLDM_GMOCK_COMPAT
@@ -972,6 +998,7 @@ enum cldm_opmode {
 #define ReturnArg(...)        CLDM_RETURN_ARG(__VA_ARGS__)
 #define ReturnPointee(...)    CLDM_RETURN_POINTEE(__VA_ARGS__)
 #define IncrementCounter(...) CLDM_INCREMENT_COUNTER(__VA_ARGS__)
+#define Assign(...)           CLDM_ASSIGN(__VA_ARGS__)
 #endif
 
 #include "cldm_config.h"
