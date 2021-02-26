@@ -72,7 +72,9 @@ def test_invoke():
         .append_include('stdio.h')
 
     with cgen.with_open_function('void', 'mockfoo', ['int', 'char']):
-        cgen.append_line('puts("{}");'.format(mockmsg))
+        cgen.append_line('(void)a0;')                       \
+            .append_line('(void)a1;')                       \
+            .append_line('puts("{}");'.format(mockmsg))
 
     with cgen.with_open_function('int', 'main'):
         cgen.append_line('EXPECT_CALL(foo).WILL_REPEATEDLY(INVOKE(mockfoo));')  \
@@ -134,7 +136,9 @@ def test_invoke_with_fallback():
         .append_include('stdio.h')
 
     with cgen.with_open_function('void', 'mockfoo', ['int', 'char']):
-        cgen.append_line('puts("{}");'.format(mockmsg))
+        cgen.append_line('(void)a0;')                       \
+            .append_line('(void)a1;')                       \
+            .append_line('puts("{}");'.format(mockmsg))
 
     with cgen.with_open_function('int', 'main'):
         cgen.append_line('EXPECT_CALL(foo).WILL_REPEATEDLY(INVOKE(mockfoo));')                                              \
