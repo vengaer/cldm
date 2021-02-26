@@ -3,16 +3,6 @@ from pathlib import Path
 
 from config import *
 
-def gen_default_makefile(mgen, target, symbol_tu):
-    mgen.adjust('CFLAGS', '-fPIC', Mod.REMOVE)
-    mgen.adjust('LDFLAGS', '-shared', Mod.REMOVE)
-    mgen.adjust('LDFLAGS', '-L. -L{} -lcldm'.format(project_root), Mod.APPEND)
-    mgen.adjust('LDLIBS', '-ltest', Mod.APPEND)
-    mgen.add_rule('libtest.so', '$(builddir)/syms.o', '$(QUIET)$(CC) -o $@ $^ -shared $(LDFLAGS) $(LDLIBS)', '[LD] $@')
-    mgen.add_rule('$(builddir)/syms.o', str(working_dir / symbol_tu), '$(QUIET)$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -fPIC', '[CC] $@')
-    mgen.add_prereq(target, 'libtest.so')
-
-
 class Mod(Enum):
     APPEND = 0
     PREPEND = 1
@@ -46,6 +36,15 @@ class Makegen():
             self.src = '$(wildcard {}/*.{})'.format(srcdir, self.__CEXT)
 
         self.aux_rules = []
+
+    def default(self, mgen, target, symbol_tu):
+        mgen.adjust('CFLAGS', '-fPIC', Mod.REMOVE)
+        mgen.adjust('LDFLAGS', '-shared', Mod.REMOVE)
+        mgen.adjust('LDFLAGS', '-L. -L{} -lcldm'.format(project_root), Mod.APPEND)
+        mgen.adjust('LDLIBS', '-ltest', Mod.APPEND)
+        mgen.add_rule('libtest.so', '$(builddir)/syms.o', '$(QUIET)$(CC) -o $@ $^ -shared $(LDFLAGS) $(LDLIBS)', '[LD] $@')
+        mgen.add_rule('$(builddir)/syms.o', str(working_dir / symbol_tu), '$(QUIET)$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -fPIC', '[CC] $@')
+        mgen.add_prereq(target, 'libtest.so')
 
     def adjust(self, varname, value, mode=Mod.APPEND):
         varname = varname.lower()

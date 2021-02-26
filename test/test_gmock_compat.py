@@ -25,7 +25,7 @@ def test_gmock_will_repeatedly():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -52,7 +52,7 @@ def test_gmock_will_once():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -82,7 +82,7 @@ def test_gmock_will_n_times():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -111,7 +111,7 @@ def test_gmock_return():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -141,7 +141,7 @@ def test_gmock_will_invoke_default():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -176,7 +176,7 @@ def test_gmock_invoke():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -206,7 +206,7 @@ def test_gmock_return_arg():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -238,7 +238,7 @@ def test_gmock_return_pointee():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -269,7 +269,7 @@ def test_increment_counter():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -307,7 +307,7 @@ def test_gmock_assign():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -339,7 +339,7 @@ def test_gmock_assign_arg():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0

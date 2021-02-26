@@ -27,7 +27,7 @@ def test_preload():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -52,7 +52,7 @@ def test_symbol_fallback():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -87,7 +87,7 @@ def test_invoke():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -117,7 +117,7 @@ def test_increment_counter():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -152,7 +152,7 @@ def test_invoke_with_fallback():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -181,7 +181,7 @@ def test_will_once():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -212,7 +212,7 @@ def test_atoi_mock():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -251,7 +251,7 @@ def test_max_params():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, 'syms.c')
+    mgen.default(mgen, target, 'syms.c')
     mgen.generate()
 
     assert build_cldm()[0] == 0
@@ -280,7 +280,7 @@ def test_will_n_times():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -311,7 +311,7 @@ def test_will_invoke_default():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -340,7 +340,7 @@ def test_return_arg():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -371,7 +371,7 @@ def test_return_pointee():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -408,7 +408,7 @@ def test_assign():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -439,7 +439,7 @@ def test_assign_arg():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0

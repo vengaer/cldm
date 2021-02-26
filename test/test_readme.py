@@ -29,7 +29,7 @@ def test_readme_example_usage():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
@@ -137,7 +137,7 @@ def test_readme_assign():
     cgen.write()
 
     mgen = Makegen(target, src='main.c')
-    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.default(mgen, target, symbol_tu)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
