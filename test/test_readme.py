@@ -103,3 +103,42 @@ def test_readme_ex2():
     assert build_cldm()[0] == 0
     assert exec_bash('gcc -o {d}/a.out {d}/main.c {d}/resource.c -L{root} -lcldm -I{root}/cldm'.format(d=working_dir, root=project_root))[0] == 0
     assert exec_bash('LD_PRELOAD={root}/libcldm.so LD_LIBRARY_PATH={wd} {wd}/a.out'.format(root=project_root, wd=working_dir))[0] != 0
+
+def test_readme_ex3():
+    target = 'readme_test'
+    symbol_tu = 'syms.c'
+
+    db = read_db()
+    cgen = CGen('main.c')
+    cgen.append_include('cldm.h', system_header=False)      \
+        .append_include('syms.h', system_header=False)      \
+        .append_include('stdio.h')                          \
+        .append_include('string.h')
+
+    with cgen.with_open_function('int', 'main'):
+        cgen.append_line('long long i;')                                                        \
+            .append_line('union { int as_int; char as_bytes[sizeof(long long)]; } u;')          \
+            .append_line('memset(&u.as_bytes, 1, sizeof(u));')                                  \
+            .append_line('u.as_int = 10;')                                                      \
+            .append_line('EXPECT_CALL(baz).WILL_REPEATEDLY(ASSIGN(i, u.as_int));')              \
+            .append_line('baz();')                                                              \
+            .append_line('printf("%lld\\n", i);')                                               \
+            .append_line('EXPECT_CALL(baz).WILL_REPEATEDLY(ASSIGN(i, u.as_int, long long));')   \
+            .append_line('baz();')                                                              \
+            .append_line('printf("%lld\\n", i);')
+    cgen.write()
+
+    cgen = CGen(symbol_tu)
+    cgen.generate_matching_symbols()
+    cgen.write()
+
+    mgen = Makegen(target, src='main.c')
+    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.generate()
+
+    assert exec_bash('make -C {}'.format(working_dir))[0] == 0
+    rv, output, _ = exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))
+    assert rv == 0
+    output = output.decode('utf-8').strip().split('\n')
+    assert output[0] != '10'
+    assert output[1] == '10'

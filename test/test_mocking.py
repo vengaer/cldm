@@ -378,3 +378,40 @@ def test_return_pointee():
     rv, output, _ = exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))
     assert rv == 0
     assert output.decode('utf-8').strip().split('\n') == ['10', '12']
+
+def test_assign():
+    target = 'mockups_test'
+    symbol_tu = 'syms.c'
+
+    db = read_db()
+    cgen = CGen('main.c')
+    cgen.append_include('cldm.h', system_header=False)      \
+        .append_include('syms.h', system_header=False)      \
+        .append_include('stdio.h')
+
+    with cgen.with_open_function('int', 'main'):
+        cgen.append_line('int i = 10, j = 12;')                                         \
+            .append_line('EXPECT_CALL(baz).WILL_REPEATEDLY(ASSIGN(i, j));')             \
+            .append_line('printf("%d\\n", i);')                                         \
+            .append_line('baz();')                                                      \
+            .append_line('printf("%d\\n", i);')                                         \
+            .append_line('EXPECT_CALL(baz).WILL_REPEATEDLY(ASSIGN(i, 13, int));')       \
+            .append_line('baz();')                                                      \
+            .append_line('printf("%d\\n", i);')                                         \
+            .append_line('EXPECT_CALL(baz).WILL_REPEATEDLY(ASSIGN(i, (int){ 14 }));')   \
+            .append_line('baz();')                                                      \
+            .append_line('printf("%d\\n", i);')
+    cgen.write()
+
+    cgen = CGen(symbol_tu)
+    cgen.generate_matching_symbols()
+    cgen.write()
+
+    mgen = Makegen(target, src='main.c')
+    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.generate()
+
+    assert exec_bash('make -C {}'.format(working_dir))[0] == 0
+    rv, output, _ = exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))
+    assert rv == 0
+    assert output.decode('utf-8').strip().split('\n') == ['10', '12', '13', '14']
