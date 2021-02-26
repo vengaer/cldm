@@ -116,8 +116,12 @@ def test_readme_ex3():
         .append_include('string.h')
 
     with cgen.open_function('int', 'main'):
+        with cgen.open_union('uic'):
+            cgen.append_line('int as_int;')                                                     \
+                .append_line('char as_bytes[sizeof(long long)];')
+
         cgen.append_line('long long i;')                                                        \
-            .append_line('union { int as_int; char as_bytes[sizeof(long long)]; } u;')          \
+            .append_line('union uic u;')                                                        \
             .append_line('memset(&u.as_bytes, 1, sizeof(u));')                                  \
             .append_line('u.as_int = 10;')                                                      \
             .append_line('EXPECT_CALL(baz).WILL_REPEATEDLY(ASSIGN(i, u.as_int));')              \

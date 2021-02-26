@@ -19,7 +19,15 @@ class CGen():
         try:
             yield
         finally:
-            self.close_struct()
+            self.__close_struct()
+
+    @contextmanager
+    def open_union(self, name):
+        self.__open_union(name)
+        try:
+            yield
+        finally:
+            self.__close_union()
 
     @contextmanager
     def open_function(self, retval, name, params=['void']):
@@ -27,7 +35,7 @@ class CGen():
         try:
             yield
         finally:
-            self.close_function()
+            self.__close_function()
 
     def __append_src_content(self, string):
         self.src.append('{}{}\n'.format('\t' * self.indent, string))
@@ -60,7 +68,16 @@ class CGen():
         self.indent = self.indent + 1
         return self
 
-    def close_struct(self):
+    def __close_struct(self):
+        self.__close_scope(True)
+        return self
+
+    def __open_union(self, name):
+        self.__append_src_content('union {} {{'.format(name))
+        self.indent = self.indent + 1
+        return self
+
+    def __close_union(self):
         self.__close_scope(True)
         return self
 
@@ -76,7 +93,7 @@ class CGen():
         self.indent = self.indent + 1
         return self
 
-    def close_function(self):
+    def __close_function(self):
         self.__close_scope()
         return self
 
