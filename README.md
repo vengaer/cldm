@@ -229,7 +229,7 @@ Dereferences the *n*th 0-indexed function parameter and returns the resulting va
 An action that causes any call to the mocked function to increment and return a counter, in that order. The parameter *initial_value* specified the initial value of said counter. The use of `INCREMENT_COUNTER` is well-formed only if the mocked function returns an integral type. Note that that max value of the counter is subject to the limits of the return type (e.g. for a `signed char`, the counter could not be increment past `SCHAR_MAX`).
 
 ###### `ASSIGN(lhs, rhs [,type])`
-Causes the function call to execute the equivalent of `lhs = rhs`. For the two parameter version, both `lhs` and `rhs` must be lvalues. If wanting to pass an rvalue as `rhs`, provide a third parameter specifying which type `rhs` should be interpreted as. As an example, `EXPECT_CALL(foo).WILL_ONCE(ASSIGN(var, 10, int));` will assign the rvalue 10, interpreted as an `int`, to the variable `var`.
+Causes the function call to execute the equivalent of `lhs = rhs`. For the two-parameter version, `lhs` and `rhs` must both be lvalues. If wanting to pass an rvalue as `rhs`, provide a third parameter specifying the type `rhs` should be interpreted as. As an example, `EXPECT_CALL(foo).WILL_ONCE(ASSIGN(var, 10, int));` will assign the rvalue 10, interpreted as an `int`, to the variable `var`.
 
 For the two-parameter version of the action to be well-defined, both `lhs` and `rhs` must be of the same type. If they are not, the three-parameter version can be used to force the type of `rhs`, e.g.
 
@@ -238,7 +238,8 @@ int main(void) {
     long long i;
     int j = 12;
     EXPECT_CALL(foo).WILL_ONCE(ASSIGN(i, j, long long)); /* OK, j converted to a long long */
-    EXPECT_CALL(foo).WILL_ONCE(ASSIGN(i, j)); /* Undefined behavior, j is intepreted as a long long despite being an int */
+    EXPECT_CALL(foo).WILL_ONCE(ASSIGN(i, j)); /* Undefined behavior, j intepreted as a long long */
+                                              /* despite being an int */
 }
 ```
 
