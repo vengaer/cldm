@@ -415,3 +415,34 @@ def test_assign():
     rv, output, _ = exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))
     assert rv == 0
     assert output.decode('utf-8').strip().split('\n') == ['10', '12', '13', '14']
+
+def test_assign_arg():
+    target = 'mockups_test'
+    symbol_tu = 'syms.c'
+
+    db = read_db()
+    cgen = CGen('main.c')
+    cgen.append_include('cldm.h', system_header=False)      \
+        .append_include('syms.h', system_header=False)      \
+        .append_include('stdio.h')
+
+    with cgen.open_function('int', 'main'):
+        cgen.append_line('int i = 10;')                                         \
+            .append_line('EXPECT_CALL(foo).WILL_REPEATEDLY(ASSIGN_ARG(0, i));') \
+            .append_line('printf("%d\\n", i);')                                 \
+            .append_line('foo(12, 13);')                                        \
+            .append_line('printf("%d\\n", i);')
+    cgen.write()
+
+    cgen = CGen(symbol_tu)
+    cgen.generate_matching_symbols()
+    cgen.write()
+
+    mgen = Makegen(target, src='main.c')
+    gen_default_makefile(mgen, target, symbol_tu)
+    mgen.generate()
+
+    assert exec_bash('make -C {}'.format(working_dir))[0] == 0
+    rv, output, _ = exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))
+    assert rv == 0
+    assert output.decode('utf-8').strip().split('\n') == ['10', '12']
