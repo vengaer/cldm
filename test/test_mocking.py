@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 
 from cgen import *
+from cldm import *
 from config import *
 from makegen import *
 from symbols import *
@@ -253,7 +254,7 @@ def test_max_params():
     gen_default_makefile(mgen, target, 'syms.c')
     mgen.generate()
 
-    assert exec_bash('make -C {}'.format(project_root))[0] == 0
+    assert build_cldm()[0] == 0
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
     assert exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))[0] == 38
 

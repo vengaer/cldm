@@ -2,6 +2,7 @@ import json
 import re
 import os
 
+from cldm import *
 from config import *
 
 def read_db():
@@ -32,7 +33,7 @@ def gen_symbols():
             else:
                 fd.write('MOCK_FUNCTION{}({}, {}{} {});\n'.format(suffix, sym['rettype'], symname, param_delim, ', '.join(sym.get('params', []))))
 
-    os.system('make -B -C {}'.format(project_root))
+    return build_cldm()
 
 def list_symbols():
     return os.popen('nm {}'.format(solib)).read()

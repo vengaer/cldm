@@ -11,7 +11,7 @@ def pytest_runtest_setup():
     except:
         pass
 
-    gen_symbols()
+    assert gen_symbols()[0] == 0
 
 def pytest_runtest_teardown():
     try:

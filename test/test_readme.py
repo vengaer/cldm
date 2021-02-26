@@ -1,4 +1,5 @@
 from cgen import *
+from cldm import *
 from config import *
 from makegen import *
 from symbols import *
@@ -64,7 +65,7 @@ def test_readme_ex1():
             .append_return(0)
     cgen.write()
 
-    assert exec_bash('make -B -C {}'.format(project_root))[0] == 0
+    assert build_cldm()[0] == 0
     assert exec_bash('gcc -shared -fPIC -o {d}/libresource.so {d}/resource.c'.format(d=working_dir))[0] == 0
     assert exec_bash('gcc -o {d}/a.out {d}/main.c -L{d} -L{root} -lresource -lcldm -I{root}/cldm'.format(d=working_dir, root=project_root))[0] == 0
     assert exec_bash('LD_PRELOAD={root}/libcldm.so LD_LIBRARY_PATH={wd} {wd}/a.out'.format(root=project_root, wd=working_dir))[0] == 0
@@ -99,6 +100,6 @@ def test_readme_ex2():
             .append_return(0)
     cgen.write()
 
-    assert exec_bash('make -B -C {}'.format(project_root))[0] == 0
+    assert build_cldm()[0] == 0
     assert exec_bash('gcc -o {d}/a.out {d}/main.c {d}/resource.c -L{root} -lcldm -I{root}/cldm'.format(d=working_dir, root=project_root))[0] == 0
     assert exec_bash('LD_PRELOAD={root}/libcldm.so LD_LIBRARY_PATH={wd} {wd}/a.out'.format(root=project_root, wd=working_dir))[0] != 0

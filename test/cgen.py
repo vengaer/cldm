@@ -1,7 +1,9 @@
 from contextlib import contextmanager
 
+from cldm import *
 from config import *
 from symbols import *
+from util import *
 
 class CGen():
     def __init__(self, srcfile):
@@ -107,7 +109,7 @@ class CGen():
                 if sym['rettype'] != 'void':
                     self.append_return(sym.get('return', '({}){{ 0 }}'.format(sym['rettype'])))
 
-        os.system('make -B -C {}'.format(project_root))
+        assert build_cldm()[0] == 0
         return self
 
     def append_line(self, line):
