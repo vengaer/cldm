@@ -180,6 +180,8 @@ LD_PRELOAD=/path/to/project/root/libcldm.so ./a.out
 
 ## Macro Reference
 
+The macros can be subdivided into three categories - mock generators, behavior specifiers and actions. Mock generators are used for generating the code required to perform the actual function mocking. The generated code is linked into the library. Behavior specifiers and actions are combined in order to specify the runtime behavior of the mocked function.
+
 ### Mock Generators
 
 ###### `MOCK_FUNCTION(return_type, function_name [,param_type[,param_type[,...]]])`
