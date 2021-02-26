@@ -1,6 +1,6 @@
 # cldm - Linker-Based Function Mocking
 
-LD-based function mocking in pure C. The interface is inspired by [gmock](https://github.com/google/googletest).
+Function mocking framework in pure C. Requires a C99-compatible compiler. The interface is inspired by [gmock](https://github.com/google/googletest).
 
 [[_TOC_]]
 
