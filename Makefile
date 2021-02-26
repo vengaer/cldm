@@ -25,15 +25,15 @@ config      := $(srcdir)/cldm_config.h
 
 MOCKUPS     ?= $(abspath $(srcdir)/mockups.h)
 
-CFLAGS      ?= -std=c99 -Wall -Wextra -Wpedantic -fPIC -c
-CPPFLAGS    ?= -DCLDM_LIBC=$(shell ldd /usr/bin/env | grep -oP "\s*\K/.*libc\.so(\.\d+)?")
-LDFLAGS     ?= -shared -Wl,-soname,$(sostem).$(soext).$(socompat)
-LDLIBS      ?= -ldl
-LNFLAGS     ?= -sf
-MKDIRFLAGS  ?= -p
-RMFLAGS     ?= -rf
-ECHOFLAGS   ?= -e
-PYTESTFLAGS ?= -v --rootdir=$(testdir)
+CFLAGS      := -std=c99 -Wall -Wextra -Wpedantic -fPIC -c
+CPPFLAGS    := -DCLDM_LIBC=$(shell ldd /usr/bin/env | grep -oP "\s*\K/.*libc\.so(\.\d+)?")
+LDFLAGS     := -shared -Wl,-soname,$(sostem).$(soext).$(socompat)
+LDLIBS      := -ldl
+LNFLAGS     := -sf
+MKDIRFLAGS  := -p
+RMFLAGS     := -rf
+ECHOFLAGS   := -e
+PYTESTFLAGS := -v --rootdir=$(testdir)
 
 QUIET       ?= @
 
@@ -72,7 +72,7 @@ $(builddir):
 clean:
 	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(target) $(link) $(help) $(config)
 
-$(help): FORCE
+$(help):
 	$(info +========+)
 	$(info |  cldm  |)
 	$(info +========+)
@@ -88,8 +88,7 @@ $(help): FORCE
 	$(info )
 	$(info For more info: gitlab.com/vilhelmengstrom/cldm)
 	$(QUIET)$(TOUCH) $@
+	$(QUIET)$(RM) $@
 
 .PHONY: help
 help: $(help)
-
-FORCE:
