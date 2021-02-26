@@ -251,75 +251,87 @@ Assigns the *n*th zero-indexed parameter to *lhs* as if `lhs = args[n]` where `a
 If `CLDM_PREFIX_ONLY` is defined prior to including the header, the default macros are not exposed. Instead, only their prefix counterparts are generated.
 
 ###### `CLDM_MOCK_FUNCTION(return_type, function_name [,param_type[,param_type[,...]]])`
-Prefixed alias for `MOCK_FUNCTION`. 
+Prefixed alias for [`MOCK_FUNCTION`](#mock_functionreturn_type-function_name-param_typeparam_type). 
 
 ###### `CLDM_MOCK_FUNCTION0(return_type, function_name, void)`
-Prefixed alias for `MOCK_FUNCTION0`. 
+Prefixed alias for [`MOCK_FUNCTION0`](#mock_function0return_type-function_name-void). 
 
 ###### `CLDM_MOCK_FUNCTION_VOID(function_name [,param_type[,param_type[,...]]])`
-Prefixed alias for `MOCK_FUNCTION_VOID`.
+Prefixed alias for [`MOCK_FUNCTION_VOID`](#mock_function_voidfunction_name-param_typeparam_type).
 
 ###### `CLDM_MOCK_FUNCTION_VOID0(function_name, void)`
-Prefixed alias for `MOCK_FUNCTION_VOID0`.
+Prefixed alias for [`MOCK_FUNCTION_VOID0`](#mock_function_void0function_name-void).
 
 ###### `CLDM_EXPECT_CALL(function_name)`
-Prefixed alias for `EXPECT_CALL`.
+Prefixed alias for [`EXPECT_CALL`](expect_callfunction_name).
 
 ###### `CLDM_WILL_ONCE(action)`
-Prefixed alias for `WILL_ONCE`.
+Prefixed alias for [`WILL_ONCE`](#will_onceaction).
 
 ###### `CLDM_WILL_REPEATEDLY(action)`
-Prefixed alias for `WILL_REPEATEDLY`.
+Prefixed alias for [`WILL_REPEATEDLY`](#will_repeatedlyaction).
 
 ###### `CLDM_WILL_N_TIMES(n, action)`
-Prefixed alias for `WILL_N_TIMES`.
+Prefixed alias for [`WILL_N_TIMES`](#will_n_timesn-action).
 
 ###### `CLDM_WILL_INVOKE_DEFAULT()`
-Prefixed alias for `WILL_INVOKE_DEFAULT`.
+Prefixed alias for [`WILL_INVOKE_DEFAULT`](#will_invoke_default).
 
 ###### `CLDM_INVOKE(function_name)`
-Prefixed alias for `INVOKE`.
+Prefixed alias for [`INVOKE`](#invokefunction_name).
 
 ###### `CLDM_RETURN(value)`
-Prefixed alias for `RETURN`.
+Prefixed alias for [`RETURN`](#returnvalue).
 
 ###### `CLDM_RETURN_ARG(n)`
-Prefixed alias for `RETURN_ARG`.
+Prefixed alias for [`RETURN_ARG`](#return_argn).
+
+###### `CLDM_RETURN_POINTEE(n)`
+Prefixed alias for [`RETURN_POINTEE`](#return_pointeen).
 
 ###### `CLDM_INCREMENT_COUNTER(initial_value)`
-Prefixed alias for `INCREMENT_COUNTER`.
+Prefixed alias for [`INCREMENT_COUNTER`](#increment_counterinitial_value).
 
-###### `CLDM_ASSIGN((lhs, rhs [,type])`
-Prefixed alias for `ASSIGN`
+###### `CLDM_ASSIGN(lhs, rhs [,type])`
+Prefixed alias for [`ASSIGN`](#assignlhs-rhs-type).
+
+###### `CLDM_ASSIGN(n, lhs)`
+Prefixed alias for [`ASSIGN_ARG`](#assign_argn-lhs).
 
 ### Gmock-Style Macros
 
 If `CLDM_GMOCK_COMPAT` is defined, the header exposes aliases named according to the "gmock-style".
 
 ###### `WillOnce(action)`
-gmock-style alias for `WILL_ONCE`.
+gmock-style alias for [`WILL_ONCE`](#will_onceaction).
 
 ###### `WillRepeatedly(action)`
-gmock-style alias for `WILL_REPEATEDLY`.
+gmock-style alias for [`WILL_REPEATEDLY`](#will_repeatedlyaction).
 
 ###### `WillNTimes(n, action)`
-gmock-style alias for `WILL_N_TIMES`.
+gmock-style alias for [`WILL_N_TIMES`](#will_n_timesn-action).
 
 ###### `WillInvokeDefault()`
-gmock-style alias for `WILL_INVOKE_DEFAULT`.
+gmock-style alias for [`WILL_INVOKE_DEFAULT`](#will_invoke_default).
 
 ###### `Invoke(function_name)`
-gmock-style alias for `INVOKE`.
+gmock-style alias for [`INVOKE`](#invokefunction_name).
 
 ###### `Return(value)`
-gmock-style alias for `RETURN`.
+gmock-style alias for [`RETURN`](#returnvalue).
 
 ###### `ReturnArg(n)`
-gmock-style alias for `RETURN_ARG`.
+gmock-style alias for [`RETURN_ARG`](#return_argn).
+
+###### `ReturnPointee(n)`
+gmock-style alias for [`RETURN_POINTEE`](#return_pointeen).
 
 ###### `IncrementCounter(initial_value)`
-gmock-style alias for `INCREMENT_COUNTER`.
+gmock-style alias for [`INCREMENT_COUNTER`](#increment_counterinitial_value).
 
 ###### `Assign(lhs, rhs [,type])`
-gmock-style alias for `ASSIGN`.
+gmock-style alias for [`ASSIGN`](#assignlhs-rhs-type).
+
+###### `AssignArg(n, lhs)`
+gmock-style alias for [`ASSIGN_ARG`](#assign_argn-lhs).
 
