@@ -25,7 +25,7 @@ config      := $(srcdir)/cldm_config.h
 
 MOCKUPS     ?= $(abspath $(srcdir)/mockups.h)
 
-CFLAGS      ?= -std=c11 -Wall -Wextra -Wpedantic -fPIC -c
+CFLAGS      ?= -std=c99 -Wall -Wextra -Wpedantic -fPIC -c
 CPPFLAGS    ?= -DCLDM_LIBC=$(shell ldd /usr/bin/env | grep -oP "\s*\K/.*libc\.so(\.\d+)?")
 LDFLAGS     ?= -shared -Wl,-soname,$(sostem).$(soext).$(socompat)
 LDLIBS      ?= -ldl
