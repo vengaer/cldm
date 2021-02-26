@@ -22,8 +22,8 @@ class CGen():
             self.close_struct()
 
     @contextmanager
-    def with_open_function(self, retval, name, params=['void']):
-        self.open_function(retval, name, params)
+    def open_function(self, retval, name, params=['void']):
+        self.__open_function(retval, name, params)
         try:
             yield
         finally:
@@ -64,7 +64,7 @@ class CGen():
         self.__close_scope(True)
         return self
 
-    def open_function(self, rettype, name, params=['void']):
+    def __open_function(self, rettype, name, params=['void']):
         if len(params) == 1 and params[0] == 'void':
             self.__append_src_content('{} {}(void) {{'.format(rettype, name))
             if name != 'main':
@@ -98,7 +98,7 @@ class CGen():
             sym = db['symbols'][symname]
             if not sym.get('generate', True):
                 continue
-            with self.with_open_function(sym['rettype'], symname, sym.get('params', ['void'])):
+            with self.open_function(sym['rettype'], symname, sym.get('params', ['void'])):
                 if len(sym.get('params', [])) != 1 or sym['params'][0] != 'void':
                     for i, _ in enumerate(sym.get('params', [])):
                         self.__append_src_content('(void)a{};'.format(i))

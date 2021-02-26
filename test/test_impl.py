@@ -17,7 +17,7 @@ def test_for_each_word():
     cgen.append_line('#define CLDM_GENERATE_SYMBOLS')   \
         .append_include('cldm.h', system_header=False)  \
         .append_include('stdio.h')
-    with cgen.with_open_function('int', 'main'):
+    with cgen.open_function('int', 'main'):
         cgen.append_line('char words[{}];'.format(len(string) + 2)) \
             .append_line('strcpy(words, "{}");'.format(string))     \
             .append_line('char const *iter;')                       \

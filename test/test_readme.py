@@ -15,7 +15,7 @@ def test_readme_ex0():
         .append_include('assert.h')                     \
         .append_include('stdlib.h')
 
-    with cgen.with_open_function('int', 'main'):
+    with cgen.open_function('int', 'main'):
         cgen.append_line('EXPECT_CALL(atoi).WILL_ONCE(RETURN(8));')         \
             .append_line('assert(atoi("2") == 8);')                         \
             .append_line('assert(atoi("2") == 2);')                         \
@@ -45,7 +45,7 @@ def test_readme_ex1():
 
     cgen = CGen('resource.c')
     cgen.append_line('static int resource_array[32] = { 1, 2, 3 };')
-    with cgen.with_open_function('int *', 'get_resource', ['int']):
+    with cgen.open_function('int *', 'get_resource', ['int']):
         cgen.append_return('&resource_array[a0]')
     cgen.write()
 
@@ -57,7 +57,7 @@ def test_readme_ex1():
     cgen.append_include('cldm.h', system_header=False)                          \
         .append_include('resource.h', system_header=False)                      \
         .append_include('assert.h')
-    with cgen.with_open_function('int', 'main'):
+    with cgen.open_function('int', 'main'):
         cgen.append_line('int i = 12;')                                         \
             .append_line('EXPECT_CALL(get_resource).WILL_ONCE(RETURN(&i));')    \
             .append_line('int *res = get_resource(0);')                         \
@@ -80,7 +80,7 @@ def test_readme_ex2():
 
     cgen = CGen('resource.c')
     cgen.append_line('static int resource_array[32] = { 1, 2, 3 };')
-    with cgen.with_open_function('int *', 'get_resource', ['int']):
+    with cgen.open_function('int *', 'get_resource', ['int']):
         cgen.append_return('&resource_array[a0]')
     cgen.write()
 
@@ -92,7 +92,7 @@ def test_readme_ex2():
     cgen.append_include('cldm.h', system_header=False)                          \
         .append_include('resource.h', system_header=False)                      \
         .append_include('assert.h')
-    with cgen.with_open_function('int', 'main'):
+    with cgen.open_function('int', 'main'):
         cgen.append_line('int i = 12;')                                         \
             .append_line('EXPECT_CALL(get_resource).WILL_ONCE(RETURN(&i));')    \
             .append_line('int *res = get_resource(0);')                         \
@@ -115,7 +115,7 @@ def test_readme_ex3():
         .append_include('stdio.h')                          \
         .append_include('string.h')
 
-    with cgen.with_open_function('int', 'main'):
+    with cgen.open_function('int', 'main'):
         cgen.append_line('long long i;')                                                        \
             .append_line('union { int as_int; char as_bytes[sizeof(long long)]; } u;')          \
             .append_line('memset(&u.as_bytes, 1, sizeof(u));')                                  \

@@ -15,7 +15,7 @@ def test_makefile_generation():
     mgen.generate()
 
     cgen = CGen('main.c')
-    with cgen.with_open_function('int', 'main'):
+    with cgen.open_function('int', 'main'):
         pass
     cgen.write()
 
