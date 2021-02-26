@@ -1,4 +1,4 @@
-# cldm - Linker-based function mocking
+# cldm - Linker-Based Function Mocking
 
 LD-based function mocking in pure C. The interface is inspired by [gmock](https://github.com/google/googletest).
 
