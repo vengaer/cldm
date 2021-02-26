@@ -5,7 +5,7 @@ from makegen import *
 from symbols import *
 from util import *
 
-def test_readme_ex0():
+def test_readme_example_usage():
     target = 'readme_test'
     symbol_tu = 'syms.c'
 
@@ -35,7 +35,7 @@ def test_readme_ex0():
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
     assert exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))[0] == 0
 
-def test_readme_ex1():
+def test_readme_build():
     target = 'readme_test'
 
     cgen = CGen(symfile)
@@ -70,7 +70,7 @@ def test_readme_ex1():
     assert exec_bash('gcc -o {d}/a.out {d}/main.c -L{d} -L{root} -lresource -lcldm -I{root}/cldm'.format(d=working_dir, root=project_root))[0] == 0
     assert exec_bash('LD_PRELOAD={root}/libcldm.so LD_LIBRARY_PATH={wd} {wd}/a.out'.format(root=project_root, wd=working_dir))[0] == 0
 
-def test_readme_ex2():
+def test_readme_incorrect_build():
     target = 'readme_test'
 
     cgen = CGen(symfile)
@@ -104,7 +104,7 @@ def test_readme_ex2():
     assert exec_bash('gcc -o {d}/a.out {d}/main.c {d}/resource.c -L{root} -lcldm -I{root}/cldm'.format(d=working_dir, root=project_root))[0] == 0
     assert exec_bash('LD_PRELOAD={root}/libcldm.so LD_LIBRARY_PATH={wd} {wd}/a.out'.format(root=project_root, wd=working_dir))[0] != 0
 
-def test_readme_ex3():
+def test_readme_assign():
     target = 'readme_test'
     symbol_tu = 'syms.c'
 
