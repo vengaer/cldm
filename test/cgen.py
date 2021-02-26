@@ -14,8 +14,8 @@ class CGen():
         self.indent = 0
 
     @contextmanager
-    def with_open_struct(self, name):
-        self.open_struct(name)
+    def open_struct(self, name):
+        self.__open_struct(name)
         try:
             yield
         finally:
@@ -55,7 +55,7 @@ class CGen():
         self.indent = self.indent - 1
         self.__append_src_content('{}'.format('};' if semicolon else '}'))
 
-    def open_struct(self, name):
+    def __open_struct(self, name):
         self.__append_src_content('struct {} {{'.format(name))
         self.indent = self.indent + 1
         return self
@@ -91,7 +91,7 @@ class CGen():
             self.append_include(inc)
         for struct in db['structs']:
             field_names = [n for n in db['structs'][struct]['members'].keys()]
-            with self.with_open_struct(struct):
+            with self.open_struct(struct):
                 for name in field_names:
                     self.__append_src_content('{} {};'.format(db['structs'][struct]['members'][name]['type'], name))
         for symname in db['symbols']:
