@@ -214,7 +214,7 @@ Specifies that any subsequent calls to the function to be mocked should invoke t
 ### Actions
 
 ###### `INVOKE(function_name)`
-An action to be used with a behavior specifier such as `WILL_ONCE`.  Causes any attempted call to the mocked function to result in a call to thn function *function_name* instead. Naturally, the signature of *function_name* and the mocked function must be the compatible.
+An action to be used with a behavior specifier such as `WILL_ONCE`.  Causes any attempted call to the mocked function to result in a call to the function *function_name* instead. Naturally, the signature of *function_name* and the mocked function must be the compatible.
 
 ###### `RETURN(value)`
 An action causing any call to the mocked function to immediately return *value* instead.
@@ -242,6 +242,9 @@ int main(void) {
                                               /* despite being an int */
 }
 ```
+
+###### `ASSIGN_ARG(n, lhs)`
+Assigns the *n*th zero-indexed parameter to *lhs* as if `lhs = args[n]` where `args[n]` indicates the *n*th parameter. This action is well-defined only if *lhs* and the *n*th parameter are of the same type.
 
 ### Prefix Macros
 
