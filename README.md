@@ -1,4 +1,4 @@
-# cMock
+# cldm - Linker-based function mocking
 
 LD-based function mocking in pure C. The interface is inspired by [gmock](https://github.com/google/googletest).
 
@@ -6,10 +6,10 @@ LD-based function mocking in pure C. The interface is inspired by [gmock](https:
 
 ## Example Usage
 
-Using cmock, the behavior of any function, including the ones provided by the standard, can be overridden. The one requirement is that the symbol to be mocked is loaded dynamically (i.e. from a shared library). The following shows an example of how the output of `atoi` ([man page](https://man.archlinux.org/man/atoi.3)) may be manipulated at runtime.
+Using cldm, the behavior of any function, including the ones provided by the standard, can be overridden. The one requirement is that the symbol to be mocked is loaded dynamically (i.e. from a shared library). The following shows an example of how the output of `atoi` ([man page](https://man.archlinux.org/man/atoi.3)) may be manipulated at runtime.
 
 ```c
-#include "cmock.h"
+#include "cldm.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -28,20 +28,20 @@ int main(void) {
 
 ```
 
-## Using cmock
+## Using cldm
 
-Building cmock requires some configuration. Specifically, the signatures of the mocks to be generated need to be known. Once these have been specified, the build system handles the rest. The procedure can be summarized as follows:
+Building cldm requires some configuration. Specifically, the signatures of the mocks to be generated need to be known. Once these have been specified, the build system handles the rest. The procedure can be summarized as follows:
 
 1. Define functions to be mocked
-2. Build cmock via make
+2. Build cldm via make
 3. Preload the generated shared library
-4. Include the `cmock.h` header
+4. Include the `cldm.h` header
 
 The entire procedure is described in detail below.
 
 #### Defining the Mocks
 
-In order for cmock to know the signatures of the functions to mock, these must be specified by the user. To do this, create a file called `mockups.h` in the `cmock` directory and use the `MOCK_FUNCTION` and `MOCK_FUNCTION_VOID` macro families.
+In order for cldm to know the signatures of the functions to mock, these must be specified by the user. To do this, create a file called `mockups.h` in the `cldm` directory and use the `MOCK_FUNCTION` and `MOCK_FUNCTION_VOID` macro families.
 
 The "signature" of the `MOCK_FUNCTION` macro is as follows:
 ```c
@@ -55,9 +55,9 @@ There are a few considerations that have to made here, [see below](#mocking-gotc
 
 The following would generate code necessary to mock the standard `atoi`, `strcpy` and `free` functions.
 
-`cmock/mockups.h`
+`cldm/mockups.h`
 ```c
-#include "cmock.h"
+#include "cldm.h"
 
 MOCK_FUNCTION(int, atoi, char const *);
 MOCK_FUNCTION(char *, strcpy, char *, char const *);
@@ -99,18 +99,18 @@ Once the mockups file has been created, building is as simple as running
 make
 ```
 
-This generates the actual shared object, `libcmock.so`.
+This generates the actual shared object, `libcldm.so`.
 
 ##### Build Options
 
-By default, the library exposes macros without prefixes (e.g. `MOCK_FUNCTION`, `WILL_ONCE`, etc.). The pollution of the global namespace may be reduced by defining `CMOCK_PREFIX_ONLY` before including `cmock.h`. This will expose only the [prefix versions](#prefix-macros) of the macros. Similarly, defining `CMOCK_GMOCK_COMPAT` exposes [aliases](#gmock-style-macros) for the macros that should be familiar to gmock users.
+By default, the library exposes macros without prefixes (e.g. `MOCK_FUNCTION`, `WILL_ONCE`, etc.). The pollution of the global namespace may be reduced by defining `CLDM_PREFIX_ONLY` before including `cldm.h`. This will expose only the [prefix versions](#prefix-macros) of the macros. Similarly, defining `CLDM_GMOCK_COMPAT` exposes [aliases](#gmock-style-macros) for the macros that should be familiar to gmock users.
 
 #### Using the Library
 
-The mocking approach relies on preloading the shared object, making ld prioritize symbols defined in the library over others loaded at runtime. The usage, in a nutshell, would be to build the final binary with the `-lcmock` flag and invoking it with
+The mocking approach relies on preloading the shared object, making ld prioritize symbols defined in the library over others loaded at runtime. The usage, in a nutshell, would be to build the final binary with the `-lcldm` flag and invoking it with
 
 ```sh
-LD_PRELOAD=/path/to/libcmock.so /path/to/binary
+LD_PRELOAD=/path/to/libcldm.so /path/to/binary
 ```
 
 Note that, when preloading the library, the lib prefix should _not_ be abbreviated to a single l ("el") as when passing the flag to the compiler.
@@ -121,9 +121,9 @@ The library may be used to mock user-defined functions as well. However, as it r
 
 The following illustrates how the user-defined function `get_resource` may be mocked.
 
-`cmock/mockups.h`
+`cldm/mockups.h`
 ```c
-#include "cmock.h"
+#include "cldm.h"
 MOCK_FUNCTION(int *, get_resource, int);
 ```
 
@@ -143,7 +143,7 @@ int *get_resource(int id) {
 
 `main.c`
 ```c
-#include "cmock.h"
+#include "cldm.h"
 #include "resource.h"
 
 #include <assert.h>
@@ -162,11 +162,11 @@ int main(void) {
 ```sh
 make -C /path/to/project/root
 gcc -shared -fPIC -o libresource.so resource.c
-gcc -o a.out main.c -L. -L/path/to/project/root -lresource -lcmock -I/path/to/project/root/cmock/
-LD_PRELOAD=/path/to/project/root/libcmock.so LD_LIBRARY_PATH=. ./a.out
+gcc -o a.out main.c -L. -L/path/to/project/root -lresource -lcldm -I/path/to/project/root/cldm/
+LD_PRELOAD=/path/to/project/root/libcldm.so LD_LIBRARY_PATH=. ./a.out
 ```
 
-Here, `path/to/project/root` refers to the root of the cmock project.
+Here, `path/to/project/root` refers to the root of the cldm project.
 
 ###### Building Incorrectly
 
@@ -174,8 +174,8 @@ As mentioned, linking the symbols to be mocked into the actual binary will cause
 
 ```sh
 make -C /path/to/project/root
-gcc -o a.out main.c resource.c -L/path/to/project/root -lcmock -I/path/to/project/root/cmock/
-LD_PRELOAD=/path/to/project/root/libcmock.so ./a.out
+gcc -o a.out main.c resource.c -L/path/to/project/root -lcldm -I/path/to/project/root/cldm/
+LD_PRELOAD=/path/to/project/root/libcldm.so ./a.out
 ```
 
 ## Macro Reference
@@ -230,50 +230,50 @@ An action that causes any call to the mocked function to increment and return a 
 
 ### Prefix Macros
 
-If `CMOCK_PREFIX_ONLY` is defined prior to including the header, the default macros are not exposed. Instead, only their prefix counterparts are generated.
+If `CLDM_PREFIX_ONLY` is defined prior to including the header, the default macros are not exposed. Instead, only their prefix counterparts are generated.
 
-###### `CMOCK_MOCK_FUNCTION(return_type, function_name [,param_type[,param_type[,...]]])`
+###### `CLDM_MOCK_FUNCTION(return_type, function_name [,param_type[,param_type[,...]]])`
 Prefixed alias for `MOCK_FUNCTION`. 
 
-###### `CMOCK_MOCK_FUNCTION0(return_type, function_name, void)`
+###### `CLDM_MOCK_FUNCTION0(return_type, function_name, void)`
 Prefixed alias for `MOCK_FUNCTION0`. 
 
-###### `CMOCK_MOCK_FUNCTION_VOID(function_name [,param_type[,param_type[,...]]])`
+###### `CLDM_MOCK_FUNCTION_VOID(function_name [,param_type[,param_type[,...]]])`
 Prefixed alias for `MOCK_FUNCTION_VOID`.
 
-###### `CMOCK_MOCK_FUNCTION_VOID0(function_name, void)`
+###### `CLDM_MOCK_FUNCTION_VOID0(function_name, void)`
 Prefixed alias for `MOCK_FUNCTION_VOID0`.
 
-###### `CMOCK_EXPECT_CALL(function_name)`
+###### `CLDM_EXPECT_CALL(function_name)`
 Prefixed alias for `EXPECT_CALL`.
 
-###### `CMOCK_WILL_ONCE(action)`
+###### `CLDM_WILL_ONCE(action)`
 Prefixed alias for `WILL_ONCE`.
 
-###### `CMOCK_WILL_REPEATEDLY(action)`
+###### `CLDM_WILL_REPEATEDLY(action)`
 Prefixed alias for `WILL_REPEATEDLY`.
 
-###### `CMOCK_WILL_N_TIMES(n, action)`
+###### `CLDM_WILL_N_TIMES(n, action)`
 Prefixed alias for `WILL_N_TIMES`.
 
-###### `CMOCK_WILL_INVOKE_DEFAULT()`
+###### `CLDM_WILL_INVOKE_DEFAULT()`
 Prefixed alias for `WILL_INVOKE_DEFAULT`.
 
-###### `CMOCK_INVOKE(function_name)`
+###### `CLDM_INVOKE(function_name)`
 Prefixed alias for `INVOKE`.
 
-###### `CMOCK_RETURN(value)`
+###### `CLDM_RETURN(value)`
 Prefixed alias for `RETURN`.
 
-###### `CMOCK_RETURN_ARG(n)`
+###### `CLDM_RETURN_ARG(n)`
 Prefixed alias for `RETURN_ARG`.
 
-###### `CMOCK_INCREMENT_COUNTER(initial_value)`
+###### `CLDM_INCREMENT_COUNTER(initial_value)`
 Prefixed alias for `INCREMENT_COUNTER`.
 
 ### Gmock-Style Macros
 
-If `CMOCK_GMOCK_COMPAT` is defined, the header exposes aliases named according to the "gmock-style".
+If `CLDM_GMOCK_COMPAT` is defined, the header exposes aliases named according to the "gmock-style".
 
 ###### `WillOnce(action)`
 gmock-style alias for `WILL_ONCE`.

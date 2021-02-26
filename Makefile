@@ -6,7 +6,7 @@ ECHO        ?= echo
 TOUCH       ?= touch
 PYTEST      ?= pytest
 
-sostem      := libcmock
+sostem      := libcldm
 sover       := 0
 socompat    := 0
 
@@ -21,12 +21,12 @@ testdir     := test
 target      := $(sostem).$(soext).$(sover)
 link        := $(sostem).$(soext)
 
-config      := $(srcdir)/cmock_config.h
+config      := $(srcdir)/cldm_config.h
 
 MOCKUPS     ?= $(abspath $(srcdir)/mockups.h)
 
 CFLAGS      ?= -std=c11 -Wall -Wextra -Wpedantic -fPIC -c
-CPPFLAGS    ?= -DCMOCK_LIBC=$(shell ldd /usr/bin/env | grep -oP "\s*\K/.*libc\.so(\.\d+)?")
+CPPFLAGS    ?= -DCLDM_LIBC=$(shell ldd /usr/bin/env | grep -oP "\s*\K/.*libc\.so(\.\d+)?")
 LDFLAGS     ?= -shared -Wl,-soname,$(sostem).$(soext).$(socompat)
 LDLIBS      ?= -ldl
 LNFLAGS     ?= -sf
@@ -59,7 +59,7 @@ $(builddir)/%.$(oext): $(srcdir)/%.$(cext) $(config) | $(builddir)
 
 $(config): $(MOCKUPS)
 	$(info [GEN] $@)
-	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CMOCK_CONFIG_H\n#define CMOCK_CONFIG_H\n#include "$^"\n#endif' > $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CLDM_CONFIG_H\n#define CLDM_CONFIG_H\n#include "$^"\n#endif' > $@
 
 .PHONY: test
 test:
@@ -73,9 +73,9 @@ clean:
 	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(target) $(link) $(help) $(config)
 
 $(help): FORCE
-	$(info +=========+)
-	$(info |  cmock  |)
-	$(info +=========+)
+	$(info +========+)
+	$(info |  cldm  |)
+	$(info +========+)
 	$(info Linker-based function mocking)
 	$(info )
 	$(info Building:)
@@ -86,7 +86,7 @@ $(help): FORCE
 	$(info Testing (requires pytest):)
 	$(info Run 'make test')
 	$(info )
-	$(info For more info: gitlab.com/vilhelmengstrom/cmock)
+	$(info For more info: gitlab.com/vilhelmengstrom/cldm)
 	$(QUIET)$(TOUCH) $@
 
 .PHONY: help

@@ -1,7 +1,7 @@
 pipeline {
     agent none
     environment {
-        DOCKER_IMAGE='cmock/build'
+        DOCKER_IMAGE='cldm/build'
     }
     stages {
         stage('Gitlab Pending') {
@@ -25,7 +25,7 @@ pipeline {
                 echo '-- Starting Build --'
 
                 echo 'Generating empty mockups.h file'
-                sh 'touch cmock/mockups.h'
+                sh 'touch cldm/mockups.h'
 
                 sh 'make'
             }

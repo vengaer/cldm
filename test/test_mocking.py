@@ -14,7 +14,7 @@ def test_preload():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('cmock.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)
     cgen.append_include('syms.h', system_header=False)
     with cgen.with_open_function('int', 'main'):
         cgen.append_line('EXPECT_CALL(bar).WILL_REPEATEDLY(RETURN(28));')
@@ -38,7 +38,7 @@ def test_symbol_fallback():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('cmock.h', system_header=False)     \
+    cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')
 
@@ -67,7 +67,7 @@ def test_invoke():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('cmock.h', system_header=False)     \
+    cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')
 
@@ -98,7 +98,7 @@ def test_increment_counter():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('cmock.h', system_header=False)     \
+    cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')
 
@@ -129,7 +129,7 @@ def test_invoke_with_fallback():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('cmock.h', system_header=False)     \
+    cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')
 
@@ -161,7 +161,7 @@ def test_will_once():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('cmock.h', system_header=False)     \
+    cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')
 
@@ -190,7 +190,7 @@ def test_atoi_mock():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('cmock.h', system_header=False)     \
+    cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')                          \
         .append_include('stdlib.h')
@@ -222,7 +222,7 @@ def test_max_params():
     typelist = 'int ' * 127
     typelist = [t for t in typelist.strip().split(' ')]
     cgen = CGen(symfile)
-    cgen.append_include('cmock.h', system_header=False)                         \
+    cgen.append_include('cldm.h', system_header=False)  \
         .append_line('MOCK_FUNCTION(int, foo, {});'.format(', '.join(typelist)))
     cgen.write()
 
@@ -238,10 +238,10 @@ def test_max_params():
     cgen.write()
 
     cgen = CGen('main.c')
-    cgen.append_include('cmock.h', system_header=False)                         \
+    cgen.append_include('cldm.h', system_header=False)              \
         .append_include('syms.h', system_header=False)
     with cgen.with_open_function('int', 'main'):
-        cgen.append_line('EXPECT_CALL(foo).WILL_ONCE(RETURN(38));')             \
+        cgen.append_line('EXPECT_CALL(foo).WILL_ONCE(RETURN(38));') \
             .append_return(CGen.default_call('foo', typelist))
     cgen.write()
 
@@ -259,7 +259,7 @@ def test_will_n_times():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('cmock.h', system_header=False)     \
+    cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')
 
@@ -289,7 +289,7 @@ def test_will_invoke_default():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('cmock.h', system_header=False)     \
+    cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')
 
@@ -320,7 +320,7 @@ def test_return_arg():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('cmock.h', system_header=False)     \
+    cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')
 
@@ -349,7 +349,7 @@ def test_return_pointee():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_include('cmock.h', system_header=False)     \
+    cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')
 

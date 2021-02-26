@@ -12,8 +12,8 @@ def test_gmock_will_repeatedly():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_line('#define CMOCK_GMOCK_COMPAT')
-    cgen.append_include('cmock.h', system_header=False)
+    cgen.append_line('#define CLDM_GMOCK_COMPAT')
+    cgen.append_include('cldm.h', system_header=False)
     cgen.append_include('syms.h', system_header=False)
     with cgen.with_open_function('int', 'main'):
         cgen.append_line('EXPECT_CALL(bar).WillRepeatedly(RETURN(28));')
@@ -38,8 +38,8 @@ def test_gmock_will_once():
     db = read_db()
     call = CGen.default_call('ret2', db['symbols']['ret2']['params']);
     cgen = CGen('main.c')
-    cgen.append_line('#define CMOCK_GMOCK_COMPAT')
-    cgen.append_include('cmock.h', system_header=False)
+    cgen.append_line('#define CLDM_GMOCK_COMPAT')
+    cgen.append_include('cldm.h', system_header=False)
     cgen.append_include('syms.h', system_header=False)
     with cgen.with_open_function('int', 'main'):
         cgen.append_line('EXPECT_CALL(ret2).WillOnce(RETURN(28));')    \
@@ -67,8 +67,8 @@ def test_gmock_will_n_times():
     db = read_db()
     call = CGen.default_call('ret2', db['symbols']['ret2']['params']);
     cgen = CGen('main.c')
-    cgen.append_line('#define CMOCK_GMOCK_COMPAT')
-    cgen.append_include('cmock.h', system_header=False)
+    cgen.append_line('#define CLDM_GMOCK_COMPAT')
+    cgen.append_include('cldm.h', system_header=False)
     cgen.append_include('syms.h', system_header=False)
     with cgen.with_open_function('int', 'main'):
         cgen.append_line('EXPECT_CALL(ret2).WillNTimes(2, RETURN(28));')    \
@@ -97,8 +97,8 @@ def test_gmock_return():
     db = read_db()
     call = CGen.default_call('ret2', db['symbols']['ret2']['params']);
     cgen = CGen('main.c')
-    cgen.append_line('#define CMOCK_GMOCK_COMPAT')
-    cgen.append_include('cmock.h', system_header=False)
+    cgen.append_line('#define CLDM_GMOCK_COMPAT')
+    cgen.append_include('cldm.h', system_header=False)
     cgen.append_include('syms.h', system_header=False)
     with cgen.with_open_function('int', 'main'):
         cgen.append_line('EXPECT_CALL(ret2).WILL_ONCE(Return(28));')    \
@@ -126,8 +126,8 @@ def test_gmock_will_invoke_default():
     db = read_db()
     call = CGen.default_call('ret2', db['symbols']['ret2']['params']);
     cgen = CGen('main.c')
-    cgen.append_line('#define CMOCK_GMOCK_COMPAT')
-    cgen.append_include('cmock.h', system_header=False)
+    cgen.append_line('#define CLDM_GMOCK_COMPAT')
+    cgen.append_include('cldm.h', system_header=False)
     cgen.append_include('syms.h', system_header=False)
     with cgen.with_open_function('int', 'main'):
         cgen.append_line('EXPECT_CALL(ret2).WILL_REPEATEDLY(RETURN(28));')      \
@@ -156,8 +156,8 @@ def test_gmock_invoke():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_line('#define CMOCK_GMOCK_COMPAT')          \
-        .append_include('cmock.h', system_header=False)     \
+    cgen.append_line('#define CLDM_GMOCK_COMPAT')           \
+        .append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')
 
@@ -188,8 +188,8 @@ def test_gmock_return_arg():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_line('#define CMOCK_GMOCK_COMPAT')          \
-        .append_include('cmock.h', system_header=False)     \
+    cgen.append_line('#define CLDM_GMOCK_COMPAT')           \
+        .append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')
 
@@ -218,8 +218,8 @@ def test_gmock_return_pointee():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_line('#define CMOCK_GMOCK_COMPAT')          \
-        .append_include('cmock.h', system_header=False)     \
+    cgen.append_line('#define CLDM_GMOCK_COMPAT')           \
+        .append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')
 
@@ -250,8 +250,8 @@ def test_increment_counter():
 
     db = read_db()
     cgen = CGen('main.c')
-    cgen.append_line('#define CMOCK_GMOCK_COMPAT')          \
-        .append_include('cmock.h', system_header=False)     \
+    cgen.append_line('#define CLDM_GMOCK_COMPAT')           \
+        .append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdio.h')
 

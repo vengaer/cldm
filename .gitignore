@@ -1,8 +1,8 @@
 a.out
 **/__pycache__/**
-libcmock.so*
+libcldm.so*
 build/**
 test/running/**
-cmock/mockups.h
-cmock/cmock_config.h
+cldm/mockups.h
+cldm/cldm_config.h
 .help.stamp

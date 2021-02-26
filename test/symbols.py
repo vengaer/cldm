@@ -14,7 +14,7 @@ def list_gensymbs():
 def gen_symbols():
     db = read_db()
     with open(symfile, 'w') as fd:
-        fd.write('#include "cmock.h"\n')
+        fd.write('#include "cldm.h"\n')
         for inc in db['includes']:
             fd.write('#include <{}>\n'.format(inc))
         for struct in db['structs']:
