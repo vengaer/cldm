@@ -9,11 +9,11 @@
 
 #define cldm_arrsize(arr) (sizeof(arr) / sizeof(arr[0]))
 
-#define cldm_alignof(type)  \
-    (size_t)&(((struct { char b; type t; } *)0)->t)
-
 #define cldm_offset(type, member)   \
     (size_t)&(((type *)0)->member)
+
+#define cldm_alignof(type)  \
+    cldm_offset(struct { char b; type t; }, t)
 
 #define cldm_overload(name, ...)    \
     cldm_cat_expand(name, cldm_count(__VA_ARGS__))(__VA_ARGS__)
