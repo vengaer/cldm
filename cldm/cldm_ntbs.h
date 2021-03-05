@@ -10,6 +10,8 @@
 #include <sys/types.h>
 
 /* TODO assert ntbscpy result */
+/* TODO ntbscpy tests */
+/* TODO ntbslen tests */
 #define cldm_for_each_word(iter, str)                                                       \
     for(char cldm_cat_expand(cldm_few_buf,__LINE__)[CLDM_PATH_MAX],                         \
             *cldm_cat_expand(cldm_few_end,__LINE__) =                                       \
@@ -29,5 +31,7 @@
 char *cldm_ntbschr(char *str, int c);
 size_t cldm_ntbslen(char const *str);
 ssize_t cldm_ntbscpy(char *restrict dst, char const *restrict src, size_t dstsize);
+
+char const *cldm_ntbs_find_substr(char const *restrict str, char const *restrict substr);
 
 #endif /* CLDM_NTBS_H */
