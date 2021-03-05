@@ -35,6 +35,8 @@ class Makegen():
         else:
             self.src = '$(wildcard {}/*.{})'.format(srcdir, self.__CEXT)
 
+        self.exports = dict()
+
         self.aux_rules = []
 
     def default(self, mgen, target, symbol_tu):
@@ -59,6 +61,9 @@ class Makegen():
         else:
             raise ValueError('Unknown adjustment {}'.format(value))
 
+    def export(self, var, value):
+        self.exports[var] = value
+
     def add_rule(self, target, prereq, command, info=None):
         self.aux_rules.append(target + ': ' + ' '.join([p for p in prereq.split(' ')]) + '\n')
         if info:
@@ -69,32 +74,37 @@ class Makegen():
         self.aux_rules.append(target + ': ' + prereq + '\n')
 
     def generate(self, filename=str(working_dir / 'Makefile')):
-        contents =  f'CC       := {self.cc}\n'                                                                  \
-                    f'CFLAGS   := {self.cflags}\n'                                                              \
-                    f'CPPFLAGS := {self.cppflags}\n'                                                            \
-                    f'LDFLAGS  := {self.ldflags}\n'                                                             \
-                    f'LDLIBS   := {self.ldlibs}\n'                                                              \
-                     'QUIET    ?= @ \n'                                                                         \
-                    f'builddir := {self.builddir}\n'                                                            \
-                    f'srcdir   := {self.srcdir}\n'                                                              \
-                    f'src      := {self.src}\n'                                                                 \
-                    f'obj      := $(patsubst $(srcdir)/%.{self.__CEXT}, $(builddir)/%.{self.__OEXT}, $(src))\n' \
-                    f'target   := {self.target}\n'                                                              \
-                     '.PHONY: all\n'                                                                            \
-                     'all: $(target)\n'                                                                         \
-                     '$(target): $(obj)\n'                                                                      \
-                     '\t$(info [LD] $@)\n'                                                                      \
-                     '\t$(QUIET)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)\n'                                          \
-                    f'$(builddir)/%.{self.__OEXT}: $(srcdir)/%.{self.__CEXT} | $(builddir)\n'                   \
-                     '\t$(info [CC] $@)\n'                                                                      \
-                     '\t$(QUIET)$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $^\n'                                         \
-                     '$(builddir):\n'                                                                           \
-                     '\t$(QUIET)mkdir -p $@\n'                                                                  \
-                     '.PHONY: clean\n'                                                                          \
-                     'clean:\n'                                                                                 \
-                     '\t$(QUIET)rm -rf $(builddir) $(target)\n'                                                 \
-                     '{}'.format(''.join([l for l in self.aux_rules]))
+        contents =  [f'CC       := {self.cc}',
+                     f'CFLAGS   := {self.cflags}',
+                     f'CPPFLAGS := {self.cppflags}',
+                     f'LDFLAGS  := {self.ldflags}',
+                     f'LDLIBS   := {self.ldlibs}',
+                      'QUIET    ?= @',
+                     f'builddir := {self.builddir}',
+                     f'srcdir   := {self.srcdir}',
+                     f'src      := {self.src}',
+                     f'obj      := $(patsubst $(srcdir)/%.{self.__CEXT}, $(builddir)/%.{self.__OEXT}, $(src))',
+                     f'target   := {self.target}',
+                      '\n'.join(['export {} := {}'.format(v, self.exports[v]) for v in self.exports.keys()]),
+                      '.PHONY: all',
+                      'all: $(target)',
+                      '$(target): $(obj)',
+                      '\t$(info [LD] $@)',
+                      '\t$(QUIET)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)',
+                     f'$(builddir)/%.{self.__OEXT}: $(srcdir)/%.{self.__CEXT} | $(builddir)',
+                      '\t$(info [CC] $@)',
+                      '\t$(QUIET)$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $^',
+                      '$(builddir):',
+                      '\t$(QUIET)mkdir -p $@',
+                      '.PHONY: clean',
+                      'clean:',
+                      '\t$(QUIET)rm -rf $(builddir) $(target)',
+                      '.PHONY: run',
+                      'run: $(target)',
+                      '\t$(QUIET)./$^',
+                      '{}'.format(''.join([l for l in self.aux_rules]))
+        ]
 
         with open(filename, 'w') as fd:
-            fd.write(contents)
+            fd.write('\n'.join(contents))
 
