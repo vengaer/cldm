@@ -7,7 +7,9 @@ char *cldm_ntbschr(char *str, int c) {
 
 size_t cldm_ntbslen(char const *str) {
     size_t len = 0;
-    while(*str++ && ++len);
+    while(*str++) {
+        ++len;
+    }
     return len;
 }
 
