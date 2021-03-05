@@ -1,5 +1,6 @@
 #define CLDM_GENERATE_SYMBOLS
 #include "cldm.h"
+#include "cldm_ntbs.h"
 
 #include <errno.h>
 #include <stdbool.h>

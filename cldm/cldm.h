@@ -1,6 +1,8 @@
 #ifndef CLDM_H
 #define CLDM_H
 
+#include "cldm_macro.h"
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,9 +51,6 @@
 
 #define cldm_count_expand(...) cldm_count_pick(__VA_ARGS__)
 #define cldm_count(...) cldm_count_expand(__VA_ARGS__, cldm_count_sequence)
-
-#define cldm_cat(a, b) a ## b
-#define cldm_cat_expand(a,b) cldm_cat(a,b)
 
 #define cldm_str(a) #a
 #define cldm_str_expand(a) cldm_str(a)
@@ -941,13 +940,6 @@ enum cldm_opmode {
 
 #define cldm_mock_function1(rvinit, call_prefix, retstatement, utype, rettype, name)        \
     cldm_generate_mock_ctx(utype, rettype, name, void)
-#endif
-
-#ifdef CLDM_GENERATE_SYMBOLS
-#define cldm_for_each_word(iter, str)                                       \
-    for(char *end = (iter = str, strchr(str, ' '));                         \
-        (end ? *end = '\0' : 0, iter);                                      \
-        iter = end ? end + 1 :  0, end ? end = strchr(end + 1, ' ') : 0)
 #endif
 
 #define CLDM_MOCK_FUNCTION(rettype, ...)                                                                            \
