@@ -10,7 +10,7 @@
 #define cldm_arrsize(arr) (sizeof(arr) / sizeof(arr[0]))
 
 #define cldm_alignof(type)  \
-    (size_t)&(((struct cldm_cat_expand(cldm_align,__LINE__) { char b; type t; } *)0)->t)
+    (size_t)&(((struct { char b; type t; } *)0)->t)
 
 #define cldm_offset(type, member)   \
     (size_t)&(((type *)0)->member)
