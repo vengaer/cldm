@@ -11,7 +11,6 @@
 
 /* TODO assert ntbscpy result */
 /* TODO ntbscpy tests */
-/* TODO ntbslen tests */
 #define cldm_for_each_word(iter, str)                                                       \
     for(char cldm_cat_expand(cldm_few_buf,__LINE__)[CLDM_PATH_MAX],                         \
             *cldm_cat_expand(cldm_few_end,__LINE__) =                                       \
