@@ -25,16 +25,6 @@
                                                                                             \
     return dst
 
-union dmemacc {
-    unsigned char *byte;
-    unsigned *dword;
-};
-
-union smemacc {
-    unsigned char const* byte;
-    unsigned const *dword;
-};
-
 void *cldm_mmove(void *dst, void const* src, size_t size) {
     cldm_copy_bytes(dst, src, size);
 }
