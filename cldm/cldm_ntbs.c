@@ -6,11 +6,10 @@ char *cldm_ntbschr(char *str, int c) {
 }
 
 size_t cldm_ntbslen(char const *str) {
-    size_t len = 0;
-    while(*str++) {
-        ++len;
-    }
-    return len;
+    char const *s = str;
+    while(*s++);
+
+    return s - str - 1;
 }
 
 ssize_t cldm_ntbscpy(char *restrict dst, char const *restrict src, size_t dstsize) {
