@@ -37,6 +37,22 @@ class CGen():
         finally:
             self.__close_function()
 
+    @contextmanager
+    def open_for(self, itertype, itername, low, high):
+        self.__open_for(itertype, itername, low, high)
+        try:
+            yield
+        finally:
+            self.__close_scope()
+
+    @contextmanager
+    def open_scope(self, prefix, semicolon=False):
+        self.__open_scope(prefix)
+        try:
+            yield
+        finally:
+            self.__close_scope(semicolon)
+
     def __append_src_content(self, string):
         self.src.append('{}{}\n'.format('\t' * self.indent, string))
 
@@ -55,6 +71,11 @@ class CGen():
             csym = '"'
 
         self.__append_src_content('#include {}{}{}'.format(osym, name, csym))
+        return self
+
+    def __open_scope(self, prefix):
+        self.__append_src_content('{} {{'.format(prefix))
+        self.indent = self.indent + 1
         return self
 
     def __close_scope(self, semicolon=False):
@@ -80,6 +101,14 @@ class CGen():
     def __close_union(self):
         self.__close_scope(True)
         return self
+
+    def __open_for(self, itertype, itername, low, high):
+        low = str(low)
+        high = str(high)
+        self.__append_src_content(f'for({itertype} {itername} = {low}; {itername} < {high}; {itername}++) {{')
+        self.indent = self.indent + 1
+        return self
+
 
     def __open_function(self, rettype, name, params=['void']):
         if len(params) == 1 and params[0] == 'void':

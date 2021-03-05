@@ -11,7 +11,7 @@ class Mod(Enum):
 
 class Makegen():
     __CC = 'gcc'
-    __CFLAGS = '-std=c11 -Wall -Wextra -Wpedantic -Werror -fPIC -g -c'
+    __CFLAGS = '-std=c99 -Wall -Wextra -Wpedantic -Werror -fPIC -g -c'
     __CPPFLAGS = '-I {}'.format(libdir)
     __LDFLAGS = '-shared'
     __LDLIBS = ''
