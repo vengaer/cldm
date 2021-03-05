@@ -1,12 +1,14 @@
 #include "cldm_mem.h"
 
 #define cldm_copy_bytes(dst, src, size)                                                     \
-    union dmemacc d = {                                                                     \
-        .byte = dst                                                                         \
-    };                                                                                      \
-    union smemacc s = {                                                                     \
-        .byte = src                                                                         \
-    };                                                                                      \
+    union {                                                                                 \
+        unsigned char *byte;                                                                \
+        unsigned *dword;                                                                    \
+    } d = { .byte = dst };                                                                  \
+    union {                                                                                 \
+        unsigned char const *byte;                                                          \
+        unsigned const *dword;                                                              \
+    } s = { .byte = src };                                                                  \
                                                                                             \
     size_t align = cldm_alignof(unsigned);                                                  \
     unsigned i = 0;                                                                         \
