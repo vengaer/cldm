@@ -9,14 +9,15 @@ from makegen import *
 from symbols import *
 from util import *
 
+__TARGET = 'makegen_test'
+
 def test_for_each_word():
-    target = 'makegen_test'
     string = 'a list of words to test'
 
     cgen = CGen('main.c')
-    cgen.append_line('#define CLDM_GENERATE_SYMBOLS')   \
-        .append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm_ntbs.h', system_header=False)  \
+        .append_include('stdio.h')                           \
+        .append_include('string.h')
     with cgen.open_function('int', 'main'):
         cgen.append_line('char words[{}];'.format(len(string) + 2)) \
             .append_line('strcpy(words, "{}");'.format(string))     \
@@ -41,7 +42,6 @@ def test_for_each_word():
     assert string.split(' ') == output
 
 def test_alignof():
-    target = 'makegen_test'
     typelist = ['char', 'short', 'int', 'long', 'long long', 'void *']
     expected = '1 ' * len(typelist)
     expected = expected.strip().split(' ')
@@ -62,14 +62,14 @@ def test_alignof():
             cgen.append_line('printf("%d\\n", result[i]);')
     cgen.write()
 
-    mgen = Makegen(target, src='main.c')
+    mgen = Makegen(__TARGET, src='main.c')
     mgen.adjust('CFLAGS', '-std=c11 -Wall -Wextra -Wpedantic -g -c -Werror', Mod.REPLACE)
     mgen.adjust('LDFLAGS', 'fPIC', Mod.REMOVE)
     mgen.adjust('LDFLAGS', '-shared', Mod.REMOVE)
     mgen.generate()
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
-    retval, output, _ = exec_bash(str(working_dir / target))
+    retval, output, _ = exec_bash(str(working_dir / __TARGET))
     assert retval == 0
     output = output.decode('utf-8').split('\n')
     output = output[:len(output) - 1]
