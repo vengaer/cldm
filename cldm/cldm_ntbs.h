@@ -33,4 +33,6 @@ ssize_t cldm_ntbscpy(char *restrict dst, char const *restrict src, size_t dstsiz
 
 char const *cldm_ntbs_find_substr(char const *restrict str, char const *restrict substr);
 
+int cldm_ntbscmp(char const *restrict str0, char const *restrict str1);
+
 #endif /* CLDM_NTBS_H */
