@@ -54,7 +54,7 @@ def test_find_substr_address():
 
     with cgen.open_function('int', 'main'):
         cgen.append_line('char const *addr = cldm_ntbs_find_substr({}, {});'.format(string, substr))    \
-            .append_line('int res = strncmp(addr, {}, {});'.format(substr, len(substr)))                \
+            .append_line('int res = strncmp(addr, {}, {});'.format(substr, len(substr) - 2))                \
             .append_line('printf("%d\\n", res);')
 
     cgen.write()

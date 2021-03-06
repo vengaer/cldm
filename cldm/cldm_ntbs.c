@@ -34,5 +34,5 @@ char const *cldm_ntbs_find_substr(char const *restrict str, char const *restrict
         d = *str == *d ? d + 1 : substr;
     }
 
-    return *d ? 0 : d - cldm_ntbslen(substr);
+    return *d ? 0 : str - cldm_ntbslen(substr);
 }
