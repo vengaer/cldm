@@ -57,10 +57,16 @@
 #define cldm_count_expand(...) cldm_count_pick(__VA_ARGS__)
 #define cldm_count(...) cldm_count_expand(__VA_ARGS__, cldm_count_sequence)
 
-#define cldm_for_each(iter, array)                                          \
+#define cldm_for_each3(iter, array, size)                                   \
     for(unsigned cldm_cat_expand(cldm_fe,__LINE__) = (iter = array, 0);     \
-        cldm_cat_expand(cldm_fe,__LINE__) < cldm_arrsize(array);            \
+        cldm_cat_expand(cldm_fe,__LINE__) < size;                           \
         ++cldm_cat_expand(cldm_fe,__LINE__),                                \
         iter = &array[cldm_cat_expand(cldm_fe,__LINE__)])
+
+#define cldm_for_each2(iter, array)                                         \
+    cldm_for_each3(iter, array, cldm_arrsize(array))
+
+#define cldm_for_each(...)                                                  \
+    cldm_overload(cldm_for_each,__VA_ARGS__)
 
 #endif /* CLDM_MACRO_H */
