@@ -66,7 +66,7 @@ $(lcldm_main): $(mainobj)
 
 $(builddir)/%.$(oext): $(srcdir)/%.$(cext) $(config) | $(builddir)
 	$(info [CC]  $@)
-	$(QUIET)$(CC) -o $@ $(filter-out $(config),$^) $(CFLAGS) $(CPPFLAGS)
+	$(QUIET)$(CC) -o $@ $< $(CFLAGS) $(CPPFLAGS)
 
 $(config): $(MOCKUPS)
 	$(info [GEN] $@)
@@ -104,4 +104,4 @@ $(help):
 .PHONY: help
 help: $(help)
 
--include $(objs:.$(oext)=.$(dext))
+-include $(obj:.$(oext)=.$(dext))
