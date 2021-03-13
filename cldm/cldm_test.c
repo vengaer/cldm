@@ -21,6 +21,11 @@ ssize_t cldm_test_collect(char *restrict buffer, char const *restrict file, size
         goto epilogue;
     }
 
+    if(!cldm_is_elf64(&map)) {
+        cldm_err("%s is not a 64-bit ELF binary", file);
+        goto epilogue;
+    }
+
     strtab_size = cldm_read_strtab(&map, strtab, sizeof(strtab));
     if(strtab_size < 0) {
         cldm_err("Could not read strtab of %s", file);
