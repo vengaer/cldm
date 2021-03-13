@@ -5,6 +5,8 @@
 
 #include <stddef.h>
 
+enum { CLDM_PAGE_SIZE = 4096 };
+
 void *cldm_mmove(void *dst, void const* restrict src, size_t size);
 void *cldm_mcpy(void *restrict dst, void const* restrict src, size_t size);
 
