@@ -45,3 +45,11 @@ int cldm_ntbscmp(char const *restrict str0, char const *restrict str1) {
 
     return diff;
 }
+
+int cldm_ntbsncmp(char const *restrict str0, char const *restrict str1, size_t n) {
+    int diff = 0;
+    for(;*str0 && *str1 && !diff && n--; ++str0, ++str1) {
+        diff = -1 * (*str0 < *str1) + (*str0 > *str1);
+    }
+    return diff;
+}

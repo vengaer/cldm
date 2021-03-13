@@ -74,7 +74,7 @@ bool cldm_is_elf64(struct cldm_elfmap const *map) {
            ehdr.e_ident[EI_CLASS] == ELFCLASS64;
 }
 
-ssize_t cldm_get_strtab(struct cldm_elfmap const *restrict map, char *restrict buffer, size_t bufsize) {
+ssize_t cldm_read_strtab(struct cldm_elfmap const *restrict map, char *restrict buffer, size_t bufsize) {
     Elf64_Ehdr ehdr;
     Elf64_Shdr shdr;
     char const *shstrtab;
@@ -95,7 +95,7 @@ ssize_t cldm_get_strtab(struct cldm_elfmap const *restrict map, char *restrict b
                 return -E2BIG;
             }
             cldm_mcpy(buffer, (char const *)map->addr + shdr.sh_offset + 1, shdr.sh_size - 1);
-            return shdr.sh_size;
+            return shdr.sh_size - 1;
         }
     }
     return -1;
@@ -105,7 +105,7 @@ ssize_t cldm_dump_strtab(struct cldm_elfmap const *map) {
     char buffer[CLDM_PAGE_SIZE];
     ssize_t nbytes;
 
-    nbytes = cldm_get_strtab(map, buffer, sizeof(buffer));
+    nbytes = cldm_read_strtab(map, buffer, sizeof(buffer));
     if(nbytes < 0) {
         return nbytes;
     }
