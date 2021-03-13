@@ -150,6 +150,7 @@ int cldm_test_invoke_each(char const *tests, size_t ntests) {
 
     glob_teardown();
 
+    status = 0;
 epilogue:
     if(handle) {
         dlclose(handle);
