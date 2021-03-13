@@ -1,4 +1,5 @@
 CC          ?= gcc
+AR          ?= ar
 LN          ?= ln
 MKDIR       ?= mkdir
 RM          ?= rm
@@ -6,29 +7,33 @@ ECHO        ?= echo
 TOUCH       ?= touch
 PYTEST      ?= pytest
 
-sostem      := libcldm
+libstem     := libcldm
 sover       := 0
 socompat    := 0
 
 cext        := c
 oext        := o
+dext        := d
 soext       := so
+aext        := a
 
 builddir    := build
-srcdir      := $(patsubst lib%,%,$(sostem))
+srcdir      := $(patsubst lib%,%,$(libstem))
 testdir     := test
 
-target      := $(sostem).$(soext).$(sover)
-link        := $(sostem).$(soext)
+lcldm       := $(libstem).$(soext).$(sover)
+link        := $(libstem).$(soext)
+lcldm_main  := $(libstem)_main.$(aext)
 
 config      := $(srcdir)/cldm_config.h
 
 MOCKUPS     ?= $(abspath $(srcdir)/mockups.h)
 
-CFLAGS      := -std=c99 -Wall -Wextra -Wpedantic -fPIC -c
-CPPFLAGS    := -DCLDM_LIBC=$(shell ldd /usr/bin/env | grep -oP "\s*\K/.*libc\.so(\.\d+)?")
-LDFLAGS     := -shared -Wl,-soname,$(sostem).$(soext).$(socompat)
+CFLAGS      := -std=c99 -Wall -Wextra -Wpedantic -fPIC -c -MD -MP -g
+CPPFLAGS    := -DCLDM_LIBC=$(shell ldd /usr/bin/env | grep -oP "\s*\K/.*libc\.so(\.\d+)?") -D_POSIX_C_SOURCE=200112L
+LDFLAGS     := -shared -Wl,-soname,$(libstem).$(soext).$(socompat)
 LDLIBS      := -ldl
+ARFLAGS     := -rcs
 LNFLAGS     := -sf
 MKDIRFLAGS  := -p
 RMFLAGS     := -rf
@@ -39,19 +44,25 @@ QUIET       ?= @
 
 help        := .help.stamp
 
-src         := $(wildcard $(srcdir)/*.$(cext))
+mainsrc     := $(wildcard $(srcdir)/*_main.$(cext))
+mainobj     := $(patsubst $(srcdir)/%.$(cext),$(builddir)/%.$(oext),$(mainsrc))
+src         := $(filter-out $(mainsrc),$(wildcard $(srcdir)/*.$(cext)))
 obj         := $(patsubst $(srcdir)/%.$(cext),$(builddir)/%.$(oext),$(src))
 
 .PHONY: all
-all: $(target) $(link)
+all: $(lcldm) $(link) $(lcldm_main)
 
-$(link): $(target)
+$(link): $(lcldm)
 	$(info [LN]  $@)
 	$(QUIET)$(LN) $(LNFLAGS) $(abspath $(CURDIR))/$^ $@
 
-$(target): $(obj)
+$(lcldm): $(obj)
 	$(info [LD]  $@)
 	$(QUIET)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+
+$(lcldm_main): $(mainobj)
+	$(info [AR] $@)
+	$(QUIET)$(AR) $(ARFLAGS) $@ $^
 
 $(builddir)/%.$(oext): $(srcdir)/%.$(cext) $(config) | $(builddir)
 	$(info [CC]  $@)
@@ -70,7 +81,7 @@ $(builddir):
 
 .PHONY: clean
 clean:
-	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(target) $(link) $(help) $(config)
+	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(lcldm) $(link) $(help) $(config)
 
 $(help):
 	$(info +========+)
@@ -92,3 +103,5 @@ $(help):
 
 .PHONY: help
 help: $(help)
+
+-include $(objs:.$(oext)=.$(dext))

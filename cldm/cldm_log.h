@@ -9,10 +9,16 @@
 #define cldm_warn_internal(fmt, ...)    \
     fprintf(stderr, "Warning: " fmt "%.0d\n", __VA_ARGS__)
 
+#define cldm_log_internal(fmt, ...)     \
+    fprintf(stdout, fmt "%.0d\n", __VA_ARGS__)
+
 #define cldm_err(...)   \
     cldm_err_internal(__VA_ARGS__, 0)
 
 #define cldm_warn(...)  \
     cldm_warn_internal(__VA_ARGS__, 0)
+
+#define cldm_log(...)   \
+    cldm_log_internal(__VA_ARGS__, 0)
 
 #endif /* CLDM_LOG_H */

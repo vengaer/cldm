@@ -1,6 +1,7 @@
 a.out
 **/__pycache__/**
 libcldm.so*
+libcldm_main.a
 build/**
 test/running/**
 cldm/mockups.h
