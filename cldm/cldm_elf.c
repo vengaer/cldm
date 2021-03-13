@@ -1,6 +1,7 @@
 #include "cldm_assert.h"
 #include "cldm_elf.h"
 #include "cldm_log.h"
+#include "cldm_macro.h"
 #include "cldm_mem.h"
 #include "cldm_ntbs.h"
 
@@ -13,6 +14,85 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+static char const *cldm_elf_section_type(Elf64_Word type) {
+    switch(type) {
+        case SHT_NULL:
+            return "SHT_NULL";
+        case SHT_PROGBITS:
+            return "SHT_PROGBITS";
+        case SHT_SYMTAB:
+            return "SHT_SYMTAB";
+        case SHT_STRTAB:
+            return "SHT_STRTAB";
+        case SHT_RELA:
+            return "SHT_RELA";
+        case SHT_HASH:
+            return "SHT_HASH";
+        case SHT_DYNAMIC:
+            return "SHT_DYNAMIC";
+        case SHT_NOTE:
+            return "SHT_NOTE";
+        case SHT_NOBITS:
+            return "SHT_NOBITS";
+        case SHT_REL:
+            return "SHT_REL";
+        case SHT_SHLIB:
+            return "SHT_SHLIB";
+        case SHT_DYNSYM:
+            return "SHT_DYNSYM";
+        case SHT_LOPROC:
+            return "SHT_LOPROC";
+        case SHT_HIPROC:
+            return "SHT_HIPROC";
+        case SHT_LOUSER:
+            return "SHT_LOUSER";
+        case SHT_HIUSER:
+            return "SHT_HIUSER";
+        default:
+            /* NOP */
+            break;
+    }
+    return "Unknown";
+}
+
+static char const *cldm_elf_shstrtab(struct cldm_elfmap const *map) {
+    Elf64_Ehdr *ehdr;
+    Elf64_Shdr shdr;
+
+    ehdr = map->addr;
+    if(ehdr->e_shstrndx == SHN_UNDEF) {
+        return 0;
+    }
+
+    cldm_mcpy(&shdr, (unsigned char *)map->addr + ehdr->e_shoff + ehdr->e_shstrndx * sizeof(shdr), sizeof(shdr));
+    return (char const *)map->addr + shdr.sh_offset;
+}
+
+static void *cldm_elf_section(struct cldm_elfmap const *restrict map, Elf64_Word type, char const *restrict secname) {
+    Elf64_Ehdr *ehdr;
+    Elf64_Shdr shdr;
+
+    ehdr = map->addr;
+
+    for(Elf64_Half i = 0; i < ehdr->e_shnum; i++) {
+        cldm_mcpy(&shdr, (unsigned char *)map->addr + ehdr->e_shoff + i * ehdr->e_shentsize, sizeof(shdr));
+
+        if(shdr.sh_type == type && cldm_ntbscmp(map->shstrtab + shdr.sh_name, secname) == 0) {
+            return (unsigned char *)map->addr + ehdr->e_shoff + i * ehdr->e_shentsize;
+        }
+    }
+
+    return 0;
+}
+
+static inline void *cldm_elf_strtab(struct cldm_elfmap const *restrict map, char const *restrict section) {
+    return cldm_elf_section(map, SHT_STRTAB, section);
+}
+
+static inline void *cldm_elf_dynamic(struct cldm_elfmap const *map) {
+    return cldm_elf_section(map, SHT_DYNAMIC, ".dynamic");
+}
 
 int cldm_map_elf(struct cldm_elfmap *restrict map, char const *restrict file) {
     int fd;
@@ -43,6 +123,13 @@ int cldm_map_elf(struct cldm_elfmap *restrict map, char const *restrict file) {
 
     map->addr = addr;
     map->size = sb.st_size;
+    map->shstrtab = cldm_elf_shstrtab(map);
+
+    if(!map->shstrtab) {
+        cldm_err("Found no shstrtab in %s", file);
+        cldm_unmap_elf(map);
+        goto epilogue;
+    }
 
     status = 0;
 
@@ -74,46 +161,107 @@ bool cldm_is_elf64(struct cldm_elfmap const *map) {
            ehdr.e_ident[EI_CLASS] == ELFCLASS64;
 }
 
-ssize_t cldm_read_strtab(struct cldm_elfmap const *restrict map, char *restrict buffer, size_t bufsize) {
-    Elf64_Ehdr ehdr;
+ssize_t cldm_elf_read_strtab(struct cldm_elfmap const *restrict map, char *restrict buffer, char const *restrict section, size_t bufsize) {
     Elf64_Shdr shdr;
-    char const *shstrtab;
+    void *strtab;
 
-    cldm_mcpy(&ehdr, map->addr, sizeof(ehdr));
-    if(ehdr.e_shstrndx == SHN_UNDEF) {
+    strtab = cldm_elf_strtab(map, section);
+    if(!strtab) {
         return -1;
     }
 
-    cldm_mcpy(&shdr, (char const *)map->addr + ehdr.e_shoff + ehdr.e_shstrndx * sizeof(shdr), sizeof(shdr));
-    shstrtab = (char const *)map->addr + shdr.sh_offset;
+    cldm_mcpy(&shdr, strtab, sizeof(shdr));
 
-    for(unsigned i = 0; i < ehdr.e_shnum; i++) {
-        cldm_mcpy(&shdr, (unsigned char *)map->addr + ehdr.e_shoff + i * ehdr.e_shentsize, sizeof(shdr));
-
-        if(shdr.sh_type == SHT_STRTAB && cldm_ntbscmp(shstrtab + shdr.sh_name, ".strtab") == 0) {
-            if(bufsize < shdr.sh_size) {
-                return -E2BIG;
-            }
-            cldm_mcpy(buffer, (char const *)map->addr + shdr.sh_offset + 1, shdr.sh_size - 1);
-            return shdr.sh_size - 1;
-        }
+    if(bufsize < shdr.sh_size) {
+        return -E2BIG;
     }
-    return -1;
+
+    cldm_mcpy(buffer, (unsigned char *)map->addr + shdr.sh_offset + 1, shdr.sh_size - 1);
+    return shdr.sh_size - 1;
 }
 
-ssize_t cldm_dump_strtab(struct cldm_elfmap const *map) {
+ssize_t cldm_elf_read_needed(struct cldm_elfmap const *restrict map, char *restrict buffer, size_t bufsize) {
+    Elf64_Shdr shdr;
+    Elf64_Dyn dyn;
+    void *dynamic;
+    char const *dynstr;
+    ssize_t nbytes;
+    ssize_t offset;
+
+    dynstr = cldm_elf_strtab(map, ".dynstr");
+    if(!dynstr) {
+        return -1;
+    }
+
+    cldm_mcpy(&shdr, dynstr, sizeof(shdr));
+    dynstr = (char const *)map->addr + shdr.sh_offset;
+
+    dynamic = cldm_elf_dynamic(map);
+    if(!dynamic) {
+        return -1;
+    }
+
+    cldm_mcpy(&shdr, dynamic, sizeof(shdr));
+
+    offset = 0;
+    for(Elf64_Xword i = 0; i < shdr.sh_size; i += sizeof(dyn)) {
+        cldm_mcpy(&dyn, (unsigned char *)map->addr + shdr.sh_offset + i, sizeof(dyn));
+        if(dyn.d_tag == DT_NEEDED) {
+            nbytes = cldm_ntbscpy(buffer + offset, dynstr + dyn.d_un.d_val, bufsize - offset);
+            if(nbytes < 0 || (size_t)(offset + nbytes + 1) >= bufsize) {
+                cldm_err("Adding needed library %s to the list would cause overflow", dynstr + dyn.d_un.d_val);
+                return nbytes;
+            }
+            offset += nbytes + 1;
+        }
+    }
+
+    return offset - 1;
+}
+
+int cldm_elf_dump_strtab(struct cldm_elfmap const *restrict map, char const *restrict section) {
     char buffer[CLDM_PAGE_SIZE];
     ssize_t nbytes;
 
-    nbytes = cldm_read_strtab(map, buffer, sizeof(buffer));
+    nbytes = cldm_elf_read_strtab(map, buffer, section, sizeof(buffer));
     if(nbytes < 0) {
         return nbytes;
     }
 
-    puts(".strtab:");
-    for(int i = 0; i < nbytes; i += cldm_ntbslen(buffer + i) + 1) {
-        printf("%s\n", buffer + i);
+    cldm_log("%s", section);
+    for(ssize_t i = 0; i < nbytes; i += cldm_ntbslen(buffer + i) + 1) {
+        cldm_log("name: %-30s offset: %llu", buffer + i, (unsigned long long)i);
     }
 
     return 0;
+}
+
+int cldm_elf_dump_needed(struct cldm_elfmap const *map) {
+    char buffer[CLDM_PAGE_SIZE];
+    ssize_t nbytes;
+
+    nbytes = cldm_elf_read_needed(map, buffer, sizeof(buffer));
+
+    if(nbytes < 0) {
+        return nbytes;
+    }
+
+    cldm_log("needed:");
+    for(ssize_t i = 0; i < nbytes; i += cldm_ntbslen(buffer + i) + 1) {
+        cldm_log("%s", buffer + i);
+    }
+    return 0;
+}
+
+void cldm_elf_dump_sections(struct cldm_elfmap const *map) {
+    Elf64_Ehdr *ehdr;
+    Elf64_Shdr shdr;
+
+    ehdr = map->addr;
+
+    for(Elf64_Half i = 0; i < ehdr->e_shnum; i++) {
+        cldm_mcpy(&shdr, (unsigned char *)map->addr + ehdr->e_shoff + i * ehdr->e_shentsize, sizeof(shdr));
+
+        cldm_log("name: %-20s type: %s", map->shstrtab + shdr.sh_name, cldm_elf_section_type(shdr.sh_type));
+    }
 }

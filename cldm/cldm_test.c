@@ -51,7 +51,7 @@ ssize_t cldm_test_collect(char *restrict buffer, char const *restrict file, size
     ssize_t symsize;
     struct cldm_elfmap map = { 0 };
     char strtab[CLDM_PAGE_SIZE];
-    char *addr = buffer;
+    ssize_t offset;
 
     if(cldm_map_elf(&map, file)) {
         cldm_err("Mapping %s failed\n", file);
@@ -63,23 +63,24 @@ ssize_t cldm_test_collect(char *restrict buffer, char const *restrict file, size
         goto epilogue;
     }
 
-    strtab_size = cldm_read_strtab(&map, strtab, sizeof(strtab));
+    strtab_size = cldm_elf_read_strtab(&map, strtab, ".strtab", sizeof(strtab));
     if(strtab_size < 0) {
         cldm_err("Could not read strtab of %s", file);
         goto epilogue;
     }
 
+    offset = 0;
     for(ssize_t i = 0; i < strtab_size; i += cldm_ntbslen(strtab + i) + 1) {
         if(cldm_ntbsncmp(cldm_str_expand(cldm_test_proc_prefix), strtab + i, sizeof(cldm_str_expand(cldm_test_proc_prefix)) - 1) == 0) {
-            symsize = cldm_ntbscpy(addr, strtab + i, bufsize - (addr - buffer));
-            if(symsize < 0) {
+            symsize = cldm_ntbscpy(buffer + offset, strtab + i, bufsize - offset);
+            if(symsize < 0 || (size_t)(offset + symsize + 1) >= bufsize) {
                 cldm_err("Test %lld would cause internal buffer overflow", (long long)i);
-                status = symsize;
+                status = -E2BIG;
                 goto epilogue;
             }
-            addr += symsize;
-            *addr++ = ';';
-            *addr = '\0';
+            offset += symsize;
+            buffer[offset++] = ';';
+            buffer[offset] = '\0';
             ++ntests;
         }
     }

@@ -22,7 +22,6 @@ int main(int argc, char *argv[argc + 1]) {
         goto epilogue;
     }
 
-    fprintf(cldm_stdout, "asdf\n");
     ntests = cldm_test_collect(buffer, argv[0], sizeof(buffer));
     if(ntests < 0) {
         cldm_err("Error collecting tests");
