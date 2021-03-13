@@ -7,30 +7,40 @@
 
 #include <dlfcn.h>
 
-static void cldm_empty_local_setup(void) { }
-static void cldm_empty_local_teardown(void) { }
+static void cldm_test_empty_func(void) { }
 
-#define cldm_load_local_stage(stage)                                                        \
-    (void) dlerror();                                                                       \
-    *(void **)(&stage) = dlsym(handle, cldm_str_expand(cldm_local_ ## stage ## _ident));    \
-    if(dlerror()) {                                                                         \
-        stage = cldm_empty_local_ ## stage;                                                 \
-    }                                                                                       \
-    else {                                                                                  \
-        cldm_log("Detected per-test " cldm_str_expand(stage));                              \
+#define cldm_load_stage(stage, scope)                                                               \
+    (void) dlerror();                                                                               \
+    *(void **)(&stage) = dlsym(handle, cldm_str_expand(cldm_ ## scope ## _ ## stage ## _ident));    \
+    if(dlerror()) {                                                                                 \
+        stage = cldm_test_empty_func;                                                               \
+    }                                                                                               \
+    else {                                                                                          \
+        cldm_log("Detected " cldm_str_expand(scope) " " cldm_str_expand(stage));                    \
     }
-
 
 
 static void (*cldm_test_local_setup(void *handle))(void) {
     void (*setup)(void) = { 0 };
-    cldm_load_local_stage(setup);
+    cldm_load_stage(setup, local);
     return setup;
 }
 
 static void (*cldm_test_local_teardown(void *handle))(void) {
     void (*teardown)(void) = { 0 };
-    cldm_load_local_stage(teardown);
+    cldm_load_stage(teardown, local);
+    return teardown;
+}
+
+static void (*cldm_test_global_setup(void *handle))(void) {
+    void (*setup)(void) = { 0 };
+    cldm_load_stage(setup, global);
+    return setup;
+}
+
+static void (*cldm_test_global_teardown(void *handle))(void) {
+    void (*teardown)(void) = { 0 };
+    cldm_load_stage(teardown, global);
     return teardown;
 }
 
@@ -93,8 +103,14 @@ int cldm_test_invoke_each(char const *tests, size_t ntests) {
     char const *err;
     unsigned testidx;
 
-    void(*setup)(void);
-    void(*teardown)(void);
+    void (*lcl_setup)(void);
+    void (*lcl_teardown)(void);
+    void (*glob_setup)(void);
+    void (*glob_teardown)(void);
+
+    if(!ntests) {
+        return 0;
+    }
 
     status = -1;
 
@@ -108,9 +124,13 @@ int cldm_test_invoke_each(char const *tests, size_t ntests) {
 
     (void)dlerror();
 
-    setup = cldm_test_local_setup(handle);
-    teardown= cldm_test_local_teardown(handle);
+    lcl_setup = cldm_test_local_setup(handle);
+    lcl_teardown= cldm_test_local_teardown(handle);
+    glob_setup = cldm_test_global_setup(handle);
+    glob_teardown = cldm_test_global_teardown(handle);
     cldm_log("");
+
+    glob_setup();
 
     testidx = 0;
     cldm_for_each_word(iter, tests, ';') {
@@ -123,10 +143,12 @@ int cldm_test_invoke_each(char const *tests, size_t ntests) {
         }
 
         cldm_log("[Running %s] (%u/%zu)", iter + sizeof(cldm_str_expand(cldm_test_proc_prefix)) - 1, ++testidx, ntests);
-        setup();
+        lcl_setup();
         test();
-        teardown();
+        lcl_teardown();
     }
+
+    glob_teardown();
 
 epilogue:
     if(handle) {
