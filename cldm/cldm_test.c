@@ -1,9 +1,11 @@
+#include "cldm_dl.h"
 #include "cldm_elf.h"
 #include "cldm_log.h"
 #include "cldm_mem.h"
 #include "cldm_ntbs.h"
 #include "cldm_test.h"
 
+#include <dlfcn.h>
 
 ssize_t cldm_test_collect(char *restrict buffer, char const *restrict file, size_t bufsize) {
     ssize_t status = -1;
@@ -47,6 +49,47 @@ epilogue:
             cldm_warn("Unmapping of %s failed", file);
         }
     }
+
+    return status;
+}
+
+int cldm_invoke_each(char const *restrict tests) {
+    void (*test)(void);
+    void *handle;
+    int status;
+    char *iter;
+    char const *err;
+
+    status = -1;
+
+    cldm_unload();
+
+    handle = dlopen(0, RTLD_LAZY);
+    if(!handle) {
+        cldm_err("%s", dlerror());
+        goto epilogue;
+    }
+
+    (void)dlerror();
+
+    cldm_for_each_word(iter, tests, ';') {
+        *(void **)(&test) = dlsym(handle, iter);
+
+        err = dlerror();
+        if(err) {
+            cldm_err("%s", err);
+            goto epilogue;
+        }
+
+        test();
+    }
+
+epilogue:
+    if(handle) {
+        dlclose(handle);
+    }
+
+    cldm_preload();
 
     return status;
 }

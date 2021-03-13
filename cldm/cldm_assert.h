@@ -3,6 +3,8 @@
 
 #include "cldm_macro.h"
 
+#include <stdio.h>
+
 #define cldm_assert_trigger(condition, ...) \
     do {                                    \
         if(!(condition)) {                  \
