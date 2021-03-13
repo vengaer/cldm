@@ -7,6 +7,8 @@
 #define cldm_str(a) #a
 #define cldm_str_expand(a) cldm_str(a)
 
+#define cldm_expand(a) a
+
 #define cldm_arrsize(arr) (sizeof(arr) / sizeof(arr[0]))
 
 #define cldm_offset(type, member)   \

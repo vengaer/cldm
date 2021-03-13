@@ -7,6 +7,33 @@
 
 #include <dlfcn.h>
 
+static void cldm_empty_local_setup(void) { }
+static void cldm_empty_local_teardown(void) { }
+
+#define cldm_load_local_stage(stage)                                                        \
+    (void) dlerror();                                                                       \
+    *(void **)(&stage) = dlsym(handle, cldm_str_expand(cldm_local_ ## stage ## _ident));    \
+    if(dlerror()) {                                                                         \
+        stage = cldm_empty_local_ ## stage;                                                 \
+    }                                                                                       \
+    else {                                                                                  \
+        cldm_log("Detected per-test " cldm_str_expand(stage));                              \
+    }
+
+
+
+static void (*cldm_test_local_setup(void *handle))(void) {
+    void (*setup)(void) = { 0 };
+    cldm_load_local_stage(setup);
+    return setup;
+}
+
+static void (*cldm_test_local_teardown(void *handle))(void) {
+    void (*teardown)(void) = { 0 };
+    cldm_load_local_stage(teardown);
+    return teardown;
+}
+
 ssize_t cldm_test_collect(char *restrict buffer, char const *restrict file, size_t bufsize) {
     ssize_t status = -1;
     ssize_t ntests = 0;
@@ -66,6 +93,9 @@ int cldm_test_invoke_each(char const *tests, size_t ntests) {
     char const *err;
     unsigned testidx;
 
+    void(*setup)(void);
+    void(*teardown)(void);
+
     status = -1;
 
     cldm_unload();
@@ -78,6 +108,10 @@ int cldm_test_invoke_each(char const *tests, size_t ntests) {
 
     (void)dlerror();
 
+    setup = cldm_test_local_setup(handle);
+    teardown= cldm_test_local_teardown(handle);
+    cldm_log("");
+
     testidx = 0;
     cldm_for_each_word(iter, tests, ';') {
         *(void **)(&test) = dlsym(handle, iter);
@@ -89,7 +123,9 @@ int cldm_test_invoke_each(char const *tests, size_t ntests) {
         }
 
         cldm_log("[Running %s] (%u/%zu)", iter + sizeof(cldm_str_expand(cldm_test_proc_prefix)) - 1, ++testidx, ntests);
+        setup();
         test();
+        teardown();
     }
 
 epilogue:
