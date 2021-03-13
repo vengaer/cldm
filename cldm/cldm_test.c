@@ -58,12 +58,13 @@ epilogue:
     return status;
 }
 
-int cldm_invoke_each(char const *restrict tests) {
+int cldm_test_invoke_each(char const *tests, size_t ntests) {
     void (*test)(void);
     void *handle;
     int status;
     char *iter;
     char const *err;
+    unsigned testidx;
 
     status = -1;
 
@@ -77,6 +78,7 @@ int cldm_invoke_each(char const *restrict tests) {
 
     (void)dlerror();
 
+    testidx = 0;
     cldm_for_each_word(iter, tests, ';') {
         *(void **)(&test) = dlsym(handle, iter);
 
@@ -86,6 +88,7 @@ int cldm_invoke_each(char const *restrict tests) {
             goto epilogue;
         }
 
+        cldm_log("[Running %s] (%u/%zu)", iter + sizeof(cldm_str_expand(cldm_test_proc_prefix)) - 1, ++testidx, ntests);
         test();
     }
 

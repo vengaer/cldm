@@ -17,6 +17,6 @@
 #endif
 
 ssize_t cldm_test_collect(char *restrict buffer, char const *restrict file, size_t bufsize);
-int cldm_invoke_each(char const *restrict tests);
+int cldm_test_invoke_each(char const *tests, size_t ntotal);
 
 #endif /* CLDM_TEST_H */
