@@ -2,14 +2,13 @@
 #define CLDM_H
 
 #include "cldm_assert.h"
+#include "cldm_dl.h"
 #include "cldm_macro.h"
 
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <dlfcn.h>
 
 #define cldm_genparams_1(type)        type a0
 #define cldm_genparams_2(type, ...)   type a1,   cldm_genparams_1(__VA_ARGS__)
@@ -669,15 +668,10 @@ enum cldm_opmode {
             }                                                                                                       \
             retstatement;                                                                                           \
         }                                                                                                           \
-        extern void *cldm_dllookup(char const*);                                                                    \
-        extern void cldm_close_dlhandle(void);                                                                      \
         rettype(* cldm_handle_ ## name)(__VA_ARGS__);                                                               \
-        dlerror();                                                                                                  \
-        *(void **) (& cldm_handle_ ## name) = cldm_dllookup(#name);                                                 \
-        char const *cldm_error_ ## name = dlerror();                                                                \
-        cldm_assert(!cldm_error_ ## name, "%s", cldm_error_ ## name);                                               \
+        *(void **) (& cldm_handle_ ## name) = cldm_dlsym_next(#name);                                               \
+        cldm_assert(cldm_handle_ ## name);                                                                          \
         call_prefix cldm_handle_ ## name(cldm_arglist(cldm_count(__VA_ARGS__)));                                    \
-        cldm_close_dlhandle();                                                                                      \
         retstatement;                                                                                               \
     }                                                                                                               \
     void cldm_trailing_ ## name (void)
@@ -723,15 +717,10 @@ enum cldm_opmode {
             }                                                                                   \
             retstatement;                                                                       \
         }                                                                                       \
-        extern void *cldm_dllookup(char const*);                                                \
-        extern void cldm_close_dlhandle(void);                                                  \
         rettype(* cldm_handle_ ## name)(void);                                                  \
-        dlerror();                                                                              \
-        *(void **) (& cldm_handle_ ## name) = cldm_dllookup(#name);                             \
-        char const *cldm_error_ ## name = dlerror();                                            \
-        cldm_assert(!cldm_error_ ## name, "%s", cldm_error_ ## name);                           \
+        *(void **) (& cldm_handle_ ## name) = cldm_dlsym_next(#name);                           \
+        cldm_assert(cldm_handle_ ## name);                                                      \
         call_prefix cldm_handle_ ## name ();                                                    \
-        cldm_close_dlhandle();                                                                  \
         retstatement;                                                                           \
     }                                                                                           \
     void cldm_trailing_ ## name (void)

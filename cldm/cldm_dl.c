@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <dlfcn.h>
+
 static char libcldm_path[CLDM_PATH_MAX / 4];
 
 int cldm_unload(void) {
@@ -91,5 +93,21 @@ int cldm_preload(void) {
     }
 
     return 0;
+}
+
+void *cldm_dlsym_next(char const *symname) {
+    char *err;
+    void *sym;
+    (void)dlerror();
+
+    sym = dlsym(RTLD_NEXT, symname);
+
+    err = dlerror();
+    if(err) {
+        cldm_err("%s", err);
+        return 0;
+    }
+
+    return sym;
 }
 

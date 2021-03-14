@@ -30,7 +30,7 @@ config      := $(srcdir)/cldm_config.h
 MOCKUPS     ?= $(abspath $(srcdir)/mockups.h)
 
 CFLAGS      := -std=c99 -Wall -Wextra -Wpedantic -fPIC -c -MD -MP -g
-CPPFLAGS    := -DCLDM_LIBC=$(shell ldd /usr/bin/env | grep -oP "\s*\K/.*libc\.so(\.\d+)?") -D_POSIX_C_SOURCE=200112L
+CPPFLAGS    := -D_POSIX_C_SOURCE=200112L -D_GNU_SOURCE
 LDFLAGS     := -shared -Wl,-soname,$(libstem).$(soext).$(socompat)
 LDLIBS      := -ldl
 ARFLAGS     := -rcs
@@ -61,7 +61,7 @@ $(lcldm): $(obj)
 	$(QUIET)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 
 $(lcldm_main): $(mainobj)
-	$(info [AR] $@)
+	$(info [AR]  $@)
 	$(QUIET)$(AR) $(ARFLAGS) $@ $^
 
 $(builddir)/%.$(oext): $(srcdir)/%.$(cext) $(config) | $(builddir)

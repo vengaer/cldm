@@ -8,4 +8,6 @@
 int cldm_unload(void);
 int cldm_preload(void);
 
+void *cldm_dlsym_next(char const *symname);
+
 #endif /* CLDM_DL_H */
