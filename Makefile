@@ -81,7 +81,7 @@ $(builddir):
 
 .PHONY: clean
 clean:
-	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(lcldm) $(link) $(help) $(cldmgen)
+	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(lcldm) $(lcldm_main) $(link) $(help) $(cldmgen)
 
 $(help):
 	$(info +========+)
