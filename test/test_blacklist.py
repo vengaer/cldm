@@ -29,9 +29,8 @@ def run(expected_output):
 def test_blacklist():
     blacklist = ['dlopen',
                  'dlclose',
-                 'dlsym',
-                 'getenv',
-                 'setenv'
+                 'dlerror',
+                 'dlsym'
     ]
     non_blacklisted = ['fprintf',
                        'exit',

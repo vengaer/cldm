@@ -5,9 +5,8 @@
 static char const *blacklist[] = {
     "dlopen",
     "dlclose",
-    "dlsym",
-    "getenv",
-    "setenv"
+    "dlerror",
+    "dlsym"
 };
 
 bool cldm_is_blacklisted(char const *function) {
