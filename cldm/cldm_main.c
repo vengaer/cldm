@@ -1,7 +1,8 @@
-#include "cldm_test.h"
+#include "cldm_dl.h"
 #include "cldm_io.h"
 #include "cldm_log.h"
 #include "cldm_mem.h"
+#include "cldm_test.h"
 
 #include <sys/types.h>
 
@@ -11,6 +12,11 @@ int main(int argc, char *argv[argc + 1]) {
     int status;
 
     status = 1;
+
+    if(cldm_dlgentab(argv[0])) {
+        cldm_err("Could not set up function table");
+        return 1;
+    }
 
     if(cldm_io_capture_stdout()) {
         cldm_err("Error redirecting stdout");
@@ -60,6 +66,10 @@ epilogue:
         if(cldm_io_restore_stderr()) {
             cldm_warn("Failed to restore stderr");
         }
+    }
+
+    if(cldm_dlclose()) {
+        cldm_warn("Could not close libc handle");
     }
 
     return status;

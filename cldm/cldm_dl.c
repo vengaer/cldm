@@ -1,98 +1,43 @@
 #include "cldm_dl.h"
+#include "cldm_elf.h"
 #include "cldm_limits.h"
 #include "cldm_log.h"
+#include "cldm_macro.h"
 #include "cldm_ntbs.h"
-
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include <dlfcn.h>
 
-static char libcldm_path[CLDM_PATH_MAX / 4];
+static void *cldm_libchandle;
 
-int cldm_unload(void) {
-    char oldenv[CLDM_PATH_MAX / 2];
-    char newenv[CLDM_PATH_MAX / 2];
-    ssize_t pldsize;
-    ssize_t nbytes;
-    char *iter;
-    char *dst;
-    char *preload = getenv("LD_PRELOAD");
+struct cldm_dlfunc {
+    char const *name;
+    void **addr;
+};
 
-    if(!preload) {
-        return 0;
-    }
+bool cldm_dl_mapped;
 
-    pldsize = cldm_ntbscpy(oldenv, preload, sizeof(oldenv));
-    if(pldsize < 0) {
-        cldm_err("LD_PRELOAD from environment overflows internal buffer");
-        return pldsize;
-    }
+int   (*cldm_dl_fprintf)(FILE *restrict, char const *restrict , ...);
+FILE *(*cldm_dl_fopen)(char const *restrict, char const *restrict);
+int   (*cldm_dl_fclose)(FILE *);
+int   (*cldm_dl_fflush)(FILE *);
+char *(*cldm_dl_fgets)(char *, int, FILE *);
+int   (*cldm_dl_fileno)(FILE *);
+int   (*cldm_dl_dup)(int);
+int   (*cldm_dl_dup2)(int, int);
 
-    cldm_ntbsrepl(oldenv, ' ', ':');
+static struct cldm_dlfunc cldm_funcmap[8];
 
-    dst = newenv;
-    cldm_for_each_word(iter, oldenv, ':') {
-        if(!cldm_ntbs_find_substr(iter, "libcldm.so")) {
-            nbytes = cldm_ntbscpy(dst, iter, sizeof(newenv) - (dst - newenv));
-            cldm_assert(nbytes >= 0, "This should never be possible");
-            dst += nbytes;
-            cldm_assert(sizeof(newenv) - (dst - newenv) > 2);
-            *dst++ = ':';
-            *dst = '\0';
-        }
-        else {
-            *libcldm_path = 1;
-            nbytes = cldm_ntbscpy(libcldm_path + 1, iter, sizeof(libcldm_path - 1));
-            if(nbytes < 0) {
-                cldm_err("Could not store path to libcldm internally");
-                return -1;
-            }
-        }
-    }
+static void cldm_init_funcmap(void) {
+    cldm_funcmap[0]  = (struct cldm_dlfunc) { "fprintf", (void **)&cldm_dl_fprintf };
 
-    if(setenv("LD_PRELOAD", newenv, 1) == -1) {
-        cldm_err("Could not overwrite LD_PRELOAD: %s", strerror(errno));
-        return -1;
-    }
+    cldm_funcmap[1]  = (struct cldm_dlfunc) { "fopen",   (void **)&cldm_dl_fopen   };
+    cldm_funcmap[2]  = (struct cldm_dlfunc) { "fclose",  (void **)&cldm_dl_fclose  };
+    cldm_funcmap[3]  = (struct cldm_dlfunc) { "fflush",  (void **)&cldm_dl_fflush  };
+    cldm_funcmap[4]  = (struct cldm_dlfunc) { "fgets",   (void **)&cldm_dl_fgets   };
+    cldm_funcmap[5]  = (struct cldm_dlfunc) { "fileno",  (void **)&cldm_dl_fileno  };
 
-    return 0;
-}
-
-int cldm_preload(void) {
-    char buffer[CLDM_PATH_MAX / 2];
-    char *preload;
-    ssize_t pldsize;
-
-    if(!*libcldm_path) {
-        return 0;
-    }
-
-    if(!libcldm_path[1]) {
-        cldm_err("Path to libcldm not found");
-        return -1;
-    }
-
-    preload = getenv("LD_PRELOAD");
-    pldsize = cldm_ntbscpy(buffer, preload, sizeof(buffer));
-    if(pldsize < 0) {
-        cldm_err("LD_PRELOAD from environment overflows internal buffer");
-        return pldsize;
-    }
-
-    pldsize = cldm_ntbscpy(buffer + pldsize, libcldm_path + 1, sizeof(buffer) - pldsize);
-    if(pldsize < 0) {
-        cldm_err("Appending path to libcldm to environment overflows itnernal buffer");
-        return pldsize;
-    }
-
-    if(setenv("LD_PRELOAD", buffer, 1) == -1) {
-        cldm_err("Could not overwrite LD_PRELOAD: %s", strerror(errno));
-        return -1;
-    }
-
-    return 0;
+    cldm_funcmap[6]  = (struct cldm_dlfunc) { "dup",     (void **)&cldm_dl_dup     };
+    cldm_funcmap[7]  = (struct cldm_dlfunc) { "dup2",    (void **)&cldm_dl_dup2    };
 }
 
 void *cldm_dlsym_next(char const *symname) {
@@ -111,3 +56,66 @@ void *cldm_dlsym_next(char const *symname) {
     return sym;
 }
 
+int cldm_dlgentab(char const *progname) {
+    char buffer[CLDM_PATH_MAX];
+    struct cldm_dlfunc *iter;
+    char *err;
+    int status;
+    struct cldm_elfmap map;
+    ssize_t nbytes;
+    char const *libcname;
+
+    status = -1;
+
+    if(cldm_map_elf(&map, progname)) {
+        cldm_err("Could not map %s", progname);
+        return -1;
+    }
+
+    nbytes = cldm_elf_read_needed(&map, buffer, sizeof(buffer));
+    if(nbytes < 0) {
+        cldm_err("Could not list needed shared objects");
+        return -1;
+    }
+
+    cldm_unmap_elf(&map);
+
+    for(ssize_t i = 0; i < nbytes; i += cldm_ntbslen(buffer + i) + 1) {
+        if(cldm_ntbs_find_substr(buffer + i, "libc.so")) {
+            libcname = buffer + i;
+            break;
+        }
+    }
+
+    cldm_libchandle = dlopen(libcname, RTLD_LAZY);
+    if(!cldm_libchandle) {
+        cldm_err("%s", dlerror());
+        return -1;
+    }
+
+    cldm_init_funcmap();
+
+    (void) dlerror();
+    cldm_for_each(iter, cldm_funcmap) {
+        *iter->addr = dlsym(cldm_libchandle, iter->name);
+        err = dlerror();
+        if(err) {
+            cldm_err("%s", err);
+            goto epilogue;
+        }
+    }
+
+    cldm_dl_mapped = true;
+    status = 0;
+
+epilogue:
+    if(status) {
+        dlclose(cldm_libchandle);
+    }
+
+    return status;;
+}
+
+int cldm_dlclose(void) {
+    return dlclose(cldm_libchandle);
+}

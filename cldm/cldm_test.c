@@ -115,8 +115,6 @@ int cldm_test_invoke_each(char const *tests, size_t ntests) {
 
     status = -1;
 
-    cldm_unload();
-
     handle = dlopen(0, RTLD_LAZY);
     if(!handle) {
         cldm_err("%s", dlerror());
@@ -156,8 +154,6 @@ epilogue:
     if(handle) {
         dlclose(handle);
     }
-
-    cldm_preload();
 
     return status;
 }

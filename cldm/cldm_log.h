@@ -1,21 +1,26 @@
 #ifndef CLDM_LOG_H
 #define CLDM_LOG_H
 
+#include "cldm_dl.h"
+#include "cldm_dlwrapper.h"
 #include "cldm_io.h"
 
 #include <stdio.h>
 
+#define cldm_print_guard(stream, fallback, fmt, ...)    \
+    fprintf(stream ? stream : fallback, fmt "%.0d\n", __VA_ARGS__)
+
 #define cldm_err_internal(fmt, ...)     \
-    fprintf(cldm_stderr ? cldm_stderr : stderr, "Error: " fmt "%.0d\n", __VA_ARGS__)
+    cldm_print_guard(cldm_stderr, stderr, "Error: " fmt, __VA_ARGS__)
 
 #define cldm_warn_internal(fmt, ...)    \
-    fprintf(cldm_stderr ? cldm_stderr : stderr, "Warning: " fmt "%.0d\n", __VA_ARGS__)
+    cldm_print_guard(cldm_stderr, stderr, "Warning: " fmt, __VA_ARGS__)
 
 #define cldm_log_internal(fmt, ...)     \
-    fprintf(cldm_stdout ? cldm_stdout : stdout, fmt "%.0d\n", __VA_ARGS__)
+    cldm_print_guard(cldm_stdout, stdout, fmt, __VA_ARGS__)
 
 #define cldm_log_stream_internal(stream, fmt, ...)  \
-    fprintf(stream, fmt "%.0d\n", __VA_ARGS__)
+    cldm_print_guard(stream, stdout, fmt, __VA_ARGS__)
 
 #define cldm_err(...)   \
     cldm_err_internal(__VA_ARGS__, 0)

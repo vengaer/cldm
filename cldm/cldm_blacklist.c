@@ -6,7 +6,12 @@ static char const *blacklist[] = {
     "dlopen",
     "dlclose",
     "dlerror",
-    "dlsym"
+    "dlsym",
+    "mmap",
+    "munmap",
+    "open",
+    "close",
+    "fstat"
 };
 
 bool cldm_is_blacklisted(char const *function) {
