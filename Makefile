@@ -25,12 +25,12 @@ lcldm       := $(libstem).$(soext).$(sover)
 link        := $(libstem).$(soext)
 lcldm_main  := $(libstem)_main.$(aext)
 
-config      := $(srcdir)/cldm_config.h
+cldmgen     := $(srcdir)/cldmgen.h
 
 MOCKUPS     ?= $(abspath $(srcdir)/mockups.h)
 
 CFLAGS      := -std=c99 -Wall -Wextra -Wpedantic -fPIC -c -MD -MP -g
-CPPFLAGS    := -D_POSIX_C_SOURCE=200112L -D_GNU_SOURCE
+CPPFLAGS    := -D_GNU_SOURCE
 LDFLAGS     := -shared -Wl,-soname,$(libstem).$(soext).$(socompat)
 LDLIBS      := -ldl
 ARFLAGS     := -rcs
@@ -64,11 +64,11 @@ $(lcldm_main): $(mainobj)
 	$(info [AR]  $@)
 	$(QUIET)$(AR) $(ARFLAGS) $@ $^
 
-$(builddir)/%.$(oext): $(srcdir)/%.$(cext) $(config) | $(builddir)
+$(builddir)/%.$(oext): $(srcdir)/%.$(cext) $(cldmgen) | $(builddir)
 	$(info [CC]  $@)
 	$(QUIET)$(CC) -o $@ $< $(CFLAGS) $(CPPFLAGS)
 
-$(config): $(MOCKUPS)
+$(cldmgen): $(MOCKUPS)
 	$(info [GEN] $@)
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CLDM_CONFIG_H\n#define CLDM_CONFIG_H\n#include "$^"\n#endif' > $@
 
@@ -81,7 +81,7 @@ $(builddir):
 
 .PHONY: clean
 clean:
-	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(lcldm) $(link) $(help) $(config)
+	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(lcldm) $(link) $(help) $(cldmgen)
 
 $(help):
 	$(info +========+)

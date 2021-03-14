@@ -804,6 +804,6 @@ enum cldm_opmode {
 #define AssignArg(...)        CLDM_ASSIGN_ARG(__VA_ARGS__)
 #endif
 
-#include "cldm_config.h"
+#include "cldmgen.h"
 
 #endif /* CLDM_H */
