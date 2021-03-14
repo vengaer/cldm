@@ -56,6 +56,37 @@ static char const *cldm_elf_section_type(Elf64_Word type) {
     return "Unknown";
 }
 
+static inline void cldm_elf_map_section_fail(struct cldm_elfmap const *map) {
+    if(!map->strtab) {
+        cldm_log("No .strtab found in binary");
+    }
+    if(!map->dynstr) {
+        cldm_log("No .dynstr found in binary");
+    }
+}
+
+static inline int cldm_elf_validate_section_map(struct cldm_elfmap const *map, int nmapped) {
+    switch(nmapped) {
+        case 0:
+        case 1:
+            cldm_elf_map_section_fail(map);
+            return -1;
+        case 2:
+            /* Debug info not mandatory */
+            if(map->debug_info) {
+                cldm_elf_map_section_fail(map);
+                return -1;
+            }
+            break;
+        case 3:
+            break;
+        default:
+            cldm_assert(0);
+    }
+
+    return 0;
+}
+
 static char const *cldm_elf_shstrtab(struct cldm_elfmap const *map) {
     Elf64_Ehdr *ehdr;
     Elf64_Shdr shdr;
@@ -67,6 +98,44 @@ static char const *cldm_elf_shstrtab(struct cldm_elfmap const *map) {
 
     cldm_mcpy(&shdr, (unsigned char *)map->addr + ehdr->e_shoff + ehdr->e_shstrndx * sizeof(shdr), sizeof(shdr));
     return (char const *)map->addr + shdr.sh_offset;
+}
+
+static int cldm_elf_map_sections(struct cldm_elfmap *map) {
+    Elf64_Ehdr *ehdr;
+    Elf64_Shdr shdr;
+    void **p;
+    ehdr = map->addr;
+    int nmapped;
+
+    map->strtab = 0;
+    map->dynstr = 0;
+    map->debug_info = 0;
+
+    nmapped = 0;
+
+    for(Elf64_Half i = 0; i < ehdr->e_shnum; i++) {
+        cldm_mcpy(&shdr, (unsigned char *)map->addr + ehdr->e_shoff + i *ehdr->e_shentsize, sizeof(shdr));
+        p = 0;
+
+        if(shdr.sh_type == SHT_STRTAB) {
+            if(cldm_ntbscmp(map->shstrtab + shdr.sh_name, ".strtab") == 0) {
+                p = &map->strtab;
+            }
+            else if(cldm_ntbscmp(map->shstrtab + shdr.sh_name, ".dynstr") == 0) {
+                p = &map->dynstr;
+            }
+        }
+        else if(shdr.sh_type == SHT_PROGBITS && cldm_ntbscmp(map->shstrtab + shdr.sh_name, ".debug_info") == 0) {
+            p = &map->debug_info;
+        }
+
+        if(p) {
+            *p = (unsigned char *)map->addr + ehdr->e_shoff + i * ehdr->e_shentsize;
+            ++nmapped;
+        }
+    }
+
+    return nmapped;
 }
 
 static void *cldm_elf_section(struct cldm_elfmap const *restrict map, Elf64_Word type, char const *restrict secname) {
@@ -99,6 +168,7 @@ int cldm_map_elf(struct cldm_elfmap *restrict map, char const *restrict file) {
     struct stat sb;
     void *addr;
     int status;
+    int nmapped;
 
     status = -1;
 
@@ -128,6 +198,11 @@ int cldm_map_elf(struct cldm_elfmap *restrict map, char const *restrict file) {
     if(!map->shstrtab) {
         cldm_err("Found no shstrtab in %s", file);
         cldm_unmap_elf(map);
+        goto epilogue;
+    }
+
+    nmapped = cldm_elf_map_sections(map);
+    if(cldm_elf_validate_section_map(map, nmapped)) {
         goto epilogue;
     }
 
@@ -165,7 +240,15 @@ ssize_t cldm_elf_read_strtab(struct cldm_elfmap const *restrict map, char *restr
     Elf64_Shdr shdr;
     void *strtab;
 
-    strtab = cldm_elf_strtab(map, section);
+    if(cldm_ntbscmp(section, ".strtab") == 0) {
+        strtab = map->strtab;
+    }
+    else if(cldm_ntbscmp(section, ".dynstr") == 0) {
+        strtab = map->dynstr;
+    }
+    else {
+        strtab = cldm_elf_strtab(map, section);
+    }
     if(!strtab) {
         return -1;
     }
@@ -188,7 +271,7 @@ ssize_t cldm_elf_read_needed(struct cldm_elfmap const *restrict map, char *restr
     ssize_t nbytes;
     ssize_t offset;
 
-    dynstr = cldm_elf_strtab(map, ".dynstr");
+    dynstr = map->dynstr;
     if(!dynstr) {
         return -1;
     }
