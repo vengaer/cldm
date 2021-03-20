@@ -47,3 +47,11 @@ TEST(cldm_ntbscpy) {
     ASSERT_EQ(cldm_ntbscpy(dst, src, 9), (ssize_t)strlen(src));
     ASSERT_EQ(dst[strlen(src)], 0);
 }
+
+TEST(cldm_ntbs_find_substr) {
+    char const *str = "a string with a substring";
+
+    ASSERT_EQ(cldm_ntbs_find_substr(str, "substring"), str + 16);
+    ASSERT_EQ(cldm_ntbs_find_substr(str, "string"), str + 2);
+    ASSERT_EQ(cldm_ntbs_find_substr(str, "automata"), 0);
+}
