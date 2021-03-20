@@ -15,13 +15,13 @@
     } while (0)
 
 #define cldm_rtassert_no_msg(condition)   \
-    cldm_rtassert_trigger(condition, "%s:%d assertion '%s' failed\n", __FILE__, __LINE__, #condition)
+    cldm_rtassert_trigger(condition, "%s:%s assertion '%s' failed\n", __FILE__, cldm_str_expand(__LINE__), #condition)
 
 #define cldm_rtassert_msg(condition, msg) \
-    cldm_rtassert_trigger(condition, "%s:%d assertion '%s' failed: " msg "\n", __FILE__, __LINE__, #condition)
+    cldm_rtassert_trigger(condition, "%s:%s assertion '%s' failed: " msg "\n", __FILE__, cldm_str_expand(__LINE__), #condition)
 
 #define cldm_rtassert_variadic(condition, fmt, ...)   \
-    cldm_rtassert_trigger(condition, "%s:%d assertion '%s' failed: " fmt "\n", __FILE__, __LINE__, #condition, __VA_ARGS__)
+    cldm_rtassert_trigger(condition, "%s:%s assertion '%s' failed: " fmt "\n", __FILE__, cldm_str_expand(__LINE__), #condition, __VA_ARGS__)
 
 #define cldm_rtassert(...)    \
     cldm_overload(cldm_rtassert, __VA_ARGS__)
