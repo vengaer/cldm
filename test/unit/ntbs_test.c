@@ -71,3 +71,26 @@ TEST(cldm_ntbsncmp) {
     ASSERT_GT(cldm_ntbsncmp("b", "a", 1), 0);
     ASSERT_EQ(cldm_ntbsncmp("a string", "a string w", strlen("a string")), 0);
 }
+
+TEST(cldm_for_each_word) {
+    char const *str = "a string with spaces";
+    char const *words[] = {
+        "a",
+        "string",
+        "with",
+        "spaces"
+    };
+    char *iter;
+    unsigned idx = 0;
+
+    cldm_for_each_word(iter, str) {
+        ASSERT_EQ(strcmp(words[idx++], iter), 0);
+    }
+    ASSERT_EQ(idx, 4);
+    str = "a;string;with;spaces";
+    idx = 0;
+    cldm_for_each_word(iter, str, ';') {
+        ASSERT_EQ(strcmp(words[idx++], iter), 0);
+    }
+    ASSERT_EQ(idx, 4);
+}

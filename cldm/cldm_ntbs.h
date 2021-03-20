@@ -10,7 +10,6 @@
 #include <sys/types.h>
 
 /* TODO assert ntbscpy result */
-/* TODO ntbscpy tests */
 #define cldm_for_each_word3(iter, str, sep)                                                 \
     for(char cldm_cat_expand(cldm_few_buf,__LINE__)[CLDM_PATH_MAX],                         \
             *cldm_cat_expand(cldm_few_end,__LINE__) =                                       \
@@ -20,7 +19,7 @@
                 cldm_ntbschr(iter, sep));                                                   \
         (cldm_cat_expand(cldm_few_end,__LINE__) ?                                           \
             *cldm_cat_expand(cldm_few_end,__LINE__) = '\0' :                                \
-            0, *iter);                                                                      \
+            0, iter ? *iter : 0);                                                           \
         iter = cldm_cat_expand(cldm_few_end,__LINE__) ?                                     \
             cldm_cat_expand(cldm_few_end,__LINE__) + 1 : 0,                                 \
         cldm_cat_expand(cldm_few_end,__LINE__) ?                                            \

@@ -73,9 +73,9 @@ $(lcldm): $(lcldm_obj)
 	$(info [LD]  $@)
 	$(QUIET)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 
-$(cldmtest): $(cldmtest_obj) | $(link) $(lcldm_main)
+$(cldmtest): $(cldmtest_obj) $(link) $(lcldm_main)
 	$(info [LD]  $@)
-	$(QUIET)$(CC) -o $@ $^ $(TLDFLAGS) $(TLDLIBS)
+	$(QUIET)$(CC) -o $@ $(cldmtest_obj) $(TLDFLAGS) $(TLDLIBS)
 
 $(lcldm_main): $(lcldm_main_obj)
 	$(info [AR]  $@)
