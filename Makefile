@@ -10,6 +10,8 @@ ECHO        ?= echo
 TOUCH       ?= touch
 PYTEST      ?= pytest
 
+cldmver     := 0.1.0
+
 
 libstem     := libcldm
 sover       := 0
@@ -39,7 +41,7 @@ cldmgen     := $(libsrcdir)/cldmgen.h
 MOCKUPS     ?= $(abspath $(libsrcdir)/mockups.h)
 
 CFLAGS      := -std=c99 -Wall -Wextra -Wpedantic -fPIC -c -MD -MP -g
-CPPFLAGS    := -D_GNU_SOURCE -I$(root)
+CPPFLAGS    := -D_GNU_SOURCE -I$(root) -DCLDM_VERSION=$(cldmver)
 LDFLAGS     := -shared -Wl,-soname,$(libstem).$(soext).$(socompat)
 LDLIBS      := -ldl
 

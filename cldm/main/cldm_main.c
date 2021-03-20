@@ -3,6 +3,7 @@
 #include "cldm_elfdump.h"
 #include "cldm_io.h"
 #include "cldm_log.h"
+#include "cldm_macro.h"
 #include "cldm_mem.h"
 #include "cldm_test.h"
 
@@ -13,6 +14,9 @@ int main(int argc, char *argv[argc + 1]) {
     ssize_t ntests;
     int status;
     struct cldm_elfmap map;
+
+    cldm_log("cldm version " cldm_str_expand(CLDM_VERSION));
+    cldm_log("Report bugs to vilhelm.engstrom@tuta.io\n");
 
     status = 2;
 
