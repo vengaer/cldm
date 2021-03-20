@@ -43,10 +43,12 @@ epilogue:
     return status;
 }
 
-static int cldm_io_dump_capture(FILE *restrict redirected, char const *restrict capture, FILE *restrict dumpstream) {
+static int cldm_io_dump_capture(FILE *restrict redirected, char const *restrict capture, FILE *restrict dumpstream, char const *restrict name) {
     char buffer[CLDM_PAGE_SIZE];
     FILE *fp;
     size_t linelen;
+    int fd;
+    struct stat sb;
 
     fflush(redirected);
 
@@ -56,12 +58,24 @@ static int cldm_io_dump_capture(FILE *restrict redirected, char const *restrict 
         return -1;
     }
 
+    fd = fileno(fp);
+    if(fstat(fd, &sb) == -1) {
+        cldm_err("Could not stat captured %s: %s", name, strerror(errno));
+        goto epilogue;
+    }
+
+    if(!sb.st_size) {
+        goto epilogue;
+    }
+
+    cldm_log_stream(dumpstream, "\nCaptured %s:", name);
     while(fgets(buffer, sizeof(buffer), fp)) {
         linelen = cldm_ntbslen(buffer);
         buffer[linelen - 1] = '\0';
         cldm_log_stream(dumpstream, "%s", buffer);
     }
 
+epilogue:
     fclose(fp);
     return 0;
 }
@@ -141,11 +155,11 @@ int cldm_io_capture_stderr(void) {
 }
 
 int cldm_io_dump_captured_stdout(void) {
-    return cldm_io_dump_capture(stdout, CLDM_CAPTURE_STDOUT, cldm_stdout);
+    return cldm_io_dump_capture(stdout, CLDM_CAPTURE_STDOUT, cldm_stdout, "stdout");
 }
 
 int cldm_io_dump_captured_stderr(void) {
-    return cldm_io_dump_capture(stderr, CLDM_CAPTURE_STDERR, cldm_stderr);
+    return cldm_io_dump_capture(stderr, CLDM_CAPTURE_STDERR, cldm_stderr, "stderr");
 }
 
 int cldm_io_restore_stdout(void) {
