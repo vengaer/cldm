@@ -65,3 +65,8 @@ $(foreach __t,$(required_by),
 
 $(eval CPPFLAGS += -I$(module_path))
 endef
+
+# $(call include-each-module,MODULE_NAME...)
+define include-each-module
+$(foreach __m,$(1),$(call include-module,$(notdir $(__m))))
+endef

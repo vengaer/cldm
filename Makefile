@@ -24,20 +24,28 @@ aext        := a
 root        := $(abspath $(CURDIR))
 
 builddir    := $(root)/build
-srcdir      := $(root)/$(patsubst lib%,%,$(libstem))
+libsrcdir   := $(root)/$(patsubst lib%,%,$(libstem))
+testdir     := $(root)/test
+srcdirs     := $(libsrcdir) $(testdir)
 
 lcldm       := $(libstem).$(soext).$(sover)
 link        := $(libstem).$(soext)
 lcldm_main  := $(libstem)_main.$(aext)
 
-cldmgen     := $(srcdir)/cldmgen.h
+cldmtest    := cldmtest
 
-MOCKUPS     ?= $(abspath $(srcdir)/mockups.h)
+cldmgen     := $(libsrcdir)/cldmgen.h
+
+MOCKUPS     ?= $(abspath $(libsrcdir)/mockups.h)
 
 CFLAGS      := -std=c99 -Wall -Wextra -Wpedantic -fPIC -c -MD -MP -g
-CPPFLAGS    := -D_GNU_SOURCE
+CPPFLAGS    := -D_GNU_SOURCE -I$(root)
 LDFLAGS     := -shared -Wl,-soname,$(libstem).$(soext).$(socompat)
 LDLIBS      := -ldl
+
+TLDFLAGS    := -L$(root)
+TLDLIBS     := $(patsubst lib%,-l%,$(libstem)) $(patsubst lib%.a,-l%,$(lcldm_main))
+
 ARFLAGS     := -rcs
 LNFLAGS     := -sf
 MKDIRFLAGS  := -p
@@ -50,7 +58,7 @@ QUIET       ?= @
 module_path := $(root)
 module_mk   := Makefile
 
-$(call include-module,$(notdir $(srcdir)))
+$(call include-each-module,$(srcdirs))
 
 .PHONY: all
 all: $(link) $(lcldm_main)
@@ -62,6 +70,10 @@ $(link): $(lcldm)
 $(lcldm): $(lcldm_obj)
 	$(info [LD]  $@)
 	$(QUIET)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+
+$(cldmtest): $(cldmtest_obj) | $(link) $(lcldm_main)
+	$(info [LD]  $@)
+	$(QUIET)$(CC) -o $@ $^ $(TLDFLAGS) $(TLDLIBS)
 
 $(lcldm_main): $(lcldm_main_obj)
 	$(info [AR]  $@)
@@ -80,18 +92,22 @@ $(MOCKUPS):
 	$(info [GEN] $(notdir $@))
 	$(QUIET)$(TOUCH) $@
 
-.PHONY: functional_tests
-functional_tests:
+.PHONY: functional_test
+functional_test:
 	$(QUIET)$(PYTEST) $(PYTESTFLAGS)
 
+.PHONY: unit_test
+unit_test: $(cldmtest)
+	$(QUIET)LD_LIBRARY_PATH=$(root) ./$<
+
 .PHONY: test
-test: functional_tests
+test: unit_test functional_test
 
 .PHONY: check
 check: test
 
 .PHONY: clean
 clean:
-	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(lcldm) $(lcldm_main) $(link) $(help) $(cldmgen)
+	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(lcldm) $(lcldm_main) $(link) $(help) $(cldmgen) $(cldmtest)
 
 -include $(obj:.$(oext)=.$(dext))

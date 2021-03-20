@@ -6,5 +6,6 @@ build/**
 test/running/**
 cldm/mockups.h
 cldm/cldmgen.h
+cldmtest
 .help.stamp
 tags

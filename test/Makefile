@@ -1,5 +1,4 @@
-trivial_module := y
-required_by    := lcldm_main
+$(call include-module,unit)
 
 ifndef module_name
 target := $(if $(MAKECMDGOALS),$(MAKECMDGOALS),recurse)
