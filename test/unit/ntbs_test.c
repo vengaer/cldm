@@ -55,3 +55,19 @@ TEST(cldm_ntbs_find_substr) {
     ASSERT_EQ(cldm_ntbs_find_substr(str, "string"), str + 2);
     ASSERT_EQ(cldm_ntbs_find_substr(str, "automata"), 0);
 }
+
+TEST(cldm_ntbscmp) {
+    ASSERT_EQ(cldm_ntbscmp("a string", "a string"), 0);
+    ASSERT_LT(cldm_ntbscmp("a strin", "a string"), 0);
+    ASSERT_GT(cldm_ntbscmp("a string", "a strin"), 0);
+    ASSERT_LT(cldm_ntbscmp("between", "the"), 0);
+    ASSERT_GT(cldm_ntbscmp("buried", "and"), 0);
+    ASSERT_LT(cldm_ntbscmp("", "a"), 0);
+}
+
+TEST(cldm_ntbsncmp) {
+    ASSERT_EQ(cldm_ntbsncmp("a string", "a str", 3), 0);
+    ASSERT_LT(cldm_ntbsncmp("a strin", "a string", 100), 0);
+    ASSERT_GT(cldm_ntbsncmp("b", "a", 1), 0);
+    ASSERT_EQ(cldm_ntbsncmp("a string", "a string w", strlen("a string")), 0);
+}
