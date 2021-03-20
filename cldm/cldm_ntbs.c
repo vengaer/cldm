@@ -41,16 +41,16 @@ int cldm_ntbscmp(char const *restrict str0, char const *restrict str1) {
     int diff = 0;
     do {
         diff = -1 * (*str0 < *str1) + (*str0 > *str1);
-    } while (*str0++ && *str1++ && !diff);
+    } while(*str0++ && *str1++ && !diff);
 
     return diff;
 }
 
 int cldm_ntbsncmp(char const *restrict str0, char const *restrict str1, size_t n) {
     int diff = 0;
-    for(;*str0 && *str1 && !diff && n--; ++str0, ++str1) {
+    do {
         diff = -1 * (*str0 < *str1) + (*str0 > *str1);
-    }
+    } while(*str0++ && *str1++ && !diff && --n);
     return diff;
 }
 
