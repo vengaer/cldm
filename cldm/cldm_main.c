@@ -31,6 +31,11 @@ int main(int argc, char *argv[argc + 1]) {
         return 1;
     }
 
+    cldm_elfdump_strtab(&map, ".strtab");
+    cldm_elfdump_strtab(&map, ".dynstr");
+    cldm_elfdump_needed(&map);
+    cldm_elfdump_sections(&map);
+
     if(cldm_io_capture_stdout()) {
         cldm_err("Error redirecting stdout");
         goto epilogue;

@@ -87,6 +87,7 @@ void cldm_elfdump_sections(struct cldm_elfmap const *map) {
 
     ehdr = map->addr;
 
+    cldm_log("sections:");
     for(Elf64_Half i = 0; i < ehdr->e_shnum; i++) {
         cldm_mcpy(&shdr, (unsigned char *)map->addr + ehdr->e_shoff + i * ehdr->e_shentsize, sizeof(shdr));
 

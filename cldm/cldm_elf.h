@@ -6,13 +6,17 @@
 
 #include <sys/types.h>
 
+struct cldm_strtab {
+    char const *addr;
+    size_t size;
+};
+
 struct cldm_elfmap {
     size_t size;
     void *addr;
     char const *shstrtab;
-    /* Addresses of Elf64_Shdrs */
-    void *strtab;
-    void *dynstr;
+    struct cldm_strtab strtab;
+    struct cldm_strtab dynstr;
     /* Address where executable is loaded */
     void *baseaddr;
 };
