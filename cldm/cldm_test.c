@@ -1,5 +1,4 @@
 #include "cldm_dl.h"
-#include "cldm_elf.h"
 #include "cldm_log.h"
 #include "cldm_mem.h"
 #include "cldm_ntbs.h"
@@ -44,29 +43,17 @@ static void (*cldm_test_global_teardown(void *handle))(void) {
     return teardown;
 }
 
-ssize_t cldm_test_collect(char *restrict buffer, char const *restrict file, size_t bufsize) {
-    ssize_t status = -1;
+ssize_t cldm_test_collect(char *restrict buffer, struct cldm_elfmap const *restrict map, size_t bufsize) {
     ssize_t ntests = 0;
     ssize_t strtab_size;
     ssize_t symsize;
-    struct cldm_elfmap map = { 0 };
     char strtab[CLDM_PAGE_SIZE];
     ssize_t offset;
 
-    if(cldm_map_elf(&map, file)) {
-        cldm_err("Mapping %s failed\n", file);
-        goto epilogue;
-    }
-
-    if(!cldm_is_elf64(&map)) {
-        cldm_err("%s is not a 64-bit ELF binary", file);
-        goto epilogue;
-    }
-
-    strtab_size = cldm_elf_read_strtab(&map, strtab, ".strtab", sizeof(strtab));
+    strtab_size = cldm_elf_read_strtab(map, strtab, ".strtab", sizeof(strtab));
     if(strtab_size < 0) {
-        cldm_err("Could not read strtab of %s", file);
-        goto epilogue;
+        cldm_err("Could not read strtab");
+        return -1;
     }
 
     offset = 0;
@@ -75,8 +62,7 @@ ssize_t cldm_test_collect(char *restrict buffer, char const *restrict file, size
             symsize = cldm_ntbscpy(buffer + offset, strtab + i, bufsize - offset);
             if(symsize < 0 || (size_t)(offset + symsize + 1) >= bufsize) {
                 cldm_err("Test %lld would cause internal buffer overflow", (long long)i);
-                status = -E2BIG;
-                goto epilogue;
+                return -E2BIG;
             }
             offset += symsize;
             buffer[offset++] = ';';
@@ -85,15 +71,7 @@ ssize_t cldm_test_collect(char *restrict buffer, char const *restrict file, size
         }
     }
 
-    status = ntests;
-epilogue:
-    if(map.addr) {
-        if(cldm_unmap_elf(&map)) {
-            cldm_warn("Unmapping of %s failed", file);
-        }
-    }
-
-    return status;
+    return ntests;
 }
 
 int cldm_test_invoke_each(char const *tests, size_t ntests) {

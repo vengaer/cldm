@@ -1,6 +1,7 @@
 #ifndef CLDM_TEST_H
 #define CLDM_TEST_H
 
+#include "cldm_elf.h"
 #include "cldm_macro.h"
 
 #include <stddef.h>
@@ -41,7 +42,7 @@
 #define GLOBAL_TEARDOWN() CLDM_GLOBAL_TEARDOWN()
 #endif
 
-ssize_t cldm_test_collect(char *restrict buffer, char const *restrict file, size_t bufsize);
+ssize_t cldm_test_collect(char *restrict buffer, struct cldm_elfmap const *restrict map, size_t bufsize);
 int cldm_test_invoke_each(char const *tests, size_t ntotal);
 
 #endif /* CLDM_TEST_H */

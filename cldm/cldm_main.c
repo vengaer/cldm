@@ -1,4 +1,5 @@
 #include "cldm_dl.h"
+#include "cldm_elf.h"
 #include "cldm_io.h"
 #include "cldm_log.h"
 #include "cldm_mem.h"
@@ -10,10 +11,21 @@ int main(int argc, char *argv[argc + 1]) {
     char buffer[CLDM_PAGE_SIZE];
     ssize_t ntests;
     int status;
+    struct cldm_elfmap map;
 
     status = 1;
 
-    if(cldm_dlgentab(argv[0])) {
+    if(cldm_map_elf(&map, argv[0])) {
+        cldm_err("Mapping %s failed", argv[0]);
+        return 1;
+    }
+
+    if(!cldm_is_elf64(&map)) {
+        cldm_err("%s is not a 64-bit ELF binary", argv[0]);
+        goto epilogue;
+    }
+
+    if(cldm_dlgentab(&map)) {
         cldm_err("Could not set up function table");
         return 1;
     }
@@ -28,7 +40,7 @@ int main(int argc, char *argv[argc + 1]) {
         goto epilogue;
     }
 
-    ntests = cldm_test_collect(buffer, argv[0], sizeof(buffer));
+    ntests = cldm_test_collect(buffer, &map, sizeof(buffer));
     if(ntests < 0) {
         cldm_err("Error collecting tests");
         goto epilogue;
@@ -57,6 +69,7 @@ int main(int argc, char *argv[argc + 1]) {
 
     status = 0;
 epilogue:
+    cldm_unmap_elf(&map);
     if(cldm_stdout) {
         if(cldm_io_restore_stdout()) {
             cldm_warn("Failed to restore stdout");

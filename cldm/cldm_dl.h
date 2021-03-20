@@ -1,6 +1,7 @@
 #ifndef CLDM_DL_H
 #define CLDM_DL_H
 
+#include "cldm_elf.h"
 #include "cldm_rtassert.h"
 
 #include <stdbool.h>
@@ -22,7 +23,7 @@ extern int   (*cldm_dl_dup2)(int, int);
 
 void *cldm_dlsym_next(char const *symname);
 
-int cldm_dlgentab(char const *progname);
+int cldm_dlgentab(struct cldm_elfmap const *map);
 int cldm_dlclose(void);
 
 #endif /* CLDM_DL_H */
