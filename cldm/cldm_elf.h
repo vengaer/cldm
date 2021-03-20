@@ -13,7 +13,8 @@ struct cldm_elfmap {
     /* Addresses of Elf64_Shdrs */
     void *strtab;
     void *dynstr;
-    void *debug_info;
+    /* Address where executable is loaded */
+    void *baseaddr;
 };
 
 int cldm_map_elf(struct cldm_elfmap *restrict map, char const *restrict file);
@@ -24,9 +25,7 @@ bool cldm_is_elf64(struct cldm_elfmap const *map);
 ssize_t cldm_elf_read_strtab(struct cldm_elfmap const *restrict map, char *restrict buffer, char const *restrict section, size_t bufsize);
 ssize_t cldm_elf_read_needed(struct cldm_elfmap const *restrict map, char *restrict buffer, size_t bufsize);
 
-int cldm_elf_dump_strtab(struct cldm_elfmap const *restrict map, char const *restrict section);
-int cldm_elf_dump_needed(struct cldm_elfmap const *map);
-
-void cldm_elf_dump_sections(struct cldm_elfmap const *map);
+/* Get pointer to given function */
+void (*cldm_elf_func(struct cldm_elfmap const *restrict map, char const *restrict func))(void);
 
 #endif /* CLDM_ELF_H */

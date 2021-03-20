@@ -15,78 +15,21 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-static char const *cldm_elf_section_type(Elf64_Word type) {
-    switch(type) {
-        case SHT_NULL:
-            return "SHT_NULL";
-        case SHT_PROGBITS:
-            return "SHT_PROGBITS";
-        case SHT_SYMTAB:
-            return "SHT_SYMTAB";
-        case SHT_STRTAB:
-            return "SHT_STRTAB";
-        case SHT_RELA:
-            return "SHT_RELA";
-        case SHT_HASH:
-            return "SHT_HASH";
-        case SHT_DYNAMIC:
-            return "SHT_DYNAMIC";
-        case SHT_NOTE:
-            return "SHT_NOTE";
-        case SHT_NOBITS:
-            return "SHT_NOBITS";
-        case SHT_REL:
-            return "SHT_REL";
-        case SHT_SHLIB:
-            return "SHT_SHLIB";
-        case SHT_DYNSYM:
-            return "SHT_DYNSYM";
-        case SHT_LOPROC:
-            return "SHT_LOPROC";
-        case SHT_HIPROC:
-            return "SHT_HIPROC";
-        case SHT_LOUSER:
-            return "SHT_LOUSER";
-        case SHT_HIUSER:
-            return "SHT_HIUSER";
-        default:
-            /* NOP */
-            break;
-    }
-    return "Unknown";
-}
-
 static inline void cldm_elf_map_section_fail(struct cldm_elfmap const *map) {
     if(!map->strtab) {
-        cldm_log("No .strtab found in binary");
+        cldm_err("No .strtab found in binary");
     }
     if(!map->dynstr) {
-        cldm_log("No .dynstr found in binary");
+        cldm_err("No .dynstr found in binary");
     }
 }
 
-static inline int cldm_elf_validate_section_map(struct cldm_elfmap const *map, int nmapped) {
-    switch(nmapped) {
-        case 0:
-        case 1:
-            cldm_elf_map_section_fail(map);
-            return -1;
-        case 2:
-            /* Debug info not mandatory */
-            if(map->debug_info) {
-                cldm_elf_map_section_fail(map);
-                return -1;
-            }
-            break;
-        case 3:
-            break;
-        default:
-            cldm_rtassert(0);
-    }
-
-    return 0;
+/* Get nth section header */
+static inline void *cldm_elf_shdr(struct cldm_elfmap const *map, unsigned n) {
+    return (unsigned char *)map->addr + ((Elf64_Ehdr *)map->addr)->e_shoff + n * ((Elf64_Ehdr *)map->addr)->e_shentsize;
 }
 
+/* Get address of section header string table */
 static char const *cldm_elf_shstrtab(struct cldm_elfmap const *map) {
     Elf64_Ehdr *ehdr;
     Elf64_Shdr shdr;
@@ -96,10 +39,11 @@ static char const *cldm_elf_shstrtab(struct cldm_elfmap const *map) {
         return 0;
     }
 
-    cldm_mcpy(&shdr, (unsigned char *)map->addr + ehdr->e_shoff + ehdr->e_shstrndx * sizeof(shdr), sizeof(shdr));
+    cldm_mcpy(&shdr, cldm_elf_shdr(map, ehdr->e_shstrndx), sizeof(shdr));
     return (char const *)map->addr + shdr.sh_offset;
 }
 
+/* Map .strtab and .dynstr sections */
 static int cldm_elf_map_sections(struct cldm_elfmap *map) {
     Elf64_Ehdr *ehdr;
     Elf64_Shdr shdr;
@@ -107,14 +51,10 @@ static int cldm_elf_map_sections(struct cldm_elfmap *map) {
     ehdr = map->addr;
     int nmapped;
 
-    map->strtab = 0;
-    map->dynstr = 0;
-    map->debug_info = 0;
-
     nmapped = 0;
 
     for(Elf64_Half i = 0; i < ehdr->e_shnum; i++) {
-        cldm_mcpy(&shdr, (unsigned char *)map->addr + ehdr->e_shoff + i *ehdr->e_shentsize, sizeof(shdr));
+        cldm_mcpy(&shdr, cldm_elf_shdr(map, i), sizeof(shdr));
         p = 0;
 
         if(shdr.sh_type == SHT_STRTAB) {
@@ -125,12 +65,9 @@ static int cldm_elf_map_sections(struct cldm_elfmap *map) {
                 p = &map->dynstr;
             }
         }
-        else if(shdr.sh_type == SHT_PROGBITS && cldm_ntbscmp(map->shstrtab + shdr.sh_name, ".debug_info") == 0) {
-            p = &map->debug_info;
-        }
 
         if(p) {
-            *p = (unsigned char *)map->addr + ehdr->e_shoff + i * ehdr->e_shentsize;
+            *p = cldm_elf_shdr(map, i);
             ++nmapped;
         }
     }
@@ -138,31 +75,109 @@ static int cldm_elf_map_sections(struct cldm_elfmap *map) {
     return nmapped;
 }
 
+/* Find section based with given type and name */
 static void *cldm_elf_section(struct cldm_elfmap const *restrict map, Elf64_Word type, char const *restrict secname) {
     Elf64_Ehdr *ehdr;
     Elf64_Shdr shdr;
+    void *addr;
 
     ehdr = map->addr;
 
     for(Elf64_Half i = 0; i < ehdr->e_shnum; i++) {
-        cldm_mcpy(&shdr, (unsigned char *)map->addr + ehdr->e_shoff + i * ehdr->e_shentsize, sizeof(shdr));
-
+        addr = cldm_elf_shdr(map, i);
+        cldm_mcpy(&shdr, addr, sizeof(shdr));
         if(shdr.sh_type == type && cldm_ntbscmp(map->shstrtab + shdr.sh_name, secname) == 0) {
-            return (unsigned char *)map->addr + ehdr->e_shoff + i * ehdr->e_shentsize;
+            return addr;
         }
     }
 
     return 0;
 }
 
+/* Get strtab for given section */
 static inline void *cldm_elf_strtab(struct cldm_elfmap const *restrict map, char const *restrict section) {
     return cldm_elf_section(map, SHT_STRTAB, section);
 }
 
+/* Get .dynamic section */
 static inline void *cldm_elf_dynamic(struct cldm_elfmap const *map) {
     return cldm_elf_section(map, SHT_DYNAMIC, ".dynamic");
 }
 
+/* Get address of Elf64_Sym struct for the given name */
+static void *cldm_elf_sym(struct cldm_elfmap const *restrict map, char const *restrict symbol) {
+    Elf64_Ehdr *ehdr;
+    Elf64_Shdr shdr;
+    Elf64_Sym sym;
+    void *addr;
+    char const *strtab;
+    ehdr = map->addr;
+
+    cldm_mcpy(&shdr, map->strtab, sizeof(shdr));
+    strtab = (char const *)map->addr + shdr.sh_offset;
+
+    for(Elf64_Half i = 0; i < ehdr->e_shnum; i++) {
+        cldm_mcpy(&shdr, cldm_elf_shdr(map, i), sizeof(shdr));
+        if(shdr.sh_type == SHT_SYMTAB) {
+            for(Elf64_Xword j = 0; j < shdr.sh_size; j += sizeof(sym)) {
+                addr = (unsigned char *)map->addr + shdr.sh_offset + j;
+                cldm_mcpy(&sym, addr, sizeof(sym));
+                if(sym.st_name != STN_UNDEF && cldm_ntbscmp(symbol, strtab + sym.st_name) == 0) {
+                    return addr;
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+/* Get address of where executable is loaded in memory */
+static void *cldm_elf_baseaddr(struct cldm_elfmap const *map) {
+    extern int main(void);
+    Elf64_Sym sym;
+    Elf64_Shdr shdr;
+    void *relmain;
+    size_t offset;
+
+    relmain = cldm_elf_sym(map, "main");
+    cldm_mcpy(&sym, relmain, sizeof(sym));
+    switch(sym.st_shndx) {
+        case SHN_UNDEF:
+            cldm_err("Cannot lookup external main");
+            return 0;
+        case SHN_ABS:
+            cldm_err("Failed to resolve base address of executable");
+            return 0;
+        default:
+            // NOP
+            break;
+    }
+    cldm_mcpy(&shdr, cldm_elf_shdr(map, sym.st_shndx), sizeof(shdr));
+
+    offset = sym.st_value + shdr.sh_offset;
+    return (void *)((size_t)main - offset);
+}
+
+/* Get address of where symbol is loaded */
+static size_t cldm_elf_symaddr(struct cldm_elfmap const *restrict map, Elf64_Sym const *restrict sym) {
+    Elf64_Shdr shdr;
+    switch(sym->st_shndx) {
+        case SHN_UNDEF:
+            cldm_rtassert(0, "External symbols not supported");
+            break;
+        case SHN_ABS:
+            return sym->st_value;
+        default:
+            // NOP
+            break;
+    }
+
+    cldm_mcpy(&shdr, cldm_elf_shdr(map, sym->st_shndx), sizeof(shdr));
+    return (size_t)map->baseaddr  + sym->st_value + shdr.sh_offset;
+}
+
+/* Memory map elf file */
 int cldm_map_elf(struct cldm_elfmap *restrict map, char const *restrict file) {
     int fd;
     struct stat sb;
@@ -191,8 +206,10 @@ int cldm_map_elf(struct cldm_elfmap *restrict map, char const *restrict file) {
         goto epilogue;
     }
 
-    map->addr = addr;
-    map->size = sb.st_size;
+    *map = (struct cldm_elfmap){
+        .addr = addr,
+        .size = sb.st_size
+    };
     map->shstrtab = cldm_elf_shstrtab(map);
 
     if(!map->shstrtab) {
@@ -202,7 +219,13 @@ int cldm_map_elf(struct cldm_elfmap *restrict map, char const *restrict file) {
     }
 
     nmapped = cldm_elf_map_sections(map);
-    if(cldm_elf_validate_section_map(map, nmapped)) {
+    if(nmapped != 2) {
+        cldm_elf_map_section_fail(map);
+        goto epilogue;
+    }
+
+    map->baseaddr = cldm_elf_baseaddr(map);
+    if(!map->baseaddr) {
         goto epilogue;
     }
 
@@ -302,49 +325,16 @@ ssize_t cldm_elf_read_needed(struct cldm_elfmap const *restrict map, char *restr
     return offset - 1;
 }
 
-int cldm_elf_dump_strtab(struct cldm_elfmap const *restrict map, char const *restrict section) {
-    char buffer[CLDM_PAGE_SIZE];
-    ssize_t nbytes;
+void (*cldm_elf_func(struct cldm_elfmap const *restrict map, char const *restrict func))(void) {
+    void *symaddr;
+    Elf64_Sym sym;
 
-    nbytes = cldm_elf_read_strtab(map, buffer, section, sizeof(buffer));
-    if(nbytes < 0) {
-        return nbytes;
+    symaddr = cldm_elf_sym(map, func);
+    if(!symaddr) {
+        cldm_err("Could not locate address of %s in .text segment", func);
+        return 0;
     }
 
-    cldm_log("%s", section);
-    for(ssize_t i = 0; i < nbytes; i += cldm_ntbslen(buffer + i) + 1) {
-        cldm_log("name: %-30s offset: %llu", buffer + i, (unsigned long long)i);
-    }
-
-    return 0;
-}
-
-int cldm_elf_dump_needed(struct cldm_elfmap const *map) {
-    char buffer[CLDM_PAGE_SIZE];
-    ssize_t nbytes;
-
-    nbytes = cldm_elf_read_needed(map, buffer, sizeof(buffer));
-
-    if(nbytes < 0) {
-        return nbytes;
-    }
-
-    cldm_log("needed:");
-    for(ssize_t i = 0; i < nbytes; i += cldm_ntbslen(buffer + i) + 1) {
-        cldm_log("%s", buffer + i);
-    }
-    return 0;
-}
-
-void cldm_elf_dump_sections(struct cldm_elfmap const *map) {
-    Elf64_Ehdr *ehdr;
-    Elf64_Shdr shdr;
-
-    ehdr = map->addr;
-
-    for(Elf64_Half i = 0; i < ehdr->e_shnum; i++) {
-        cldm_mcpy(&shdr, (unsigned char *)map->addr + ehdr->e_shoff + i * ehdr->e_shentsize, sizeof(shdr));
-
-        cldm_log("name: %-20s type: %s", map->shstrtab + shdr.sh_name, cldm_elf_section_type(shdr.sh_type));
-    }
+    cldm_mcpy(&sym, symaddr, sizeof(sym));
+    return (void (*)(void))cldm_elf_symaddr(map, &sym);
 }

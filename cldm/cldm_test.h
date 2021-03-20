@@ -43,6 +43,6 @@
 #endif
 
 ssize_t cldm_test_collect(char *restrict buffer, struct cldm_elfmap const *restrict map, size_t bufsize);
-int cldm_test_invoke_each(char const *tests, size_t ntotal);
+int cldm_test_invoke_each(struct cldm_elfmap const *restrict map, char const *restrict tests, size_t ntotal);
 
 #endif /* CLDM_TEST_H */

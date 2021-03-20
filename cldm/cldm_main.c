@@ -1,5 +1,6 @@
 #include "cldm_dl.h"
 #include "cldm_elf.h"
+#include "cldm_elfdump.h"
 #include "cldm_io.h"
 #include "cldm_log.h"
 #include "cldm_mem.h"
@@ -48,7 +49,7 @@ int main(int argc, char *argv[argc + 1]) {
 
     cldm_log("Collected %lld tests", (long long)ntests);
 
-    if(cldm_test_invoke_each(buffer, (size_t)ntests)) {
+    if(cldm_test_invoke_each(&map, buffer, (size_t)ntests)) {
         cldm_err("Error while running tests");
         goto epilogue;
     }

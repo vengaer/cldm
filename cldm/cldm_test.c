@@ -4,42 +4,39 @@
 #include "cldm_ntbs.h"
 #include "cldm_test.h"
 
-#include <dlfcn.h>
-
 static void cldm_test_empty_func(void) { }
 
-#define cldm_load_stage(stage, scope)                                                               \
-    (void) dlerror();                                                                               \
-    *(void **)(&stage) = dlsym(handle, cldm_str_expand(cldm_ ## scope ## _ ## stage ## _ident));    \
-    if(dlerror()) {                                                                                 \
-        stage = cldm_test_empty_func;                                                               \
-    }                                                                                               \
-    else {                                                                                          \
-        cldm_log("Detected " cldm_str_expand(scope) " " cldm_str_expand(stage));                    \
+#define cldm_load_stage(map, stage, scope)                                                  \
+    stage = cldm_elf_func(map, cldm_str_expand(cldm_ ## scope ## _ ## stage ## _ident));    \
+    if(!stage) {                                                                            \
+        stage = cldm_test_empty_func;                                                       \
+    }                                                                                       \
+    else {                                                                                  \
+        cldm_log("Detected " cldm_str_expand(scope) " " cldm_str_expand(stage));            \
     }
 
 
-static void (*cldm_test_local_setup(void *handle))(void) {
+static void (*cldm_test_local_setup(struct cldm_elfmap const *map))(void) {
     void (*setup)(void) = { 0 };
-    cldm_load_stage(setup, local);
+    cldm_load_stage(map, setup, local);
     return setup;
 }
 
-static void (*cldm_test_local_teardown(void *handle))(void) {
+static void (*cldm_test_local_teardown(struct cldm_elfmap const *map))(void) {
     void (*teardown)(void) = { 0 };
-    cldm_load_stage(teardown, local);
+    cldm_load_stage(map, teardown, local);
     return teardown;
 }
 
-static void (*cldm_test_global_setup(void *handle))(void) {
+static void (*cldm_test_global_setup(struct cldm_elfmap const *map))(void) {
     void (*setup)(void) = { 0 };
-    cldm_load_stage(setup, global);
+    cldm_load_stage(map, setup, global);
     return setup;
 }
 
-static void (*cldm_test_global_teardown(void *handle))(void) {
+static void (*cldm_test_global_teardown(struct cldm_elfmap const *map))(void) {
     void (*teardown)(void) = { 0 };
-    cldm_load_stage(teardown, global);
+    cldm_load_stage(map, teardown, global);
     return teardown;
 }
 
@@ -74,12 +71,9 @@ ssize_t cldm_test_collect(char *restrict buffer, struct cldm_elfmap const *restr
     return ntests;
 }
 
-int cldm_test_invoke_each(char const *tests, size_t ntests) {
+int cldm_test_invoke_each(struct cldm_elfmap const *restrict map, char const *restrict tests, size_t ntests) {
     void (*test)(void);
-    void *handle;
-    int status;
     char *iter;
-    char const *err;
     unsigned testidx;
 
     void (*lcl_setup)(void);
@@ -91,32 +85,20 @@ int cldm_test_invoke_each(char const *tests, size_t ntests) {
         return 0;
     }
 
-    status = -1;
-
-    handle = dlopen(0, RTLD_LAZY);
-    if(!handle) {
-        cldm_err("%s", dlerror());
-        goto epilogue;
-    }
-
-    (void)dlerror();
-
-    lcl_setup = cldm_test_local_setup(handle);
-    lcl_teardown= cldm_test_local_teardown(handle);
-    glob_setup = cldm_test_global_setup(handle);
-    glob_teardown = cldm_test_global_teardown(handle);
+    lcl_setup = cldm_test_local_setup(map);
+    lcl_teardown= cldm_test_local_teardown(map);
+    glob_setup = cldm_test_global_setup(map);
+    glob_teardown = cldm_test_global_teardown(map);
     cldm_log("");
 
     glob_setup();
 
     testidx = 0;
     cldm_for_each_word(iter, tests, ';') {
-        *(void **)(&test) = dlsym(handle, iter);
-
-        err = dlerror();
-        if(err) {
-            cldm_err("%s", err);
-            goto epilogue;
+        test = cldm_elf_func(map, iter);
+        if(!test) {
+            cldm_warn("Could not load %s from memory", iter);
+            continue;
         }
 
         cldm_log("[Running %s] (%u/%zu)", iter + sizeof(cldm_str_expand(cldm_test_proc_prefix)) - 1, ++testidx, ntests);
@@ -127,11 +109,5 @@ int cldm_test_invoke_each(char const *tests, size_t ntests) {
 
     glob_teardown();
 
-    status = 0;
-epilogue:
-    if(handle) {
-        dlclose(handle);
-    }
-
-    return status;
+    return 0;
 }

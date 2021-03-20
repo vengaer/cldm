@@ -39,9 +39,9 @@ char const *cldm_ntbs_find_substr(char const *restrict str, char const *restrict
 
 int cldm_ntbscmp(char const *restrict str0, char const *restrict str1) {
     int diff = 0;
-    for(;*str0 && *str1 && !diff; ++str0, ++str1) {
+    do {
         diff = -1 * (*str0 < *str1) + (*str0 > *str1);
-    }
+    } while (*str0++ && *str1++ && !diff);
 
     return diff;
 }
