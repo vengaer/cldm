@@ -19,3 +19,9 @@ TEST(cldm_ntbscrchr) {
     str = "a_string";
     ASSERT_EQ(cldm_ntbscrchr(str, ' '), 0);
 }
+
+TEST(cldm_ntbslen) {
+    ASSERT_EQ(cldm_ntbslen("a string"), 8);
+    ASSERT_EQ(cldm_ntbslen("another string"), 14);
+    ASSERT_EQ(cldm_ntbslen("a"), 1);
+}
