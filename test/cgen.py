@@ -53,6 +53,14 @@ class CGen():
         finally:
             self.__close_scope(semicolon)
 
+    @contextmanager
+    def open_macro(self, macro, optarg=''):
+        self.__open_macro(macro, optarg)
+        try:
+            yield
+        finally:
+            self.__close_scope()
+
     def __append_src_content(self, string):
         self.src.append('{}{}\n'.format('\t' * self.indent, string))
 
@@ -123,6 +131,15 @@ class CGen():
         return self
 
     def __close_function(self):
+        self.__close_scope()
+        return self
+
+    def __open_macro(self, macro, optarg=''):
+        self.__append_src_content('{}({}) {{'.format(macro, optarg))
+        self.indent = self.indent + 1
+        return self
+
+    def __close_macro(self):
         self.__close_scope()
         return self
 

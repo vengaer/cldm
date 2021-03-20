@@ -1,10 +1,7 @@
-import os
-
-from pathlib import Path
-
 from cgen import *
 from config import *
 from makegen import *
+from runner import *
 from util import *
 
 __TARGET = 'blacklist_test'
@@ -17,14 +14,6 @@ def gen_makefile():
     mgen.adjust('LDLIBS', '-lcldm')
     mgen.export('LD_LIBRARY_PATH', project_root)
     mgen.generate()
-
-def run(expected_output):
-    assert exec_bash('make -C {}'.format(working_dir))[0] == 0
-    retval, output, _ = exec_bash('make -sC {} run'.format(working_dir))
-    assert retval == 0
-    output = output.decode('utf-8').split('\n')
-    output = output[:len(output) - 1]
-    assert output == expected_output
 
 def test_blacklist():
     blacklist = ['dlopen',
@@ -52,4 +41,4 @@ def test_blacklist():
     bl = '1 ' * len(blacklist) + '0 ' * len(non_blacklisted)
     expected = bl.strip().split(' ')
 
-    run(expected)
+    run(EqMatcher(expected))
