@@ -20,6 +20,7 @@ aext        := a
 builddir    := build
 srcdir      := $(patsubst lib%,%,$(libstem))
 testdir     := test
+functestdir := $(testdir)/functional
 
 lcldm       := $(libstem).$(soext).$(sover)
 link        := $(libstem).$(soext)
@@ -38,7 +39,7 @@ LNFLAGS     := -sf
 MKDIRFLAGS  := -p
 RMFLAGS     := -rf
 ECHOFLAGS   := -e
-PYTESTFLAGS := -v --rootdir=$(testdir)
+PYTESTFLAGS := -v --rootdir=$(functestdir)
 
 QUIET       ?= @
 
@@ -80,6 +81,9 @@ $(MOCKUPS):
 .PHONY: test
 test:
 	$(QUIET)$(PYTEST) $(PYTESTFLAGS)
+
+.PHONY: check
+check: test
 
 $(builddir):
 	$(QUIET)$(MKDIR) $(MKDIRFLAGS) $@
