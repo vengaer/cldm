@@ -43,6 +43,4 @@ char const *cldm_ntbs_find_substr(char const *restrict str, char const *restrict
 int cldm_ntbscmp(char const *restrict str0, char const *restrict str1);
 int cldm_ntbsncmp(char const *restrict str0, char const *restrict str1, size_t n);
 
-void cldm_ntbsrepl(char *str, char from, char to);
-
 #endif /* CLDM_NTBS_H */

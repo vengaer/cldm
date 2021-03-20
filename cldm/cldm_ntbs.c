@@ -65,11 +65,3 @@ int cldm_ntbsncmp(char const *restrict str0, char const *restrict str1, size_t n
     } while(*str0++ && *str1++ && !diff && --n);
     return diff;
 }
-
-void cldm_ntbsrepl(char *str, char from, char to) {
-    while(*str) {
-        if(*str == from) {
-            *str = to;
-        }
-    }
-}
