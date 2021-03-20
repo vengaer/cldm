@@ -2,7 +2,7 @@
 #define CLDM_LOG_H
 
 #include "cldm_dl.h"
-#include "cldm_dlwrapper.h"
+#include "cldm_dlwrp.h"
 #include "cldm_io.h"
 
 #include <stdio.h>

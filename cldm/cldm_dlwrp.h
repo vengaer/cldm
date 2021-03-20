@@ -1,5 +1,5 @@
-#ifndef CLDM_DLWRAPPER_H
-#define CLDM_DLWRAPPER_H
+#ifndef CLDM_DLWRP_H
+#define CLDM_DLWRP_H
 
 #include "cldm_dl.h"
 #include "cldm_macro.h"
@@ -43,4 +43,4 @@ extern bool cldm_dl_mapped;
     cldm_wrapfunc(dup2, __VA_ARGS__)
 
 
-#endif /* CLDM_DLWRAPPER_H */
+#endif /* CLDM_DLWRP_H */
