@@ -59,11 +59,14 @@
 #define cldm_count_expand(...) cldm_count_pick(__VA_ARGS__)
 #define cldm_count(...) cldm_count_expand(__VA_ARGS__, cldm_count_sequence)
 
-#define cldm_for_each3(iter, array, size)                                   \
+#define cldm_for_each4(iter, array, size, step)                             \
     for(unsigned cldm_cat_expand(cldm_fe,__LINE__) = (iter = array, 0);     \
         cldm_cat_expand(cldm_fe,__LINE__) < size;                           \
-        ++cldm_cat_expand(cldm_fe,__LINE__),                                \
+        cldm_cat_expand(cldm_fe,__LINE__) += step,                          \
         iter = &array[cldm_cat_expand(cldm_fe,__LINE__)])
+
+#define cldm_for_each3(iter, array, size)                                   \
+    cldm_for_each4(iter, array, size, 1)
 
 #define cldm_for_each2(iter, array)                                         \
     cldm_for_each3(iter, array, cldm_arrsize(array))

@@ -23,18 +23,26 @@ char *(*cldm_dl_fgets)(char *, int, FILE *);
 int   (*cldm_dl_fileno)(FILE *);
 int   (*cldm_dl_dup)(int);
 int   (*cldm_dl_dup2)(int, int);
+void *(*cldm_dl_realloc)(void *, size_t);
+void  (*cldm_dl_free)(void *);
+char *(*cldm_dl_strerror)(int);
+int   (*cldm_dl_snprintf)(char *restrict, size_t, char const *restrict, ...);
 
-static struct cldm_dlfunc cldm_funcmap[8];
+static struct cldm_dlfunc cldm_funcmap[12];
 
 static void cldm_init_funcmap(void) {
-    cldm_funcmap[0]  = (struct cldm_dlfunc) { "fprintf", (void **)&cldm_dl_fprintf };
-    cldm_funcmap[1]  = (struct cldm_dlfunc) { "fopen",   (void **)&cldm_dl_fopen   };
-    cldm_funcmap[2]  = (struct cldm_dlfunc) { "fclose",  (void **)&cldm_dl_fclose  };
-    cldm_funcmap[3]  = (struct cldm_dlfunc) { "fflush",  (void **)&cldm_dl_fflush  };
-    cldm_funcmap[4]  = (struct cldm_dlfunc) { "fgets",   (void **)&cldm_dl_fgets   };
-    cldm_funcmap[5]  = (struct cldm_dlfunc) { "fileno",  (void **)&cldm_dl_fileno  };
-    cldm_funcmap[6]  = (struct cldm_dlfunc) { "dup",     (void **)&cldm_dl_dup     };
-    cldm_funcmap[7]  = (struct cldm_dlfunc) { "dup2",    (void **)&cldm_dl_dup2    };
+    cldm_funcmap[0]  = (struct cldm_dlfunc) { "fprintf",  (void **)&cldm_dl_fprintf  };
+    cldm_funcmap[1]  = (struct cldm_dlfunc) { "fopen",    (void **)&cldm_dl_fopen    };
+    cldm_funcmap[2]  = (struct cldm_dlfunc) { "fclose",   (void **)&cldm_dl_fclose   };
+    cldm_funcmap[3]  = (struct cldm_dlfunc) { "fflush",   (void **)&cldm_dl_fflush   };
+    cldm_funcmap[4]  = (struct cldm_dlfunc) { "fgets",    (void **)&cldm_dl_fgets    };
+    cldm_funcmap[5]  = (struct cldm_dlfunc) { "fileno",   (void **)&cldm_dl_fileno   };
+    cldm_funcmap[6]  = (struct cldm_dlfunc) { "dup",      (void **)&cldm_dl_dup      };
+    cldm_funcmap[7]  = (struct cldm_dlfunc) { "dup2",     (void **)&cldm_dl_dup2     };
+    cldm_funcmap[8]  = (struct cldm_dlfunc) { "realloc",  (void **)&cldm_dl_realloc  };
+    cldm_funcmap[9]  = (struct cldm_dlfunc) { "free",     (void **)&cldm_dl_free     };
+    cldm_funcmap[10] = (struct cldm_dlfunc) { "strerror", (void **)&cldm_dl_strerror };
+    cldm_funcmap[11] = (struct cldm_dlfunc) { "snprintf", (void **)&cldm_dl_snprintf };
 }
 
 void *cldm_dlsym_next(char const *symname) {

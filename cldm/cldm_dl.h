@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -20,6 +21,10 @@ extern char *(*cldm_dl_fgets)(char *, int, FILE *);
 extern int   (*cldm_dl_fileno)(FILE *);
 extern int   (*cldm_dl_dup)(int);
 extern int   (*cldm_dl_dup2)(int, int);
+extern void *(*cldm_dl_realloc)(void *, size_t);
+extern void  (*cldm_dl_free)(void *);
+extern char *(*cldm_dl_strerror)(int);
+extern int   (*cldm_dl_snprintf)(char *restrict , size_t, char const *restrict, ...);
 
 void *cldm_dlsym_next(char const *symname);
 

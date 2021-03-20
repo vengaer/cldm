@@ -5,6 +5,16 @@ char *cldm_ntbschr(char *str, int c) {
     return *str ? str : 0;
 }
 
+char const *cldm_ntbscrchr(char const *str, int c) {
+    char const *res = 0;
+    while(*str++) {
+        if(*str == c) {
+            res = str;
+        }
+    }
+    return res;
+}
+
 size_t cldm_ntbslen(char const *str) {
     char const *s = str;
     while(*s++);

@@ -14,7 +14,7 @@ int main(int argc, char *argv[argc + 1]) {
     int status;
     struct cldm_elfmap map;
 
-    status = 1;
+    status = 2;
 
     if(cldm_map_elf(&map, argv[0])) {
         cldm_err("Mapping %s failed", argv[0]);
@@ -28,7 +28,7 @@ int main(int argc, char *argv[argc + 1]) {
 
     if(cldm_dlgentab(&map)) {
         cldm_err("Could not set up function table");
-        return 1;
+        goto epilogue;
     }
 
     if(cldm_io_capture_stdout()) {
@@ -48,11 +48,7 @@ int main(int argc, char *argv[argc + 1]) {
     }
 
     cldm_log("Collected %lld tests", (long long)ntests);
-
-    if(cldm_test_invoke_each(&map, buffer, (size_t)ntests)) {
-        cldm_err("Error while running tests");
-        goto epilogue;
-    }
+    status = cldm_test_invoke_each(&map, buffer, (size_t)ntests);
 
     cldm_log("\nCaptured stdout:");
     if(cldm_io_dump_captured_stdout()) {
@@ -67,7 +63,6 @@ int main(int argc, char *argv[argc + 1]) {
     cldm_io_remove_captured_stdout();
     cldm_io_remove_captured_stderr();
 
-    status = 0;
 epilogue:
     cldm_unmap_elf(&map);
     if(cldm_stdout) {
