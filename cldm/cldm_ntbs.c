@@ -1,7 +1,9 @@
 #include "cldm_ntbs.h"
 
 char *cldm_ntbschr(char *str, int c) {
-    while(*str != (char)c && *str++);
+    while(*str != (char)c && *str) {
+        ++str;
+    }
     return *str ? str : 0;
 }
 
