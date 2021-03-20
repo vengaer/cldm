@@ -72,6 +72,11 @@ $(cldmgen): $(MOCKUPS)
 	$(info [GEN] $@)
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CLDM_CONFIG_H\n#define CLDM_CONFIG_H\n#include "$^"\n#endif' > $@
 
+$(MOCKUPS):
+	$(info $@ not found, generating empty one)
+	$(info [GEN] $(notdir $@))
+	$(QUIET)$(TOUCH) $@
+
 .PHONY: test
 test:
 	$(QUIET)$(PYTEST) $(PYTESTFLAGS)
