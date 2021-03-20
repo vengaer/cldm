@@ -9,3 +9,4 @@ cldm/cldmgen.h
 cldmtest
 .help.stamp
 tags
+test/functional/running/**
