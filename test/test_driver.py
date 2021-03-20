@@ -9,7 +9,7 @@ __TARGET = 'driver_test'
 __TESTFILE = 'test.c'
 
 def gen_makefile(src):
-    mgen = Makegen(__TARGET, src=src)
+    mgen = Makegen('driver_test', src=src)
     mgen.adjust('CFLAGS', '-fPIC', Mod.REMOVE)
     mgen.adjust('LDFLAGS', '-shared', Mod.REMOVE)
     mgen.adjust('LDFLAGS', '-L{}'.format(project_root), Mod.APPEND)
@@ -103,7 +103,7 @@ def test_runner():
     cgen.write()
     gen_makefile(__TESTFILE)
 
-    run(ContainsMatcher('Captured stdout:.*{p}foo.*{p}bar'.format(p=TEST_PREFIX)))
+    run(ContainsMatcher('Captured stdout:.*{p}foo.*{p}bar'.format(p=test_prefix)))
 
 def test_setup_invoked_before_tests():
     cgen = CGen(__TESTFILE)
@@ -120,7 +120,7 @@ def test_setup_invoked_before_tests():
     cgen.write()
     gen_makefile(__TESTFILE)
 
-    run(ContainsMatcher('{s}.*{p}(foo|bar).*{s}.*{p}(foo|bar)'.format(s=LOCAL_SETUP, p=TEST_PREFIX)))
+    run(ContainsMatcher('{s}.*{p}(foo|bar).*{s}.*{p}(foo|bar)'.format(s=local_setup, p=test_prefix)))
 
 def test_teardown_invoked_after_tests():
     cgen = CGen(__TESTFILE)
@@ -137,7 +137,7 @@ def test_teardown_invoked_after_tests():
     cgen.write()
     gen_makefile(__TESTFILE)
 
-    run(ContainsMatcher(r'{p}(foo|bar).*{t}.*{p}(foo|bar).*{t}'.format(p=TEST_PREFIX, t=LOCAL_TEARDOWN)))
+    run(ContainsMatcher(r'{p}(foo|bar).*{t}.*{p}(foo|bar).*{t}'.format(p=test_prefix, t=local_teardown)))
 
 def test_global_setup_invoked_once():
     cgen = CGen(__TESTFILE)
@@ -154,7 +154,7 @@ def test_global_setup_invoked_once():
     cgen.write()
     gen_makefile(__TESTFILE)
 
-    run(ContainsOnceMatcher('{gs}.*{p}(foo|bar).*{p}(foo|bar)'.format(gs=GLOBAL_SETUP, p=TEST_PREFIX), [GLOBAL_SETUP]))
+    run(ContainsOnceMatcher('{gs}.*{p}(foo|bar).*{p}(foo|bar)'.format(gs=global_setup, p=test_prefix), [global_setup]))
 
 def test_global_teardown_invoked_once():
     cgen = CGen(__TESTFILE)
@@ -171,7 +171,7 @@ def test_global_teardown_invoked_once():
     cgen.write()
     gen_makefile(__TESTFILE)
 
-    run(ContainsOnceMatcher('{p}(foo|bar).*{p}(foo|bar).*{gt}'.format(p=TEST_PREFIX, gt=GLOBAL_TEARDOWN), [GLOBAL_TEARDOWN]))
+    run(ContainsOnceMatcher('{p}(foo|bar).*{p}(foo|bar).*{gt}'.format(p=test_prefix, gt=global_teardown), [global_teardown]))
 
 def test_setup_teardown():
     cgen = CGen(__TESTFILE)
@@ -195,4 +195,4 @@ def test_setup_teardown():
     gen_makefile(__TESTFILE)
 
     run(ContainsOnceMatcher('{gs}.*{ts}.*{p}(foo|bar).*{tt}.*{ts}.*{p}(foo|bar).*{tt}.*{gt}'
-        .format(gs=GLOBAL_SETUP, ts=LOCAL_SETUP, p=TEST_PREFIX, tt=LOCAL_TEARDOWN, gt=GLOBAL_TEARDOWN), [GLOBAL_SETUP, GLOBAL_TEARDOWN]))
+        .format(gs=global_setup, ts=local_setup, p=test_prefix, tt=local_teardown, gt=global_teardown), [global_setup, global_teardown]))
