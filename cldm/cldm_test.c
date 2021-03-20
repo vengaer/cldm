@@ -94,13 +94,15 @@ static inline void cldm_test_free(void) {
 static void cldm_test_summary(size_t ntests) {
     char *iter;
     if(cldm_test_log.failed_tests) {
-        cldm_log_stream(cldm_stderr, "\n%llu/%llu assertions failed across %llu tests", cldm_test_log.failed_assertions, cldm_test_log.total_assertions, cldm_test_log.failed_tests);
+        cldm_log_stream(cldm_stderr, "\n%llu/%llu assertions failed across %llu test%s",
+                        cldm_test_log.failed_assertions, cldm_test_log.total_assertions, cldm_test_log.failed_tests, cldm_test_log.failed_tests == 1 ? "" : "s");
+
         cldm_for_each(iter, ((char *)cldm_test_log.l_un.addr), cldm_test_log.size * sizeof(*cldm_test_log.l_un.data), sizeof(*cldm_test_log.l_un.data)) {
             cldm_log_stream(cldm_stderr, "\n%s", iter);
         }
         return;
     }
-    cldm_log("\nSuccessfully finished %llu assertions across %zu tests", cldm_test_log.total_assertions, ntests);
+    cldm_log("\nSuccessfully finished %llu assertions across %zu test%s", cldm_test_log.total_assertions, ntests, ntests == 1 ? "" : "s");
 }
 
 ssize_t cldm_test_collect(char *restrict buffer, struct cldm_elfmap const *restrict map, size_t bufsize) {

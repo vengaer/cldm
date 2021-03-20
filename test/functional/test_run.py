@@ -6,7 +6,6 @@ from runner import *
 from util import *
 
 __TESTFILE = 'test.c'
-
 def gen_makefile(src):
     mgen = Makegen('runtest', src=src)
     mgen.adjust('CFLAGS', '-fPIC', Mod.REMOVE)
@@ -30,7 +29,7 @@ def test_triggered_assertion_causes_failure():
     cgen.write()
     gen_makefile(__TESTFILE)
 
-    run(ContainsMatcher(r'foo.*\(\d+/\d+\).*fail'), ContainsMatcher(r'1/1\s*assertions\s*failed\s*across\s*1\s*tests'), RvDiffMatcher(0))
+    run(ContainsMatcher(r'foo.*\(\d+/\d+\).*fail'), ContainsMatcher(r'1/1\s*assertions\s*failed\s*across\s*1\s*test'), RvDiffMatcher(0))
 
 def test_violating_assertions_logged():
     cgen = CGen(__TESTFILE)
@@ -64,7 +63,7 @@ def test_violating_assertions_logged():
     cgen.write()
     gen_makefile(__TESTFILE)
 
-    run(ContainsMatcher(r'foo.*\(\d+/\d+\).*fail'), ContainsMatcher('8/8.*1.*tests.*{}'.format('.*'.join(errout))), RvDiffMatcher(0))
+    run(ContainsMatcher(r'foo.*\(\d+/\d+\).*fail'), ContainsMatcher('8/8.*1.*test.*{}'.format('.*'.join(errout))), RvDiffMatcher(0))
 
 def test_number_of_failed_functions_logged():
     cgen = CGen(__TESTFILE)
