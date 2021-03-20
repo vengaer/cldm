@@ -100,7 +100,7 @@ static void cldm_test_summary(size_t ntests) {
         }
         return;
     }
-    cldm_log("Successfully finished %llu assertions across %zu tests", cldm_test_log.total_assertions, ntests);
+    cldm_log("\nSuccessfully finished %llu assertions across %zu tests", cldm_test_log.total_assertions, ntests);
 }
 
 ssize_t cldm_test_collect(char *restrict buffer, struct cldm_elfmap const *restrict map, size_t bufsize) {
