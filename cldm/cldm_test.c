@@ -165,7 +165,7 @@ int cldm_test_invoke_each(struct cldm_elfmap const *restrict map, char const *re
         cldm_test_set(iter);
         test = cldm_elf_func(map, iter);
         if(!test) {
-            cldm_warn("Could not locate address of %s in .test segment", iter);
+            cldm_warn("Could not locate address of %s in .text segment", iter);
             continue;
         }
 
