@@ -82,14 +82,11 @@ int cldm_elfdump_needed(struct cldm_elfmap const *map) {
 }
 
 void cldm_elfdump_sections(struct cldm_elfmap const *map) {
-    Elf64_Ehdr *ehdr;
     Elf64_Shdr shdr;
 
-    ehdr = map->addr;
-
     cldm_log("sections:");
-    for(Elf64_Half i = 0; i < ehdr->e_shnum; i++) {
-        cldm_mcpy(&shdr, (unsigned char *)map->addr + ehdr->e_shoff + i * ehdr->e_shentsize, sizeof(shdr));
+    for(Elf64_Half i = 0; i < map->m_un.ehdr->e_shnum; i++) {
+        cldm_mcpy(&shdr, cldm_elf_shdr(map, i), sizeof(shdr));
 
         cldm_log("name: %-20s type: %s", map->shstrtab + shdr.sh_name, cldm_elf_section_type(shdr.sh_type));
     }

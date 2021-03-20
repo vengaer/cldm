@@ -8,7 +8,6 @@
 #include <errno.h>
 #include <string.h>
 
-#include <elf.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -25,22 +24,18 @@ static inline void cldm_elf_map_section_fail(struct cldm_elfmap const *map) {
 }
 
 /* Get nth section header */
-static inline void *cldm_elf_shdr(struct cldm_elfmap const *map, unsigned n) {
-    return (unsigned char *)map->addr + ((Elf64_Ehdr *)map->addr)->e_shoff + n * ((Elf64_Ehdr *)map->addr)->e_shentsize;
-}
+void *cldm_elf_shdr(struct cldm_elfmap const *map, unsigned n);
 
 /* Get address of section header string table */
 static char const *cldm_elf_shstrtab(struct cldm_elfmap const *map) {
-    Elf64_Ehdr *ehdr;
     Elf64_Shdr shdr;
 
-    ehdr = map->addr;
-    if(ehdr->e_shstrndx == SHN_UNDEF) {
+    if(map->m_un.ehdr->e_shstrndx == SHN_UNDEF) {
         return 0;
     }
 
-    cldm_mcpy(&shdr, cldm_elf_shdr(map, ehdr->e_shstrndx), sizeof(shdr));
-    return (char const *)map->addr + shdr.sh_offset;
+    cldm_mcpy(&shdr, cldm_elf_shdr(map, map->m_un.ehdr->e_shstrndx), sizeof(shdr));
+    return (char const *)map->m_un.addr + shdr.sh_offset;
 }
 
 static inline void cldm_map_strtab(struct cldm_strtab *restrict strtab, size_t baseaddr, void *restrict hdr) {
@@ -52,14 +47,12 @@ static inline void cldm_map_strtab(struct cldm_strtab *restrict strtab, size_t b
 
 /* Map .strtab and .dynstr sections */
 static int cldm_elf_map_sections(struct cldm_elfmap *map) {
-    Elf64_Ehdr *ehdr;
     Elf64_Shdr shdr;
-    ehdr = map->addr;
     void *addr;
     void *strtab_hdr = 0;
     void *dynstr_hdr = 0;
 
-    for(Elf64_Half i = 0; i < ehdr->e_shnum; i++) {
+    for(Elf64_Half i = 0; i < map->m_un.ehdr->e_shnum; i++) {
         addr = cldm_elf_shdr(map, i);
         cldm_mcpy(&shdr, addr, sizeof(shdr));
 
@@ -74,11 +67,11 @@ static int cldm_elf_map_sections(struct cldm_elfmap *map) {
     }
 
     if(strtab_hdr) {
-        cldm_map_strtab(&map->strtab, (size_t)map->addr, strtab_hdr);
+        cldm_map_strtab(&map->strtab, (size_t)map->m_un.addr, strtab_hdr);
     }
 
     if(dynstr_hdr) {
-        cldm_map_strtab(&map->dynstr, (size_t)map->addr, dynstr_hdr);
+        cldm_map_strtab(&map->dynstr, (size_t)map->m_un.addr, dynstr_hdr);
     }
 
     return !!strtab_hdr + !!dynstr_hdr;
@@ -86,13 +79,10 @@ static int cldm_elf_map_sections(struct cldm_elfmap *map) {
 
 /* Find section based with given type and name */
 static void *cldm_elf_section(struct cldm_elfmap const *restrict map, Elf64_Word type, char const *restrict secname) {
-    Elf64_Ehdr *ehdr;
     Elf64_Shdr shdr;
     void *addr;
 
-    ehdr = map->addr;
-
-    for(Elf64_Half i = 0; i < ehdr->e_shnum; i++) {
+    for(Elf64_Half i = 0; i < map->m_un.ehdr->e_shnum; i++) {
         addr = cldm_elf_shdr(map, i);
         cldm_mcpy(&shdr, addr, sizeof(shdr));
         if(shdr.sh_type == type && cldm_ntbscmp(map->shstrtab + shdr.sh_name, secname) == 0) {
@@ -115,17 +105,15 @@ static inline void *cldm_elf_dynamic(struct cldm_elfmap const *map) {
 
 /* Get address of Elf64_Sym struct for the given name */
 static void *cldm_elf_sym(struct cldm_elfmap const *restrict map, char const *restrict symbol) {
-    Elf64_Ehdr *ehdr;
     Elf64_Shdr shdr;
     Elf64_Sym sym;
     void *addr;
-    ehdr = map->addr;
 
-    for(Elf64_Half i = 0; i < ehdr->e_shnum; i++) {
+    for(Elf64_Half i = 0; i < map->m_un.ehdr->e_shnum; i++) {
         cldm_mcpy(&shdr, cldm_elf_shdr(map, i), sizeof(shdr));
         if(shdr.sh_type == SHT_SYMTAB) {
             for(Elf64_Xword j = 0; j < shdr.sh_size; j += sizeof(sym)) {
-                addr = (unsigned char *)map->addr + shdr.sh_offset + j;
+                addr = (unsigned char *)map->m_un.addr + shdr.sh_offset + j;
                 cldm_mcpy(&sym, addr, sizeof(sym));
                 if(sym.st_name != STN_UNDEF && cldm_ntbscmp(symbol, map->strtab.addr + sym.st_name) == 0) {
                     return addr;
@@ -212,7 +200,7 @@ int cldm_map_elf(struct cldm_elfmap *restrict map, char const *restrict file) {
     }
 
     *map = (struct cldm_elfmap){
-        .addr = addr,
+        .m_un.addr = addr,
         .size = sb.st_size
     };
     map->shstrtab = cldm_elf_shstrtab(map);
@@ -245,7 +233,7 @@ epilogue:
 }
 
 int cldm_unmap_elf(struct cldm_elfmap *map) {
-    if(munmap(map->addr, map->size) == -1) {
+    if(munmap(map->m_un.addr, map->size) == -1) {
         cldm_err("munmap: %s", strerror(errno));
         return -1;
     }
@@ -254,14 +242,12 @@ int cldm_unmap_elf(struct cldm_elfmap *map) {
 }
 
 bool cldm_is_elf64(struct cldm_elfmap const *map) {
-    Elf64_Ehdr ehdr;
-    cldm_mcpy(&ehdr, map->addr, sizeof(ehdr));
 
-    return ehdr.e_ident[EI_MAG0] == ELFMAG0 &&
-           ehdr.e_ident[EI_MAG1] == ELFMAG1 &&
-           ehdr.e_ident[EI_MAG2] == ELFMAG2 &&
-           ehdr.e_ident[EI_MAG3] == ELFMAG3 &&
-           ehdr.e_ident[EI_CLASS] == ELFCLASS64;
+    return map->m_un.ehdr->e_ident[EI_MAG0]  == ELFMAG0 &&
+           map->m_un.ehdr->e_ident[EI_MAG1]  == ELFMAG1 &&
+           map->m_un.ehdr->e_ident[EI_MAG2]  == ELFMAG2 &&
+           map->m_un.ehdr->e_ident[EI_MAG3]  == ELFMAG3 &&
+           map->m_un.ehdr->e_ident[EI_CLASS] == ELFCLASS64;
 }
 
 ssize_t cldm_elf_read_strtab(struct cldm_elfmap const *restrict map, char *restrict buffer, char const *restrict section, size_t bufsize) {
@@ -294,7 +280,7 @@ ssize_t cldm_elf_read_strtab(struct cldm_elfmap const *restrict map, char *restr
         return -E2BIG;
     }
 
-    cldm_mcpy(buffer, (unsigned char *)map->addr + shdr.sh_offset + 1, shdr.sh_size - 1);
+    cldm_mcpy(buffer, (unsigned char *)map->m_un.addr + shdr.sh_offset + 1, shdr.sh_size - 1);
     return shdr.sh_size - 1;
 }
 
@@ -314,7 +300,7 @@ ssize_t cldm_elf_read_needed(struct cldm_elfmap const *restrict map, char *restr
 
     offset = 0;
     for(Elf64_Xword i = 0; i < shdr.sh_size; i += sizeof(dyn)) {
-        cldm_mcpy(&dyn, (unsigned char *)map->addr + shdr.sh_offset + i, sizeof(dyn));
+        cldm_mcpy(&dyn, (unsigned char *)map->m_un.addr + shdr.sh_offset + i, sizeof(dyn));
         if(dyn.d_tag == DT_NEEDED) {
             nbytes = cldm_ntbscpy(buffer + offset, map->dynstr.addr + dyn.d_un.d_val, bufsize - offset);
             if(nbytes < 0 || (size_t)(offset + nbytes + 1) >= bufsize) {
