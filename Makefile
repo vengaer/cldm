@@ -1,4 +1,7 @@
+include     scripts/modules.mk
+
 CC          ?= gcc
+
 AR          ?= ar
 LN          ?= ln
 MKDIR       ?= mkdir
@@ -6,6 +9,7 @@ RM          ?= rm
 ECHO        ?= echo
 TOUCH       ?= touch
 PYTEST      ?= pytest
+
 
 libstem     := libcldm
 sover       := 0
@@ -17,10 +21,10 @@ dext        := d
 soext       := so
 aext        := a
 
-builddir    := build
-srcdir      := $(patsubst lib%,%,$(libstem))
-testdir     := test
-functestdir := $(testdir)/functional
+root        := $(abspath $(CURDIR))
+
+builddir    := $(root)/build
+srcdir      := $(root)/$(patsubst lib%,%,$(libstem))
 
 lcldm       := $(libstem).$(soext).$(sover)
 link        := $(libstem).$(soext)
@@ -43,34 +47,32 @@ PYTESTFLAGS := -v --rootdir=$(functestdir)
 
 QUIET       ?= @
 
-help        := .help.stamp
+module_path := $(root)
+module_mk   := Makefile
 
-mainsrc     := $(wildcard $(srcdir)/*_main.$(cext))
-mainobj     := $(patsubst $(srcdir)/%.$(cext),$(builddir)/%.$(oext),$(mainsrc))
-src         := $(filter-out $(mainsrc),$(wildcard $(srcdir)/*.$(cext)))
-obj         := $(patsubst $(srcdir)/%.$(cext),$(builddir)/%.$(oext),$(src))
+$(call include-module,$(notdir $(srcdir)))
 
 .PHONY: all
-all: $(lcldm) $(link) $(lcldm_main)
+all: $(link) $(lcldm_main)
 
 $(link): $(lcldm)
 	$(info [LN]  $@)
 	$(QUIET)$(LN) $(LNFLAGS) $(abspath $(CURDIR))/$^ $@
 
-$(lcldm): $(obj)
+$(lcldm): $(lcldm_obj)
 	$(info [LD]  $@)
 	$(QUIET)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 
-$(lcldm_main): $(mainobj)
+$(lcldm_main): $(lcldm_main_obj)
 	$(info [AR]  $@)
 	$(QUIET)$(AR) $(ARFLAGS) $@ $^
 
-$(builddir)/%.$(oext): $(srcdir)/%.$(cext) $(cldmgen) | $(builddir)
-	$(info [CC]  $@)
+$(builddir)/%.$(oext): $(root)/%.$(cext) $(cldmgen)
+	$(info [CC]  $(notdir $@))
 	$(QUIET)$(CC) -o $@ $< $(CFLAGS) $(CPPFLAGS)
 
 $(cldmgen): $(MOCKUPS)
-	$(info [GEN] $@)
+	$(info [GEN] $(notdir $@))
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CLDM_CONFIG_H\n#define CLDM_CONFIG_H\n#include "$^"\n#endif' > $@
 
 $(MOCKUPS):
@@ -78,39 +80,18 @@ $(MOCKUPS):
 	$(info [GEN] $(notdir $@))
 	$(QUIET)$(TOUCH) $@
 
-.PHONY: test
-test:
+.PHONY: functional_tests
+functional_tests:
 	$(QUIET)$(PYTEST) $(PYTESTFLAGS)
+
+.PHONY: test
+test: functional_tests
 
 .PHONY: check
 check: test
 
-$(builddir):
-	$(QUIET)$(MKDIR) $(MKDIRFLAGS) $@
-
 .PHONY: clean
 clean:
 	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(lcldm) $(lcldm_main) $(link) $(help) $(cldmgen)
-
-$(help):
-	$(info +========+)
-	$(info |  cldm  |)
-	$(info +========+)
-	$(info Linker-based function mocking)
-	$(info )
-	$(info Building:)
-	$(info Create $(MOCKUPS) and specify which functions to mock)
-	$(info Run 'make' (without any targets))
-	$(info The path to mockups file may be modified by passing the MOCKUPS variable)
-	$(info )
-	$(info Testing (requires pytest):)
-	$(info Run 'make test')
-	$(info )
-	$(info For more info: gitlab.com/vilhelmengstrom/cldm)
-	$(QUIET)$(TOUCH) $@
-	$(QUIET)$(RM) $@
-
-.PHONY: help
-help: $(help)
 
 -include $(obj:.$(oext)=.$(dext))
