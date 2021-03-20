@@ -320,7 +320,6 @@ void (*cldm_elf_func(struct cldm_elfmap const *restrict map, char const *restric
 
     symaddr = cldm_elf_sym(map, func);
     if(!symaddr) {
-        cldm_err("Could not locate address of %s in .text segment", func);
         return 0;
     }
 

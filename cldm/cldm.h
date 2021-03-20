@@ -4,6 +4,7 @@
 #include "cldm_rtassert.h"
 #include "cldm_dl.h"
 #include "cldm_macro.h"
+#include "cldm_test.h"
 
 #include <stddef.h>
 #include <stdio.h>
