@@ -10,3 +10,12 @@ TEST(cldm_ntbschr) {
     str = "a string without slashes";
     ASSERT_EQ(cldm_ntbschr((char *)str, '/'), 0);
 }
+
+TEST(cldm_ntbscrchr) {
+    char const *str = "a string with spaces";
+    ASSERT_EQ(cldm_ntbscrchr(str, ' '), str + 13);
+    str = "/some/path/to/a/file";
+    ASSERT_EQ(cldm_ntbscrchr(str, '/'), str + 15);
+    str = "a_string";
+    ASSERT_EQ(cldm_ntbscrchr(str, ' '), 0);
+}

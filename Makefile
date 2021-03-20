@@ -94,16 +94,16 @@ $(MOCKUPS):
 	$(info [GEN] $(notdir $@))
 	$(QUIET)$(TOUCH) $@
 
-.PHONY: functional_test
-functional_test:
+.PHONY: functional
+functional:
 	$(QUIET)$(PYTEST) $(PYTESTFLAGS)
 
-.PHONY: unit_test
-unit_test: $(cldmtest)
+.PHONY: unit
+unit: $(cldmtest)
 	$(QUIET)LD_LIBRARY_PATH=$(root) ./$<
 
 .PHONY: test
-test: unit_test functional_test
+test: unit functional
 
 .PHONY: check
 check: test
