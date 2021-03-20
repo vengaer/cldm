@@ -1,7 +1,7 @@
 #ifndef CLDM_H
 #define CLDM_H
 
-#include "cldm_assert.h"
+#include "cldm_rtassert.h"
 #include "cldm_dl.h"
 #include "cldm_macro.h"
 
@@ -541,7 +541,7 @@
 #define cldm_will(invocations, ...)                                                                     \
         __VA_ARGS__;                                                                                    \
         *(int *)((unsigned char *)mockinfo->addr + mockinfo->invocations_offset) = invocations;         \
-        cldm_assert((*(int *)((unsigned char *)mockinfo->addr + mockinfo->invocations_offset)) > -2);   \
+        cldm_rtassert((*(int *)((unsigned char *)mockinfo->addr + mockinfo->invocations_offset)) > -2); \
     } while (0)
 
 #define cldm_set_opmode(mode)                                                               \
@@ -639,13 +639,13 @@ enum cldm_opmode {
                     call_prefix ++cldm_mock_ ## name.opdata.act.counter;                                            \
                     break;                                                                                          \
                 case CLDM_OP_RETARG:                                                                                \
-                    cldm_assert(cldm_mock_ ## name.opdata.act.argindex < cldm_arrsize(argaddrs),                    \
+                    cldm_rtassert(cldm_mock_ ## name.opdata.act.argindex < cldm_arrsize(argaddrs),                  \
                                  "Attempt to access parameter %u in function taking only %zu",                      \
                                  cldm_mock_ ## name.opdata.act.argindex + 1, cldm_arrsize(argaddrs));               \
                     call_prefix *(utype *)argaddrs[cldm_mock_ ## name.opdata.act.argindex];                         \
                     break;                                                                                          \
                 case CLDM_OP_RETPOINTEE:                                                                            \
-                    cldm_assert(cldm_mock_ ## name.opdata.act.argindex < cldm_arrsize(argaddrs),                    \
+                    cldm_rtassert(cldm_mock_ ## name.opdata.act.argindex < cldm_arrsize(argaddrs),                  \
                                  "Attempt to access parameter %u in function taking only %zu",                      \
                                  cldm_mock_ ## name.opdata.act.argindex + 1, cldm_arrsize(argaddrs));               \
                     call_prefix **(utype **)argaddrs[cldm_mock_ ## name.opdata.act.argindex];                       \
@@ -656,7 +656,7 @@ enum cldm_opmode {
                            cldm_mock_ ## name.opdata.act.assign_ctx.argsize);                                       \
                     break;                                                                                          \
                 case CLDM_OP_ASSIGNARG:                                                                             \
-                    cldm_assert(cldm_mock_ ## name.opdata.act.assignarg_ctx.argidx < cldm_arrsize(argaddrs),        \
+                    cldm_rtassert(cldm_mock_ ## name.opdata.act.assignarg_ctx.argidx < cldm_arrsize(argaddrs),      \
                                  "Attempt to access parameter %u in function taking only %zu",                      \
                                  cldm_mock_ ## name.opdata.act.assignarg_ctx.argidx + 1, cldm_arrsize(argaddrs));   \
                     memcpy(cldm_mock_ ## name.opdata.act.assignarg_ctx.addr,                                        \
@@ -664,13 +664,13 @@ enum cldm_opmode {
                            cldm_mock_ ## name.opdata.act.assignarg_ctx.argsize);                                    \
                     break;                                                                                          \
                 default:                                                                                            \
-                    cldm_assert(0, "Invalid opmode %d", cldm_mock_ ## name.opdata.mode);                            \
+                    cldm_rtassert(0, "Invalid opmode %d", cldm_mock_ ## name.opdata.mode);                          \
             }                                                                                                       \
             retstatement;                                                                                           \
         }                                                                                                           \
         rettype(* cldm_handle_ ## name)(__VA_ARGS__);                                                               \
         *(void **) (& cldm_handle_ ## name) = cldm_dlsym_next(#name);                                               \
-        cldm_assert(cldm_handle_ ## name);                                                                          \
+        cldm_rtassert(cldm_handle_ ## name);                                                                        \
         call_prefix cldm_handle_ ## name(cldm_arglist(cldm_count(__VA_ARGS__)));                                    \
         retstatement;                                                                                               \
     }                                                                                                               \
@@ -713,13 +713,13 @@ enum cldm_opmode {
                            cldm_mock_ ## name.opdata.act.assign_ctx.argsize);                   \
                     break;                                                                      \
                 default:                                                                        \
-                    cldm_assert(0, "Invalid opmode %d", cldm_mock_ ## name.opdata.mode);        \
+                    cldm_rtassert(0, "Invalid opmode %d", cldm_mock_ ## name.opdata.mode);      \
             }                                                                                   \
             retstatement;                                                                       \
         }                                                                                       \
         rettype(* cldm_handle_ ## name)(void);                                                  \
         *(void **) (& cldm_handle_ ## name) = cldm_dlsym_next(#name);                           \
-        cldm_assert(cldm_handle_ ## name);                                                      \
+        cldm_rtassert(cldm_handle_ ## name);                                                    \
         call_prefix cldm_handle_ ## name ();                                                    \
         retstatement;                                                                           \
     }                                                                                           \

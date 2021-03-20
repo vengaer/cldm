@@ -4,6 +4,7 @@
 #include "cldm_dl.h"
 #include "cldm_macro.h"
 
+#include <stdbool.h>
 #include <stdio.h>
 
 #include <unistd.h>

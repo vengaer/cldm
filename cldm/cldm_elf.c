@@ -1,4 +1,4 @@
-#include "cldm_assert.h"
+#include "cldm_rtassert.h"
 #include "cldm_elf.h"
 #include "cldm_log.h"
 #include "cldm_macro.h"
@@ -81,7 +81,7 @@ static inline int cldm_elf_validate_section_map(struct cldm_elfmap const *map, i
         case 3:
             break;
         default:
-            cldm_assert(0);
+            cldm_rtassert(0);
     }
 
     return 0;

@@ -1,7 +1,7 @@
 #ifndef CLDM_DL_H
 #define CLDM_DL_H
 
-#include "cldm_assert.h"
+#include "cldm_rtassert.h"
 
 #include <stdbool.h>
 #include <stddef.h>
