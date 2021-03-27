@@ -162,7 +162,7 @@ TEST(cldm_rbtree_remove) {
     cldm_rbtree tree = cldm_rbtree_init();
 
     for(unsigned i = 0; i < cldm_arrsize(nodes) - 1; i++) {
-        cldm_rbtree_insert(&tree, &nodes[i].node, compare);
+        ASSERT_TRUE(cldm_rbtree_insert(&tree, &nodes[i].node, compare));
     }
 
     ASSERT_FALSE(cldm_rbtree_remove(&tree, &nodes[cldm_arrsize(nodes) - 1].node, compare));
@@ -171,5 +171,38 @@ TEST(cldm_rbtree_remove) {
     for(unsigned i = 0; i < cldm_arrsize(nodes) - 1; i++) {
         ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
         ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+    }
+}
+
+TEST(cldm_rbtree_for_each) {
+    enum { SIZE = 1024 };
+
+    struct inode nodes[SIZE];
+    struct inode *iiter;
+    struct cldm_rbnode *rbiter;
+    int ref[SIZE];
+    unsigned i;
+
+    for(i = 0; i < cldm_arrsize(nodes); i++) {
+        nodes[i].value = i % 2 ? -i : i;
+    }
+
+    for(i = 0; i < cldm_arrsize(nodes) / 2; i++) {
+        ref[i] = -1023 + 2 * (int)i;
+    }
+
+    for(; i < cldm_arrsize(nodes); i++) {
+        ref[i] = 2 * (i - cldm_arrsize(nodes) / 2);
+    }
+
+    cldm_rbtree tree = cldm_rbtree_init();
+
+    cldm_for_each(iiter, nodes) {
+        ASSERT_TRUE(cldm_rbtree_insert(&tree, &iiter->node, compare));
+    }
+
+    i = 0;
+    cldm_rbtree_for_each(rbiter, &tree) {
+        ASSERT_EQ(nodeval(rbiter), ref[i++]);
     }
 }
