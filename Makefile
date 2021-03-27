@@ -12,7 +12,6 @@ PYTEST      ?= pytest
 
 cldmver     := 0.1.0
 
-
 libstem     := libcldm
 sover       := 0
 socompat    := 0
@@ -40,12 +39,12 @@ lcldm_main  := $(libstem)_main.$(aext)
 cldmtest    := cldmtest
 
 cldmgen     := $(libsrcdir)/cldmgen.h
+config      := $(libsrcdir)/cldm_config.h
 
 MOCKUPS     ?= $(abspath $(libsrcdir)/mockups.h)
 
 CFLAGS      := -std=c11 -Wall -Wextra -Wpedantic -fPIC -c -MD -MP -g
-CPPFLAGS     = -D_GNU_SOURCE -DCLDM_VERSION=$(cldmver) $(if $(filter y,$(has_generic)),-DCLDM_HAS_GENERIC) \
-               -DCLDM_ARCH_$(patsubst %-bit,%,$(arch)) -DCLDM_ABI_$(abi) -I$(root)
+CPPFLAGS     = -D_GNU_SOURCE -DCLDM_VERSION=$(cldmver) -I$(root)
 LDFLAGS     := -shared -Wl,-soname,$(libstem).$(soext).$(socompat)
 LDLIBS      := -ldl
 
@@ -64,7 +63,9 @@ QUIET       ?= @
 module_path := $(root)
 module_mk   := Makefile
 
-builddeps   :=
+prepare     := $(builddir)/.prepare.stamp
+
+prepdeps    :=
 
 .PHONY: all
 all: $(link) $(lcldm_main)
@@ -72,6 +73,9 @@ all: $(link) $(lcldm_main)
 ifneq ($(MAKECMDGOALS),clean)
   $(call include-each-module,$(srcdirs))
 endif
+
+$(prepare): $(prepdeps)
+	$(QUIET)$(TOUCH) $@
 
 $(link): $(lcldm)
 	$(info [LN]  $@)
@@ -89,7 +93,7 @@ $(lcldm_main): $(lcldm_main_obj)
 	$(info [AR]  $@)
 	$(QUIET)$(AR) $(ARFLAGS) $@ $^
 
-$(builddir)/%.$(oext): $(root)/%.$(cext) $(cldmgen) $(builddeps)
+$(builddir)/%.$(oext): $(root)/%.$(cext) $(cldmgen) $(config)
 	$(info [CC]  $(notdir $@))
 	$(QUIET)$(CC) -o $@ $< $(CFLAGS) $(CPPFLAGS)
 
@@ -97,8 +101,15 @@ $(cldmgen): $(MOCKUPS)
 	$(info [GEN] $(notdir $@))
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CLDMGEN_H\n#define CLDMGEN_H\n#include "$^"\n#endif /* CLDMGEN_H */' > $@
 
+$(config): $(prepare)
+	$(info [GEN] $(notdir $@))
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CLDM_CONFIG_H\n#define CLDM_CONFIG_H\n' > $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '$(if $(filter y,$(has_generic)),#define CLDM_HAS_GENERIC)\n' >> $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_ARCH_$(patsubst %-bit,%,$(arch))\n' >> $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_ABI_$(abi)\n' >> $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '#endif /* CLDM_CONFIG_H */' >> $@
+
 $(MOCKUPS):
-	$(info $@ not found, generating empty one)
 	$(info [GEN] $(notdir $@))
 	$(QUIET)$(TOUCH) $@
 
@@ -118,6 +129,6 @@ check: test
 
 .PHONY: clean
 clean:
-	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(lcldm) $(lcldm_main) $(link) $(help) $(cldmgen) $(cldmtest)
+	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(lcldm) $(lcldm_main) $(link) $(help) $(cldmgen) $(cldmtest) $(config)
 
 -include $(obj:.$(oext)=.$(dext))

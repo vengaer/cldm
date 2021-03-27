@@ -216,7 +216,7 @@ void cldm_assert_internal(bool eval, char const *restrict expr, char const *rest
     ++cldm_test_log.size;
 }
 
-#ifdef cldm_has_generic
+#ifdef CLDM_HAS_GENERIC
 
 #define generic_cmp_assertion(lhs, rhs, lexpand, rexpand, file, line, fmt, cmp)             \
     do {                                                                                    \
@@ -268,4 +268,4 @@ cldm_genassert_defs(>=, ge, cldm_genassert_typelist)
 cldm_genassert_defs(<,  lt, cldm_genassert_typelist)
 cldm_genassert_defs(<=, le, cldm_genassert_typelist)
 
-#endif /* cldm_has_generic */
+#endif /* CLDM_HAS_GENERIC */

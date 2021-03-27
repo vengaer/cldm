@@ -76,7 +76,7 @@ void cldm_assert_internal(bool eval, char const *restrict expr, char const *rest
 #define CLDM_ASSERT_FALSE(expr)     \
     CLDM_ASSERT_TRUE(!(expr))
 
-#ifdef cldm_has_generic
+#ifdef CLDM_HAS_GENERIC
 
 #define cldm_genassert_typelist \
     c,   int,                   \
@@ -144,7 +144,7 @@ cldm_genassert_decls(le, cldm_genassert_typelist)
 #define CLDM_ASSERT_LE(l, r)    \
     cldm_assert_generic(l, r, le)
 
-#else /* cldm_has_generic */
+#else /* CLDM_HAS_GENERIC */
 
 #define CLDM_ASSERT_EQ(l, r)        \
     CLDM_ASSERT_TRUE((l) == (r))
@@ -164,6 +164,6 @@ cldm_genassert_decls(le, cldm_genassert_typelist)
 #define CLDM_ASSERT_GE(l, r)        \
     CLDM_ASSERT_TRUE((l) >= (r))
 
-#endif /* cldm_has_generic */
+#endif /* CLDM_HAS_GENERIC */
 
 #endif /* CLDM_TEST_H */

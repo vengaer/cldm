@@ -7,14 +7,15 @@ $($(module_name)_target): $($(module_name)_obj)
 	$(info [LD]  $(notdir $@))
 	$(QUIET)$(CC) -o $@ $^
 
-$(patsubst $(root)/%,$(builddir)/%,$(module_path))/%.$(oext): $(moduel_path)/%.$(cext)
-	$(info [CC]  $@)
-	$(QUIET)$(CC) $(filter-out -fPIC,$(CFLAGS)) $(CPPFLAGS) $@ $<
-
 $(config_mk): $($(module_name)_target)
 	$(QUIET)$^ $@
 
-builddeps += $(eval include $(config_mk))
+$(patsubst $(root)/%,$(builddir)/%,$(module_path))/%.$(oext): $(module_path)/%.$(cext)
+	$(info [CC]  $(notdir $@))
+	$(QUIET)$(CC) -o $@ $< $(CFLAGS) $(CPPFLAGS)
+
+prepdeps  += $(config_mk)
+include $(config_mk)
 
 ifndef module_name
 target := $(if $(MAKECMDGOALS),$(MAKECMDGOALS),recurse)
