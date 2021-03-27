@@ -125,11 +125,14 @@ static void *cldm_elf_sym(struct cldm_elfmap const *restrict map, char const *re
     return 0;
 }
 
-/* Get address of where executable is loaded in memory */
 static void *cldm_elf_baseaddr(struct cldm_elfmap const *map) {
     extern int main(void);
+
     Elf64_Phdr phdr;
     Elf64_Addr baseaddr;
+    Elf64_Shdr shdr;
+    Elf64_Sym  sym;
+    void *relmain;
     void *phaddr;
 
     baseaddr = ~(Elf64_Addr)0;
@@ -143,10 +146,21 @@ static void *cldm_elf_baseaddr(struct cldm_elfmap const *map) {
         baseaddr = baseaddr ^ ((phdr.p_vaddr ^ baseaddr) & -(phdr.p_vaddr < baseaddr));
     }
 
-    Elf64_Shdr shdr;
-    Elf64_Sym sym;
-    void *relmain = cldm_elf_sym(map, "main");
+    relmain = cldm_elf_sym(map, "main");
     cldm_mcpy(&sym, relmain, sizeof(sym));
+
+    switch(sym.st_shndx) {
+        case SHN_UNDEF:
+            cldm_err("Cannot lookup external main");
+            return 0;
+        case SHN_ABS:
+            cldm_err("Failed to resolve base address of executable");
+            return 0;
+        default:
+            // NOP
+            break;
+    }
+
     cldm_mcpy(&shdr, cldm_elf_shdr(map, sym.st_shndx), sizeof(shdr));
 
     return (void *)((size_t)main - sym.st_value - baseaddr);
@@ -157,8 +171,8 @@ static size_t cldm_elf_symaddr(struct cldm_elfmap const *restrict map, Elf64_Sym
     Elf64_Shdr shdr;
     switch(sym->st_shndx) {
         case SHN_UNDEF:
-            cldm_rtassert(0, "External symbols not supported");
-            break;
+            cldm_err("External test symbols not supported");
+            return 0;
         case SHN_ABS:
             return sym->st_value;
         default:
