@@ -43,7 +43,7 @@ config      := $(libsrcdir)/cldm_config.h
 
 MOCKUPS     ?= $(abspath $(libsrcdir)/mockups.h)
 
-CFLAGS      := -std=c11 -Wall -Wextra -Wpedantic -fPIC -c -MD -MP -g
+CFLAGS      := -std=c99 -Wall -Wextra -Wpedantic -fPIC -c -MD -MP -g
 CPPFLAGS     = -D_GNU_SOURCE -DCLDM_VERSION=$(cldmver) -I$(root)
 LDFLAGS     := -shared -Wl,-soname,$(libstem).$(soext).$(socompat)
 LDLIBS      := -ldl
