@@ -14,8 +14,8 @@ enum {
 };
 
 struct inode {
-    int value;
     struct cldm_rbnode node;
+    int value;
 };
 
 static inline int rand_range(int low, int high) {
