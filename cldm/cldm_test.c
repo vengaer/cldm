@@ -85,6 +85,25 @@ static int cldm_test_init(void) {
     return 0;
 }
 
+static bool cldm_test_ensure_logcapacity(void) {
+    void *addr;
+    size_t new_cap;
+
+    if(cldm_test_log.size  + 1 >= cldm_test_log.capacity) {
+        new_cap = 2 * cldm_test_log.capacity * sizeof(*cldm_test_log.l_un.data);
+        addr = realloc(cldm_test_log.l_un.addr, new_cap);
+        cldm_rtassert(addr, "Could not allocate chunk of %zu bytes", new_cap);
+        if(!addr) {
+            free(cldm_test_log.l_un.addr);
+            return false;
+        }
+        cldm_test_log.l_un.addr = addr;
+        cldm_test_log.capacity = new_cap;
+    }
+
+    return true;
+}
+
 static inline void cldm_test_free(void) {
     free(cldm_test_log.l_un.addr);
 }
@@ -175,8 +194,6 @@ int cldm_test_invoke_each(cldm_rbtree const *restrict tests, struct cldm_elfmap 
 
 
 void cldm_test_assertion(char const *restrict expr, char const *restrict file, char const *restrict line, bool result) {
-    void *addr;
-    size_t new_cap;
     ++cldm_test_log.total_assertions;
 
     if(result) {
@@ -191,13 +208,7 @@ void cldm_test_assertion(char const *restrict expr, char const *restrict file, c
     }
 
     ++cldm_test_log.failed_assertions;
-
-    if(cldm_test_log.size  + 1 >= cldm_test_log.capacity) {
-        new_cap = 2 * cldm_test_log.capacity * sizeof(*cldm_test_log.l_un.data);
-        addr = realloc(cldm_test_log.l_un.addr, new_cap);
-        cldm_rtassert(addr, "Could not allocate chunk of %zu bytes", new_cap);
-        cldm_test_log.l_un.addr = addr;
-    }
+    cldm_rtassert(cldm_test_ensure_logcapacity(), "Could not increase test log size");
 
     snprintf(cldm_test_log.l_un.data[cldm_test_log.size], sizeof(cldm_test_log.l_un.data[cldm_test_log.size]),
              "| %s:%s: Assertion failure in %s:\n"
