@@ -9,5 +9,5 @@ global_teardown = 'cldm_global_teardown'
 
 test_failure_status = 1
 
-def build_cldm():
-    return exec_bash('make -j$(nproc) -B -C {} CFLAGS="{}"'.format(project_root, libcflags))
+def build_cldm(cflags=None):
+    return exec_bash('make -j$(nproc) -B -C {} CFLAGS="{}"'.format(project_root, cflags if cflags else libcflags))
