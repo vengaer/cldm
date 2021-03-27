@@ -94,8 +94,7 @@ static bool read_elf(char const *argv0) {
             goto epilogue;
     }
 
-    int i = memcmp(ehdr.e_ident, (unsigned char[]){ ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3 }, 4);
-    if(i) {
+    if(memcmp(ehdr.e_ident, (unsigned char[]){ ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3 }, 4)) {
         fprintf(stderr, "%s is not an ELF file\n", argv0);
         goto epilogue;
     }
