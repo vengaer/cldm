@@ -35,3 +35,27 @@ void *cldm_mcpy(void *restrict dst, void const *restrict src, size_t size) {
 
     return dst;
 }
+
+void *cldm_mset(void *dst, int c, size_t size) {
+    union {
+        unsigned char *byte;
+        unsigned *dword;
+    } d = { .byte = dst };
+
+    unsigned dw = (c << 24) | (c << 16) | (c << 8) | c;
+
+    size_t align = cldm_alignof(unsigned);
+    unsigned i = 0;
+
+    for(; i < size && (((size_t)d.byte) % align); i++) {
+        *d.byte++ = (unsigned char)c;
+    }
+    for(; i + sizeof(*d.dword) <= size; i += sizeof(*d.dword)) {
+        *d.dword++ = dw;
+    }
+    for(; i < size; i++) {
+        *d.byte++ = (unsigned char)c;
+    }
+
+    return dst;
+}

@@ -20,6 +20,15 @@
 #define cldm_overload(name, ...)    \
     cldm_cat_expand(name, cldm_count(__VA_ARGS__))(__VA_ARGS__)
 
+#define cldm_container4(addr, type, member, qual)   \
+    ((type qual *) ((unsigned char qual *)addr - cldm_offset(type, member)))
+
+#define cldm_container3(addr, type, member) \
+    cldm_container4(addr, type, member,)
+
+#define cldm_container(...) \
+    cldm_overload(cldm_container, __VA_ARGS__)
+
 #define cldm_count_sequence 128, 127, 126, 125, 124, 123, 122, 121, \
                             120, 119, 118, 117, 116, 115, 114, 113, \
                             112, 111, 110, 109, 108, 107, 106, 105, \
@@ -60,10 +69,10 @@
 #define cldm_count(...) cldm_count_expand(__VA_ARGS__, cldm_count_sequence)
 
 #define cldm_for_each4(iter, array, size, step)                             \
-    for(unsigned cldm_cat_expand(cldm_fe,__LINE__) = (iter = array, 0);     \
-        cldm_cat_expand(cldm_fe,__LINE__) < size;                           \
-        cldm_cat_expand(cldm_fe,__LINE__) += step,                          \
-        iter = &array[cldm_cat_expand(cldm_fe,__LINE__)])
+    for(unsigned cldm_cat_expand(cldm_fe,__LINE__) = ((iter) = (array), 0); \
+        cldm_cat_expand(cldm_fe,__LINE__) < (size);                         \
+        cldm_cat_expand(cldm_fe,__LINE__) += (step),                        \
+        (iter) = &(array)[cldm_cat_expand(cldm_fe,__LINE__)])
 
 #define cldm_for_each3(iter, array, size)                                   \
     cldm_for_each4(iter, array, size, 1)
