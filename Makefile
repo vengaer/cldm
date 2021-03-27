@@ -30,6 +30,9 @@ libsrcdir   := $(root)/$(patsubst lib%,%,$(libstem))
 testdir     := $(root)/test
 srcdirs     := $(libsrcdir) $(testdir)
 
+# Generated during prepare step
+config_mk   := $(builddir)/config.mk
+
 lcldm       := $(libstem).$(soext).$(sover)
 link        := $(libstem).$(soext)
 lcldm_main  := $(libstem)_main.$(aext)
@@ -40,8 +43,9 @@ cldmgen     := $(libsrcdir)/cldmgen.h
 
 MOCKUPS     ?= $(abspath $(libsrcdir)/mockups.h)
 
-CFLAGS      := -std=c99 -Wall -Wextra -Wpedantic -fPIC -c -MD -MP -g
-CPPFLAGS    := -D_GNU_SOURCE -I$(root) -DCLDM_VERSION=$(cldmver)
+CFLAGS      := -std=c11 -Wall -Wextra -Wpedantic -fPIC -c -MD -MP -g
+CPPFLAGS     = -D_GNU_SOURCE -DCLDM_VERSION=$(cldmver) $(if $(filter y,$(has_generic)),-DCLDM_HAS_GENERIC) \
+               -DCLDM_ARCH_$(patsubst %-bit,%,$(arch)) -DCLDM_ABI_$(abi) -I$(root)
 LDFLAGS     := -shared -Wl,-soname,$(libstem).$(soext).$(socompat)
 LDLIBS      := -ldl
 
@@ -60,10 +64,14 @@ QUIET       ?= @
 module_path := $(root)
 module_mk   := Makefile
 
-$(call include-each-module,$(srcdirs))
+builddeps   :=
 
 .PHONY: all
 all: $(link) $(lcldm_main)
+
+ifneq ($(MAKECMDGOALS),clean)
+  $(call include-each-module,$(srcdirs))
+endif
 
 $(link): $(lcldm)
 	$(info [LN]  $@)
@@ -81,7 +89,7 @@ $(lcldm_main): $(lcldm_main_obj)
 	$(info [AR]  $@)
 	$(QUIET)$(AR) $(ARFLAGS) $@ $^
 
-$(builddir)/%.$(oext): $(root)/%.$(cext) $(cldmgen)
+$(builddir)/%.$(oext): $(root)/%.$(cext) $(cldmgen) $(builddeps)
 	$(info [CC]  $(notdir $@))
 	$(QUIET)$(CC) -o $@ $< $(CFLAGS) $(CPPFLAGS)
 
