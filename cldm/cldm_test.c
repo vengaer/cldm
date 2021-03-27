@@ -9,8 +9,8 @@
 
 enum { CLDM_ASSERTION_LEN = 256 };
 enum { CLDM_LOG_INITIAL_CAP = 32 };
-enum { CLDM_RUNBUF_SIZE = 64 };
-enum { CLDM_IDXBUF_SIZE = 32 };
+enum { CLDM_RUNWIDTH = 40 };
+enum { CLDM_IDXWIDTH = 10 };
 
 struct cldm_test_log {
     union {
@@ -142,11 +142,12 @@ ssize_t cldm_test_collect(cldm_rbtree *restrict tree, struct cldm_elfmap const *
 }
 
 int cldm_test_invoke_each(cldm_rbtree const *restrict tests, struct cldm_elfmap const *restrict map, size_t ntests) {
-    char runbuf[CLDM_RUNBUF_SIZE];
-    char idxbuf[CLDM_IDXBUF_SIZE];
     unsigned long long testidx;
     struct cldm_rbnode *iter;
     struct cldm_testrec const *record;
+    unsigned runpad;
+    unsigned idxpad;
+    unsigned length;
 
     void (*lcl_setup)(void);
     void (*lcl_teardown)(void);
@@ -172,10 +173,12 @@ int cldm_test_invoke_each(cldm_rbtree const *restrict tests, struct cldm_elfmap 
         record = cldm_testrec_get(iter, const);
         cldm_test_set(record->name);
 
-        snprintf(runbuf, sizeof(runbuf), "[Running %s]", record->name);
-        snprintf(idxbuf, sizeof(idxbuf), "(%llu/%zu)", ++testidx, ntests);
+        length = cldm_ntbslen(record->name) + sizeof("[Running ]") - 1;
+        runpad = (length <= CLDM_RUNWIDTH) * (CLDM_RUNWIDTH - length);
+        length = snprintf(0, 0, "(%llu/%zu)", ++testidx, ntests);
+        idxpad = (length <= CLDM_IDXWIDTH) * (CLDM_IDXWIDTH - length);
 
-        cldm_log_raw("%-40s %-10s", runbuf, idxbuf);
+        cldm_log_raw("[Running %s]%-*s (%llu/%zu)%-*s", record->name, runpad, "", testidx, ntests, idxpad, "");
         lcl_setup();
         record->handle();
         lcl_teardown();
