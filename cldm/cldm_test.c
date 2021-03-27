@@ -9,6 +9,8 @@
 
 enum { CLDM_ASSERTION_LEN = 256 };
 enum { CLDM_LOG_INITIAL_CAP = 32 };
+enum { CLDM_RUNBUF_SIZE = 64 };
+enum { CLDM_IDXBUF_SIZE = 32 };
 
 struct cldm_test_log {
     union {
@@ -140,6 +142,8 @@ int cldm_test_invoke_each(struct cldm_elfmap const *restrict map, char const *re
     void (*test)(void);
     char *iter;
     unsigned long long testidx;
+    char runbuf[CLDM_RUNBUF_SIZE];
+    char idxbuf[CLDM_IDXBUF_SIZE];
 
     void (*lcl_setup)(void);
     void (*lcl_teardown)(void);
@@ -169,7 +173,10 @@ int cldm_test_invoke_each(struct cldm_elfmap const *restrict map, char const *re
             continue;
         }
 
-        cldm_log_raw("[Running %s] (%llu/%zu)", cldm_test_extract_name(iter), ++testidx, ntests);
+        snprintf(runbuf, sizeof(runbuf), "[Running %s]", cldm_test_extract_name(iter));
+        snprintf(idxbuf, sizeof(idxbuf), "(%llu/%zu)", ++testidx, ntests);
+
+        cldm_log_raw("%-40s %-10s", runbuf, idxbuf);
         lcl_setup();
         test();
         lcl_teardown();
