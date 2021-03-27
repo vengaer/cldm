@@ -1,7 +1,7 @@
 from config import *
 from util import *
 
-test_prefix = 'cldm_test_proc_'
+test_prefix = 'cldm_testproc_'
 local_setup = 'cldm_local_setup'
 local_teardown = 'cldm_local_teardown'
 global_setup = 'cldm_global_setup'

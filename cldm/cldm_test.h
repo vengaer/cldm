@@ -16,8 +16,8 @@ int cldm_test_invoke_each(cldm_rbtree const *restrict tests, struct cldm_elfmap 
 
 void cldm_test_assertion(char const *restrict expr, char const *restrict file, char const *restrict line, bool result);
 
-#define cldm_test_proc_prefix       \
-    cldm_test_proc_
+#define cldm_testproc_prefix       \
+    cldm_testproc_
 #define cldm_local_setup_ident      \
     cldm_local_setup
 #define cldm_local_teardown_ident   \
@@ -31,13 +31,13 @@ void cldm_test_assertion(char const *restrict expr, char const *restrict file, c
     cldm_testrec_
 
 #define CLDM_TEST(testname)                                                 \
-    void cldm_cat_expand(cldm_test_proc_prefix,testname)(void);             \
+    void cldm_cat_expand(cldm_testproc_prefix,testname)(void);              \
     struct cldm_testrec cldm_cat_expand(cldm_testrec_prefix,testname) = {   \
         .name = #testname,                                                  \
         .file = __FILE__,                                                   \
-        .handle = cldm_cat_expand(cldm_test_proc_prefix,testname)           \
+        .handle = cldm_cat_expand(cldm_testproc_prefix,testname)            \
     };                                                                      \
-    void cldm_cat_expand(cldm_test_proc_prefix,testname)(void)
+    void cldm_cat_expand(cldm_testproc_prefix,testname)(void)
 
 #define CLDM_TEST_SETUP()           \
     void cldm_expand(cldm_local_setup_ident)(void)
