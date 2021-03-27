@@ -89,6 +89,8 @@ int cldm_io_redirect2(FILE *restrict fp, char const *restrict path) {
         return -1;
     }
 
+    fflush(fp);
+
     prevfd = dup(fileno(fp));
 
     if(dup2(fd, fileno(fp)) == -1) {
