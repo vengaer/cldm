@@ -28,8 +28,8 @@ int main(int argc, char *argv[argc + 1]) {
         return 1;
     }
 
-    if(!cldm_is_elf64(&map)) {
-        cldm_err("%s is not a 64-bit ELF binary", argv[0]);
+    if(!cldm_is_elf64(&map) || !cldm_elf_is_executable(&map)) {
+        cldm_err("%s is not a 64-bit ELF executable", argv[0]);
         goto epilogue;
     }
 

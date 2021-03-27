@@ -241,12 +241,16 @@ int cldm_unmap_elf(struct cldm_elfmap *map) {
 }
 
 bool cldm_is_elf64(struct cldm_elfmap const *map) {
-
     return map->m_un.ehdr->e_ident[EI_MAG0]  == ELFMAG0 &&
            map->m_un.ehdr->e_ident[EI_MAG1]  == ELFMAG1 &&
            map->m_un.ehdr->e_ident[EI_MAG2]  == ELFMAG2 &&
            map->m_un.ehdr->e_ident[EI_MAG3]  == ELFMAG3 &&
            map->m_un.ehdr->e_ident[EI_CLASS] == ELFCLASS64;
+}
+
+bool cldm_elf_is_executable(struct cldm_elfmap const *map) {
+    return map->m_un.ehdr->e_type == ET_EXEC ||
+           map->m_un.ehdr->e_type == ET_DYN;
 }
 
 ssize_t cldm_elf_read_strtab(struct cldm_elfmap const *restrict map, char *restrict buffer, char const *restrict section, size_t bufsize) {
