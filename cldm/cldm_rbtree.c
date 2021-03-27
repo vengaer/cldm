@@ -1,57 +1,17 @@
-#include "cldm_macro.h"
-#include "cldm_mem.h"
 #include "cldm_rbtree.h"
-#include "cldm_rtassert.h"
 
 #include <stdbool.h>
-
-enum { CLDM_MAX_RBTREE_DEPTH = 1024 };
-
-enum cldm_rbdir {
-    cldm_rbdir_left,
-    cldm_rbdir_right
-};
-
-struct cldm_rbstack_node {
-    struct cldm_rbnode *node;
-    enum cldm_rbdir dir;
-};
-
-struct cldm_rbstack {
-    struct cldm_rbstack_node data[CLDM_MAX_RBTREE_DEPTH];
-    unsigned top;
-};
 
 #define link(node, idx)     \
     (*(struct cldm_rbnode **)((unsigned char *)&(node)->left + ((unsigned char *)&(node)->right - (unsigned char*)&(node)->left) * (idx)))
 
-#define cldm_rbstack_init() \
-    { .top = 0 }
-
-static inline unsigned cldm_rbstack_capacity(struct cldm_rbstack const *stack) {
-    return cldm_arrsize(stack->data);
-}
-
-static inline unsigned cldm_rbstack_size(struct cldm_rbstack const *stack) {
-    return stack->top;
-}
-
-static inline void cldm_rbstack_push(struct cldm_rbstack *restrict stack, struct cldm_rbstack_node const *restrict node) {
-    cldm_rtassert(cldm_rbstack_size(stack) < cldm_rbstack_capacity(stack));
-    stack->data[stack->top++] = *node;
-}
-
-static inline struct cldm_rbstack_node *cldm_rbstack_pop(struct cldm_rbstack *stack) {
-    return &stack->data[--stack->top];
-}
-
-static inline struct cldm_rbstack_node *cldm_rbstack_peek(struct cldm_rbstack *stack) {
-    return &stack->data[stack->top - 1];
-}
-
-static inline bool cldm_rbstack_empty(struct cldm_rbstack *stack) {
-    return !cldm_rbstack_size(stack);
-}
+unsigned cldm_rbstack_capacity(struct cldm_rbstack const *stack);
+unsigned cldm_rbstack_size(struct cldm_rbstack const *stack);
+void cldm_rbstack_push(struct cldm_rbstack *restrict stack, struct cldm_rbstack_node const *restrict node);
+struct cldm_rbstack_node *cldm_rbstack_pop(struct cldm_rbstack *stack);
+struct cldm_rbstack_node *cldm_rbstack_peek(struct cldm_rbstack *stack);
+bool cldm_rbstack_empty(struct cldm_rbstack *stack);
+void cldm_rbtree_descend(struct cldm_rbnode *restrict node, struct cldm_rbstack *restrict stack);
 
 static inline void cldm_rbnode_make_red(struct cldm_rbnode *node) {
     node->color = cldm_rbcolor_red;
