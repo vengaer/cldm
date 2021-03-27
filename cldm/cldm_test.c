@@ -75,10 +75,6 @@ static inline void cldm_test_set(char const *name) {
     };
 }
 
-static inline char const *cldm_test_extract_name(char const *proc) {
-    return proc + sizeof(cldm_str_expand(cldm_test_proc_prefix)) - 1;
-}
-
 static int cldm_test_init(void) {
     cldm_test_log.capacity = CLDM_LOG_INITIAL_CAP;
     cldm_test_log.l_un.addr = realloc(0, CLDM_LOG_INITIAL_CAP * sizeof(*cldm_test_log.l_un.data));
@@ -107,30 +103,19 @@ static void cldm_test_summary(size_t ntests) {
     cldm_log("\nSuccessfully finished %llu assertions across %zu test%s", cldm_test_log.total_assertions, ntests, ntests == 1 ? "" : "s");
 }
 
-ssize_t cldm_test_collect(char *restrict buffer, struct cldm_elfmap const *restrict map, size_t bufsize) {
+ssize_t cldm_test_collect(cldm_rbtree *restrict tree, struct cldm_elfmap const *restrict map) {
     ssize_t ntests = 0;
-    ssize_t strtab_size;
-    ssize_t symsize;
-    char strtab[CLDM_PAGE_SIZE];
-    ssize_t offset;
+    struct cldm_testrec *record;
 
-    strtab_size = cldm_elf_read_strtab(map, strtab, ".strtab", sizeof(strtab));
-    if(strtab_size < 0) {
-        cldm_err("Could not read strtab");
-        return -1;
-    }
-
-    offset = 0;
-    for(ssize_t i = 0; i < strtab_size; i += cldm_ntbslen(strtab + i) + 1) {
-        if(cldm_ntbsncmp(cldm_str_expand(cldm_test_proc_prefix), strtab + i, sizeof(cldm_str_expand(cldm_test_proc_prefix)) - 1) == 0) {
-            symsize = cldm_ntbscpy(buffer + offset, strtab + i, bufsize - offset);
-            if(symsize < 0 || (size_t)(offset + symsize + 1) >= bufsize) {
-                cldm_err("Test %lld would cause internal buffer overflow", (long long)i);
-                return -E2BIG;
+    for(size_t i = 0; i < map->strtab.size; i += cldm_ntbslen(map->strtab.addr + i) + 1) {
+        if(cldm_ntbsncmp(cldm_str_expand(cldm_testrec_prefix), map->strtab.addr + i, sizeof(cldm_str_expand(cldm_testrec_prefix)) - 1) == 0) {
+            record = cldm_elf_testrec(map, map->strtab.addr + i);
+            if(!record) {
+                cldm_err("Could not map test record for %s", map->strtab.addr + i + sizeof(cldm_str_expand(cldm_testrec_prefix)) - 1);
+                return -1;
             }
-            offset += symsize;
-            buffer[offset++] = ';';
-            buffer[offset] = '\0';
+
+            cldm_rtassert(cldm_rbtree_insert(tree, &record->rbnode, cldm_testrec_compare));
             ++ntests;
         }
     }
@@ -138,12 +123,12 @@ ssize_t cldm_test_collect(char *restrict buffer, struct cldm_elfmap const *restr
     return ntests;
 }
 
-int cldm_test_invoke_each(struct cldm_elfmap const *restrict map, char const *restrict tests, size_t ntests) {
-    void (*test)(void);
-    char *iter;
-    unsigned long long testidx;
+int cldm_test_invoke_each(cldm_rbtree const *restrict tests, struct cldm_elfmap const *restrict map, size_t ntests) {
     char runbuf[CLDM_RUNBUF_SIZE];
     char idxbuf[CLDM_IDXBUF_SIZE];
+    unsigned long long testidx;
+    struct cldm_rbnode *iter;
+    struct cldm_testrec const *record;
 
     void (*lcl_setup)(void);
     void (*lcl_teardown)(void);
@@ -165,20 +150,16 @@ int cldm_test_invoke_each(struct cldm_elfmap const *restrict map, char const *re
     glob_setup();
 
     testidx = 0;
-    cldm_for_each_word(iter, tests, ';') {
-        cldm_test_set(iter);
-        test = cldm_elf_func(map, iter);
-        if(!test) {
-            cldm_warn("Could not locate address of %s in .text segment", iter);
-            continue;
-        }
+    cldm_rbtree_for_each(iter, tests) {
+        record = cldm_testrec_get(iter, const);
+        cldm_test_set(record->name);
 
-        snprintf(runbuf, sizeof(runbuf), "[Running %s]", cldm_test_extract_name(iter));
+        snprintf(runbuf, sizeof(runbuf), "[Running %s]", record->name);
         snprintf(idxbuf, sizeof(idxbuf), "(%llu/%zu)", ++testidx, ntests);
 
         cldm_log_raw("%-40s %-10s", runbuf, idxbuf);
         lcl_setup();
-        test();
+        record->handle();
         lcl_teardown();
 
         cldm_log("  %s", cldm_current_test.passed ? "pass" : "fail");
@@ -220,7 +201,7 @@ void cldm_test_assertion(char const *restrict expr, char const *restrict file, c
 
     snprintf(cldm_test_log.l_un.data[cldm_test_log.size], sizeof(cldm_test_log.l_un.data[cldm_test_log.size]),
              "| %s:%s: Assertion failure in %s:\n"
-             "| '%s'", basename, line, cldm_test_extract_name(cldm_current_test.name), expr);
+             "| '%s'", basename, line, cldm_current_test.name, expr);
 
     ++cldm_test_log.size;
 }

@@ -5,15 +5,18 @@
 #include "cldm_log.h"
 #include "cldm_macro.h"
 #include "cldm_mem.h"
+#include "cldm_rbtree.h"
 #include "cldm_test.h"
 
 #include <sys/types.h>
 
+unsigned char cldm_datavar = 0;
+
 int main(int argc, char *argv[argc + 1]) {
-    char buffer[CLDM_PAGE_SIZE];
     ssize_t ntests;
     int status;
     struct cldm_elfmap map;
+    cldm_rbtree tests = cldm_rbtree_init();
 
     cldm_log("cldm version " cldm_str_expand(CLDM_VERSION));
     cldm_log("Report bugs to vilhelm.engstrom@tuta.io\n");
@@ -45,14 +48,14 @@ int main(int argc, char *argv[argc + 1]) {
         goto epilogue;
     }
 
-    ntests = cldm_test_collect(buffer, &map, sizeof(buffer));
+    ntests = cldm_test_collect(&tests, &map);
     if(ntests < 0) {
         cldm_err("Error collecting tests");
         goto epilogue;
     }
 
     cldm_log("Collected %lld tests", (long long)ntests);
-    status = cldm_test_invoke_each(&map, buffer, (size_t)ntests);
+    status = cldm_test_invoke_each(&tests, &map, (size_t)ntests);
 
     if(cldm_io_dump_captured_stdout()) {
         cldm_warn("Could not read captured stdout");

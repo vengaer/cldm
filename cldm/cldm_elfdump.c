@@ -88,6 +88,6 @@ void cldm_elfdump_sections(struct cldm_elfmap const *map) {
     for(Elf64_Half i = 0; i < map->m_un.ehdr->e_shnum; i++) {
         cldm_mcpy(&shdr, cldm_elf_shdr(map, i), sizeof(shdr));
 
-        cldm_log("name: %-20s type: %s", map->shstrtab + shdr.sh_name, cldm_elf_section_type(shdr.sh_type));
+        cldm_log("name: %-20s type: %-20s offset: %#lx", map->shstrtab + shdr.sh_name, cldm_elf_section_type(shdr.sh_type), shdr.sh_offset);
     }
 }

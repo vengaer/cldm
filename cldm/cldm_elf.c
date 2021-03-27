@@ -38,10 +38,10 @@ static char const *cldm_elf_shstrtab(struct cldm_elfmap const *map) {
     return (char const *)map->m_un.addr + shdr.sh_offset;
 }
 
-static inline void cldm_map_strtab(struct cldm_strtab *restrict strtab, size_t baseaddr, void *restrict hdr) {
+static inline void cldm_map_strtab(struct cldm_strtab *restrict strtab, size_t mapaddr, void *restrict hdr) {
     Elf64_Shdr shdr;
     cldm_mcpy(&shdr, hdr, sizeof(shdr));
-    strtab->addr = (char const *)baseaddr + shdr.sh_offset;
+    strtab->addr = (char const *)mapaddr + shdr.sh_offset;
     strtab->size = shdr.sh_size - 1;
 }
 
@@ -128,28 +128,28 @@ static void *cldm_elf_sym(struct cldm_elfmap const *restrict map, char const *re
 /* Get address of where executable is loaded in memory */
 static void *cldm_elf_baseaddr(struct cldm_elfmap const *map) {
     extern int main(void);
-    Elf64_Sym sym;
-    Elf64_Shdr shdr;
-    void *relmain;
-    size_t offset;
+    Elf64_Phdr phdr;
+    Elf64_Addr baseaddr;
+    void *phaddr;
 
-    relmain = cldm_elf_sym(map, "main");
-    cldm_mcpy(&sym, relmain, sizeof(sym));
-    switch(sym.st_shndx) {
-        case SHN_UNDEF:
-            cldm_err("Cannot lookup external main");
-            return 0;
-        case SHN_ABS:
-            cldm_err("Failed to resolve base address of executable");
-            return 0;
-        default:
-            // NOP
-            break;
+    baseaddr = ~(Elf64_Addr)0;
+
+    for(Elf64_Half i = 0; i < map->m_un.ehdr->e_phnum; i++) {
+        phaddr = (void *)((unsigned char const *)map->m_un.addr + map->m_un.ehdr->e_phoff + i * map->m_un.ehdr->e_phentsize);
+
+        cldm_mcpy(&phdr, phaddr, sizeof(phdr));
+
+        /* min(baseaddr, phdr.p_vaddr) */
+        baseaddr = baseaddr ^ ((phdr.p_vaddr ^ baseaddr) & -(phdr.p_vaddr < baseaddr));
     }
+
+    Elf64_Shdr shdr;
+    Elf64_Sym sym;
+    void *relmain = cldm_elf_sym(map, "main");
+    cldm_mcpy(&sym, relmain, sizeof(sym));
     cldm_mcpy(&shdr, cldm_elf_shdr(map, sym.st_shndx), sizeof(shdr));
 
-    offset = sym.st_value + shdr.sh_offset;
-    return (void *)((size_t)main - offset);
+    return (void *)((size_t)main - sym.st_value - baseaddr);
 }
 
 /* Get address of where symbol is loaded */
@@ -167,7 +167,7 @@ static size_t cldm_elf_symaddr(struct cldm_elfmap const *restrict map, Elf64_Sym
     }
 
     cldm_mcpy(&shdr, cldm_elf_shdr(map, sym->st_shndx), sizeof(shdr));
-    return (size_t)map->baseaddr  + sym->st_value + shdr.sh_offset;
+    return (size_t)map->baseaddr + sym->st_value;
 }
 
 /* Memory map elf file */
@@ -223,7 +223,6 @@ int cldm_map_elf(struct cldm_elfmap *restrict map, char const *restrict file) {
     }
 
     status = 0;
-
 epilogue:
     if(fd != -1) {
         close(fd);
@@ -325,4 +324,17 @@ void (*cldm_elf_func(struct cldm_elfmap const *restrict map, char const *restric
 
     cldm_mcpy(&sym, symaddr, sizeof(sym));
     return (void (*)(void))cldm_elf_symaddr(map, &sym);
+}
+
+void *cldm_elf_testrec(struct cldm_elfmap const *restrict map, char const *restrict record) {
+    void *symaddr;
+    Elf64_Sym sym;
+
+    symaddr = cldm_elf_sym(map, record);
+    if(!symaddr) {
+        return 0;
+    }
+
+    cldm_mcpy(&sym, symaddr, sizeof(sym));
+    return (void *)cldm_elf_symaddr(map, &sym);
 }

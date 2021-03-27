@@ -3,14 +3,16 @@
 
 #include "cldm_elf.h"
 #include "cldm_macro.h"
+#include "cldm_rbtree.h"
+#include "cldm_testrec.h"
 
 #include <stdbool.h>
 #include <stddef.h>
 
 #include <sys/types.h>
 
-ssize_t cldm_test_collect(char *restrict buffer, struct cldm_elfmap const *restrict map, size_t bufsize);
-int cldm_test_invoke_each(struct cldm_elfmap const *restrict map, char const *restrict tests, size_t ntotal);
+ssize_t cldm_test_collect(cldm_rbtree *restrict tree, struct cldm_elfmap const *restrict map);
+int cldm_test_invoke_each(cldm_rbtree const *restrict tests, struct cldm_elfmap const *restrict map, size_t ntotal);
 
 void cldm_test_assertion(char const *restrict expr, char const *restrict file, char const *restrict line, bool result);
 
@@ -25,8 +27,17 @@ void cldm_test_assertion(char const *restrict expr, char const *restrict file, c
 #define cldm_global_teardown_ident  \
     cldm_global_teardown
 
-#define CLDM_TEST(name)             \
-    void cldm_cat_expand(cldm_test_proc_prefix,name)(void)
+#define cldm_testrec_prefix        \
+    cldm_testrec_
+
+#define CLDM_TEST(testname)                                                 \
+    void cldm_cat_expand(cldm_test_proc_prefix,testname)(void);             \
+    struct cldm_testrec cldm_cat_expand(cldm_testrec_prefix,testname) = {   \
+        .name = #testname,                                                  \
+        .file = __FILE__,                                                   \
+        .handle = cldm_cat_expand(cldm_test_proc_prefix,testname)           \
+    };                                                                      \
+    void cldm_cat_expand(cldm_test_proc_prefix,testname)(void)
 
 #define CLDM_TEST_SETUP()           \
     void cldm_expand(cldm_local_setup_ident)(void)

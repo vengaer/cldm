@@ -40,5 +40,6 @@ ssize_t cldm_elf_read_needed(struct cldm_elfmap const *restrict map, char *restr
 
 /* Get pointer to given function */
 void (*cldm_elf_func(struct cldm_elfmap const *restrict map, char const *restrict func))(void);
+void *cldm_elf_testrec(struct cldm_elfmap const *restrict map, char const *restrict record);
 
 #endif /* CLDM_ELF_H */

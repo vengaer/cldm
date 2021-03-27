@@ -103,7 +103,7 @@ def test_runner():
     cgen.write()
     gen_makefile(__TESTFILE)
 
-    run(ContainsMatcher('Captured stdout:.*{p}foo.*{p}bar'.format(p=test_prefix)))
+    run(ContainsMatcher('Captured stdout:.*{p}bar.*{p}foo'.format(p=test_prefix)))
 
 def test_setup_invoked_before_tests():
     cgen = CGen(__TESTFILE)
