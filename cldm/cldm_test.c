@@ -133,7 +133,7 @@ ssize_t cldm_test_collect(cldm_rbtree *restrict tree, struct cldm_elfmap const *
                 return -1;
             }
 
-            cldm_rtassert(cldm_rbtree_insert(tree, &record->rbnode, cldm_testrec_compare));
+            cldm_rbtree_insert(tree, &record->rbnode, cldm_testrec_compare);
             ++ntests;
         }
     }
