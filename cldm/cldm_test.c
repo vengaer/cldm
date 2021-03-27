@@ -85,6 +85,10 @@ static int cldm_test_init(void) {
     return 0;
 }
 
+static inline void cldm_test_free(void) {
+    free(cldm_test_log.l_un.addr);
+}
+
 static bool cldm_test_ensure_logcapacity(void) {
     void *addr;
     size_t new_cap;
@@ -92,7 +96,6 @@ static bool cldm_test_ensure_logcapacity(void) {
     if(cldm_test_log.size  + 1 >= cldm_test_log.capacity) {
         new_cap = 2 * cldm_test_log.capacity * sizeof(*cldm_test_log.l_un.data);
         addr = realloc(cldm_test_log.l_un.addr, new_cap);
-        cldm_rtassert(addr, "Could not allocate chunk of %zu bytes", new_cap);
         if(!addr) {
             free(cldm_test_log.l_un.addr);
             return false;
@@ -102,10 +105,6 @@ static bool cldm_test_ensure_logcapacity(void) {
     }
 
     return true;
-}
-
-static inline void cldm_test_free(void) {
-    free(cldm_test_log.l_un.addr);
 }
 
 static void cldm_test_summary(size_t ntests) {
@@ -192,11 +191,10 @@ int cldm_test_invoke_each(cldm_rbtree const *restrict tests, struct cldm_elfmap 
     return !!cldm_test_log.failed_tests;
 }
 
-
-void cldm_test_assertion(char const *restrict expr, char const *restrict file, char const *restrict line, bool result) {
+void cldm_assert_internal(bool eval, char const *restrict expr, char const *restrict file, char const *restrict line) {
     ++cldm_test_log.total_assertions;
 
-    if(result) {
+    if(eval) {
         return;
     }
 
@@ -208,6 +206,7 @@ void cldm_test_assertion(char const *restrict expr, char const *restrict file, c
     }
 
     ++cldm_test_log.failed_assertions;
+
     cldm_rtassert(cldm_test_ensure_logcapacity(), "Could not increase test log size");
 
     snprintf(cldm_test_log.l_un.data[cldm_test_log.size], sizeof(cldm_test_log.l_un.data[cldm_test_log.size]),
@@ -216,3 +215,57 @@ void cldm_test_assertion(char const *restrict expr, char const *restrict file, c
 
     ++cldm_test_log.size;
 }
+
+#ifdef cldm_has_generic
+
+#define generic_cmp_assertion(lhs, rhs, lexpand, rexpand, file, line, fmt, cmp)             \
+    do {                                                                                    \
+        ++cldm_test_log.total_assertions;                                                   \
+        if((lhs) cmp (rhs)) {                                                               \
+            return;                                                                         \
+        }                                                                                   \
+        char const *basename = cldm_ntbscrchr(file, '/');                                   \
+        basename = basename ? basename + 1 : file;                                          \
+        if(cldm_current_test.passed) {                                                      \
+            ++cldm_test_log.failed_tests;                                                   \
+            cldm_current_test.passed = false;                                               \
+        }                                                                                   \
+        ++cldm_test_log.failed_assertions;                                                  \
+        cldm_rtassert(cldm_test_ensure_logcapacity(), "Could not increase test log size");  \
+        snprintf(cldm_test_log.l_un.data[cldm_test_log.size],                               \
+                 sizeof(cldm_test_log.l_un.data[cldm_test_log.size]),                       \
+                 "| %s:%s: Assertion failure in %s:\n"                                      \
+                 "| '%s " #cmp " %s' with expansion\n"                                      \
+                 "| '" #fmt " " #cmp " " #fmt "'\n",                                        \
+                 basename, line, cldm_current_test.name, lexpand, rexpand, lhs, rhs);       \
+        ++cldm_test_log.size;                                                               \
+    } while(0)
+
+#define cldm_genassert_defs4(op, opstr, suffix, type)                                                                                                                               \
+    void cldm_assert_ ## opstr ## _ ## suffix(type l, type r, char const *restrict lexpand, char const *restrict rexpand, char const *restrict file, char const *restrict line) {   \
+        generic_cmp_assertion(l, r, lexpand, rexpand, file, line, %suffix, op);                                                                                                     \
+    }
+
+#define cldm_genassert_defs6(op, opstr, suffix, type, ...)   \
+    cldm_genassert_defs4(op, opstr, suffix, type)            \
+    cldm_genassert_defs4(op, opstr, __VA_ARGS__)
+
+#define cldm_genassert_defs8(op, opstr, suffix, type, ...)   \
+    cldm_genassert_defs4(op, opstr, suffix, type)            \
+    cldm_genassert_defs6(op, opstr, __VA_ARGS__)
+
+#define cldm_genassert_defs10(op, opstr, suffix, type, ...)  \
+    cldm_genassert_defs4(op, opstr, suffix, type)            \
+    cldm_genassert_defs8(op, opstr, __VA_ARGS__)
+
+#define cldm_genassert_defs(...) \
+    cldm_cat_expand(cldm_genassert_defs, cldm_count(__VA_ARGS__))(__VA_ARGS__)
+
+cldm_genassert_defs(==, eq, cldm_genassert_typelist)
+cldm_genassert_defs(!=, ne, cldm_genassert_typelist)
+cldm_genassert_defs(>,  gt, cldm_genassert_typelist)
+cldm_genassert_defs(>=, ge, cldm_genassert_typelist)
+cldm_genassert_defs(<,  lt, cldm_genassert_typelist)
+cldm_genassert_defs(<=, le, cldm_genassert_typelist)
+
+#endif /* cldm_has_generic */

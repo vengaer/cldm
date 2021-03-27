@@ -87,7 +87,7 @@ $(builddir)/%.$(oext): $(root)/%.$(cext) $(cldmgen)
 
 $(cldmgen): $(MOCKUPS)
 	$(info [GEN] $(notdir $@))
-	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CLDM_CONFIG_H\n#define CLDM_CONFIG_H\n#include "$^"\n#endif' > $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CLDMGEN_H\n#define CLDMGEN_H\n#include "$^"\n#endif /* CLDMGEN_H */' > $@
 
 $(MOCKUPS):
 	$(info $@ not found, generating empty one)
