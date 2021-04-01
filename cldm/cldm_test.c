@@ -94,8 +94,8 @@ static bool cldm_test_ensure_logcapacity(void) {
     size_t new_cap;
 
     if(cldm_test_log.size  + 1 >= cldm_test_log.capacity) {
-        new_cap = 2 * cldm_test_log.capacity * sizeof(*cldm_test_log.l_un.data);
-        addr = realloc(cldm_test_log.l_un.addr, new_cap);
+        new_cap = 2 * cldm_test_log.capacity;
+        addr = realloc(cldm_test_log.l_un.addr, new_cap * sizeof(*cldm_test_log.l_un.data));
         if(!addr) {
             free(cldm_test_log.l_un.addr);
             return false;
