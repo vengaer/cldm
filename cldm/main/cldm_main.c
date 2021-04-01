@@ -16,7 +16,7 @@ int main(int argc, char *argv[argc + 1]) {
     ssize_t ntests;
     int status;
     struct cldm_elfmap map;
-    cldm_rbtree tests = cldm_rbtree_init();
+    struct cldm_rbtree tests = cldm_rbtree_init();
 
     cldm_log("cldm version " cldm_str_expand(CLDM_VERSION));
     cldm_log("Report bugs to vilhelm.engstrom@tuta.io\n");

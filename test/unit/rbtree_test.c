@@ -119,32 +119,32 @@ TEST(cldm_rbtree_insert) {
         iter->value = rand_range(-100, 99);
     }
 
-    cldm_rbtree tree = cldm_rbtree_init();
+    struct cldm_rbtree tree = cldm_rbtree_init();
 
     cldm_for_each(iter, nodes) {
         cldm_rbtree_insert(&tree, &iter->node, compare);
-        ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
     }
 
     cldm_rbtree_clear(&tree);
-    ASSERT_EQ(tree.left, 0);
+    ASSERT_EQ(cldm_rbroot(&tree), 0);
 
     for(unsigned i = 0; i < cldm_arrsize(nodes); i += 2) {
         cldm_rbtree_insert(&tree, &nodes[i].node, compare);
-        ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
     }
 
     for(unsigned i = 1; i < cldm_arrsize(nodes); i += 2) {
         cldm_rbtree_insert(&tree, &nodes[i].node, compare);
-        ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
     }
 
     cldm_rbtree_clear(&tree);
-    ASSERT_EQ(tree.left, 0);
+    ASSERT_EQ(cldm_rbroot(&tree), 0);
 
     for(unsigned i = 0; i < cldm_arrsize(nodes); i++) {
         cldm_rbtree_insert(&tree, &nodes[cldm_arrsize(nodes) - i - 1].node, compare);
-        ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
     }
 }
 
@@ -157,7 +157,7 @@ TEST(cldm_rbtree_find) {
         nodes[i].value = i * 2 - cldm_arrsize(nodes) / 2;
     }
 
-    cldm_rbtree tree = cldm_rbtree_init();
+    struct cldm_rbtree tree = cldm_rbtree_init();
 
     for(unsigned i = 1; i < cldm_arrsize(nodes) - 1; i++) {
         cldm_rbtree_insert(&tree, &nodes[i].node, compare);
@@ -180,71 +180,71 @@ TEST(cldm_rbtree_remove) {
         nodes[i].value = i - cldm_arrsize(nodes) / 2;
     }
 
-    cldm_rbtree tree = cldm_rbtree_init();
+    struct cldm_rbtree tree = cldm_rbtree_init();
 
     for(unsigned i = 0; i < cldm_arrsize(nodes) - 1; i++) {
         ASSERT_TRUE(cldm_rbtree_insert(&tree, &nodes[i].node, compare));
     }
 
     ASSERT_FALSE(cldm_rbtree_remove(&tree, &nodes[cldm_arrsize(nodes) - 1].node, compare));
-    ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+    ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
 
     for(unsigned i = 0; i < cldm_arrsize(nodes) - 1; i++) {
         ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
-        ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
     }
 
-    ASSERT_EQ(tree.left, 0);
+    ASSERT_EQ(cldm_rbroot(&tree), 0);
 
     for(unsigned i = 1; i < cldm_arrsize(nodes); i++) {
         ASSERT_TRUE(cldm_rbtree_insert(&tree, &nodes[i].node, compare));
     }
 
     ASSERT_FALSE(cldm_rbtree_remove(&tree, &nodes[0].node, compare));
-    ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+    ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
 
     for(unsigned i = cldm_arrsize(nodes) - 1; i > 0; i--) {
         ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
-        ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
     }
 
-    ASSERT_EQ(tree.left, 0);
+    ASSERT_EQ(cldm_rbroot(&tree), 0);
 
     for(unsigned i = 0; i < cldm_arrsize(nodes); i++) {
         ASSERT_TRUE(cldm_rbtree_insert(&tree, &nodes[i].node, compare));
     }
 
-    ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+    ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
 
     for(unsigned i = cldm_arrsize(nodes) / 2; i < cldm_arrsize(nodes); i++) {
         ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
-        ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
     }
 
     for(unsigned i = 0; i < cldm_arrsize(nodes) / 2; i++) {
         ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
-        ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
     }
 
-    ASSERT_EQ(tree.left, 0);
+    ASSERT_EQ(cldm_rbroot(&tree), 0);
 
     for(unsigned i = 0; i < cldm_arrsize(nodes); i++) {
         ASSERT_TRUE(cldm_rbtree_insert(&tree, &nodes[i].node, compare));
     }
 
-    ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+    ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
 
     for(unsigned i = 0; i < cldm_arrsize(nodes); i += 2) {
         ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
-        ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
     }
 
     for(unsigned i = 1; i < cldm_arrsize(nodes); i += 2) {
         ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
-        ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
     }
 
-    ASSERT_EQ(tree.left, 0);
+    ASSERT_EQ(cldm_rbroot(&tree), 0);
 }
 
 TEST(cldm_rbtree_for_each) {
@@ -268,7 +268,7 @@ TEST(cldm_rbtree_for_each) {
         ref[i] = 2 * (i - cldm_arrsize(nodes) / 2);
     }
 
-    cldm_rbtree tree = cldm_rbtree_init();
+    struct cldm_rbtree tree = cldm_rbtree_init();
 
     cldm_for_each(iiter, nodes) {
         ASSERT_TRUE(cldm_rbtree_insert(&tree, &iiter->node, compare));

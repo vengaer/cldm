@@ -121,7 +121,7 @@ static void cldm_test_summary(size_t ntests) {
     cldm_log("\nSuccessfully finished %llu assertions across %zu test%s", cldm_test_log.total_assertions, ntests, ntests == 1 ? "" : "s");
 }
 
-ssize_t cldm_test_collect(cldm_rbtree *restrict tree, struct cldm_elfmap const *restrict map) {
+ssize_t cldm_test_collect(struct cldm_rbtree *restrict tree, struct cldm_elfmap const *restrict map) {
     ssize_t ntests = 0;
     struct cldm_testrec *record;
 
@@ -141,7 +141,7 @@ ssize_t cldm_test_collect(cldm_rbtree *restrict tree, struct cldm_elfmap const *
     return ntests;
 }
 
-int cldm_test_invoke_each(cldm_rbtree const *restrict tests, struct cldm_elfmap const *restrict map, size_t ntests) {
+int cldm_test_invoke_each(struct cldm_rbtree const *restrict tests, struct cldm_elfmap const *restrict map, size_t ntests) {
     unsigned long long testidx;
     struct cldm_rbnode *iter;
     struct cldm_testrec const *record;

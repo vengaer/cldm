@@ -5,7 +5,8 @@
 #define link(node, idx)     \
     (*(struct cldm_rbnode **)((unsigned char *)&(node)->left + ((unsigned char *)&(node)->right - (unsigned char*)&(node)->left) * (idx)))
 
-void cldm_rbtree_clear(cldm_rbtree *tree);
+void cldm_rbtree_clear(struct cldm_rbtree *tree);
+size_t cldm_rbtree_size(struct cldm_rbtree const *tree);
 unsigned cldm_rbstack_capacity(struct cldm_rbstack const *stack);
 unsigned cldm_rbstack_size(struct cldm_rbstack const *stack);
 void cldm_rbstack_push(struct cldm_rbstack *restrict stack, struct cldm_rbstack_node const *restrict node);
@@ -99,11 +100,11 @@ static void cldm_rbtree_balance_removal(struct cldm_rbnode *restrict n, struct c
     }
 }
 
-static struct cldm_rbnode *cldm_rbtree_find_parent_of(cldm_rbtree *restrict tree, struct cldm_rbnode const *restrict node, cldm_rbcompare compare) {
+static struct cldm_rbnode *cldm_rbtree_find_parent_of(struct cldm_rbtree *restrict tree, struct cldm_rbnode const *restrict node, cldm_rbcompare compare) {
     int relation;
 
-    struct cldm_rbnode *parent = tree;
-    struct cldm_rbnode *n = tree->left;
+    struct cldm_rbnode *parent = &tree->sentinel;
+    struct cldm_rbnode *n = cldm_rbroot(tree);
 
     enum cldm_rbdir dir;
 
@@ -118,7 +119,7 @@ static struct cldm_rbnode *cldm_rbtree_find_parent_of(cldm_rbtree *restrict tree
     return parent;
 }
 
-bool cldm_rbtree_insert(cldm_rbtree *restrict tree, struct cldm_rbnode *restrict node, cldm_rbcompare compare) {
+bool cldm_rbtree_insert(struct cldm_rbtree *restrict tree, struct cldm_rbnode *restrict node, cldm_rbcompare compare) {
     struct cldm_rbnode *child = 0;
     struct cldm_rbstack stack = cldm_rbstack_init();
     struct cldm_rbnode *n;
@@ -127,13 +128,14 @@ bool cldm_rbtree_insert(cldm_rbtree *restrict tree, struct cldm_rbnode *restrict
 
     cldm_mset(node, 0, sizeof(*node));
 
-    if(!tree->left) {
-        tree->left = node;
+    if(!cldm_rbroot(tree)) {
+        cldm_rbroot(tree) = node;
+        tree->size = 1u;
         cldm_rbnode_make_black(node);
         return true;
     }
 
-    n = tree->left;
+    n = cldm_rbroot(tree);
 
     while(n) {
         relation = compare(n, node);
@@ -162,15 +164,16 @@ bool cldm_rbtree_insert(cldm_rbtree *restrict tree, struct cldm_rbnode *restrict
         link(n, dir) = child;
     }
 
-    tree->left = cldm_rbtree_balance_insertion(n, dir);
-    cldm_rbnode_make_black(tree->left);
+    cldm_rbroot(tree) = cldm_rbtree_balance_insertion(n, dir);
+    cldm_rbnode_make_black(cldm_rbroot(tree));
+    ++tree->size;
 
     return true;
 }
 
-struct cldm_rbnode *cldm_rbtree_find(cldm_rbtree *restrict tree, struct cldm_rbnode const *restrict node, cldm_rbcompare compare) {
+struct cldm_rbnode *cldm_rbtree_find(struct cldm_rbtree *restrict tree, struct cldm_rbnode const *restrict node, cldm_rbcompare compare) {
     int relation;
-    struct cldm_rbnode *n = tree->left;
+    struct cldm_rbnode *n = cldm_rbroot(tree);
 
     while(n) {
         relation = compare(n, node);
@@ -184,16 +187,16 @@ struct cldm_rbnode *cldm_rbtree_find(cldm_rbtree *restrict tree, struct cldm_rbn
     return n;
 }
 
-struct cldm_rbnode *cldm_rbtree_remove(cldm_rbtree *restrict tree, struct cldm_rbnode const *restrict node, cldm_rbcompare compare) {
-    if(!tree->left) {
+struct cldm_rbnode *cldm_rbtree_remove(struct cldm_rbtree *restrict tree, struct cldm_rbnode const *restrict node, cldm_rbcompare compare) {
+    if(!cldm_rbroot(tree)) {
         return 0;
     }
 
-    struct cldm_rbnode faux_root = { .left = tree };
+    struct cldm_rbnode faux_root = { .left = &tree->sentinel };
 
     struct cldm_rbnode *gparent = &faux_root;
-    struct cldm_rbnode *parent = tree;
-    struct cldm_rbnode *n = tree->left;
+    struct cldm_rbnode *parent = &tree->sentinel;
+    struct cldm_rbnode *n = cldm_rbroot(tree);
 
     struct cldm_rbnode *found = 0;
     struct cldm_rbnode *fparent;
@@ -237,10 +240,12 @@ struct cldm_rbnode *cldm_rbtree_remove(cldm_rbtree *restrict tree, struct cldm_r
 
         found->left = 0;
         found->right = 0;
+
+        --tree->size;
     }
 
-    if(tree->left) {
-        cldm_rbnode_make_black(tree->left);
+    if(cldm_rbroot(tree)) {
+        cldm_rbnode_make_black(cldm_rbroot(tree));
     }
 
     return found;

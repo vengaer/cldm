@@ -25,6 +25,11 @@ struct cldm_rbnode {
     enum cldm_rbcolor color;
 };
 
+struct cldm_rbtree {
+    struct cldm_rbnode sentinel;
+    size_t size;
+};
+
 struct cldm_rbstack_node {
     struct cldm_rbnode *node;
     enum cldm_rbdir dir;
@@ -35,22 +40,28 @@ struct cldm_rbstack {
     unsigned top;
 };
 
-typedef struct cldm_rbnode cldm_rbtree;
-
 #define cldm_rbtree_init()  \
-    { .left = 0, .right = 0, .color = cldm_rbcolor_black }
+    { .sentinel = { 0 }, .size = 0 }
+
+#define cldm_rbroot(tree)   \
+    (tree)->sentinel.left
 
 #define cldm_rbstack_init() \
     { .top = 0 }
 
 typedef int(*cldm_rbcompare)(struct cldm_rbnode const *restrict, struct cldm_rbnode const *restrict);
 
-bool cldm_rbtree_insert(cldm_rbtree *restrict tree, struct cldm_rbnode *restrict node, cldm_rbcompare compare);
-struct cldm_rbnode *cldm_rbtree_find(cldm_rbtree *restrict tree, struct cldm_rbnode const *restrict node, cldm_rbcompare compare);
-struct cldm_rbnode *cldm_rbtree_remove(cldm_rbtree *restrict tree, struct cldm_rbnode const *restrict node, cldm_rbcompare compare);
+bool cldm_rbtree_insert(struct cldm_rbtree *restrict tree, struct cldm_rbnode *restrict node, cldm_rbcompare compare);
+struct cldm_rbnode *cldm_rbtree_find(struct cldm_rbtree *restrict tree, struct cldm_rbnode const *restrict node, cldm_rbcompare compare);
+struct cldm_rbnode *cldm_rbtree_remove(struct cldm_rbtree *restrict tree, struct cldm_rbnode const *restrict node, cldm_rbcompare compare);
 
-inline void cldm_rbtree_clear(cldm_rbtree *tree) {
-    tree->left = 0;
+inline void cldm_rbtree_clear(struct cldm_rbtree *tree) {
+    cldm_rbroot(tree) = 0;
+    tree->size = 0u;
+}
+
+inline size_t cldm_rbtree_size(struct cldm_rbtree const *tree) {
+    return tree->size;
 }
 
 inline unsigned cldm_rbstack_capacity(struct cldm_rbstack const *stack) {
@@ -85,13 +96,13 @@ inline void cldm_rbtree_descend(struct cldm_rbnode *restrict node, struct cldm_r
     }
 }
 
-#define cldm_rbtree_for_each(iter, root)    \
-    for(struct cldm_rbstack cldm_cat_expand(cldm_rbtfe,__LINE__) =                  \
-            ((iter) = (root)->left, (struct cldm_rbstack) cldm_rbstack_init());     \
-        ((iter) || !cldm_rbstack_empty(&cldm_cat_expand(cldm_rbtfe,__LINE__))) &&   \
-          (cldm_rbtree_descend(iter, &cldm_cat_expand(cldm_rbtfe,__LINE__)),        \
-            (iter) = cldm_rbstack_pop(&cldm_cat_expand(cldm_rbtfe,__LINE__))->node, \
-              1);                                                                   \
+#define cldm_rbtree_for_each(iter, tree)    \
+    for(struct cldm_rbstack cldm_cat_expand(cldm_rbtfe,__LINE__) =                      \
+            ((iter) = cldm_rbroot(tree), (struct cldm_rbstack) cldm_rbstack_init());    \
+        ((iter) || !cldm_rbstack_empty(&cldm_cat_expand(cldm_rbtfe,__LINE__))) &&       \
+          (cldm_rbtree_descend(iter, &cldm_cat_expand(cldm_rbtfe,__LINE__)),            \
+            (iter) = cldm_rbstack_pop(&cldm_cat_expand(cldm_rbtfe,__LINE__))->node,     \
+              1);                                                                       \
         (iter) = (iter)->right)
 
 
