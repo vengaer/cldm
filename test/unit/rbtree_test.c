@@ -172,6 +172,58 @@ TEST(cldm_rbtree_remove) {
         ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
         ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
     }
+
+    ASSERT_EQ(tree.left, 0);
+
+    for(unsigned i = 1; i < cldm_arrsize(nodes); i++) {
+        ASSERT_TRUE(cldm_rbtree_insert(&tree, &nodes[i].node, compare));
+    }
+
+    ASSERT_FALSE(cldm_rbtree_remove(&tree, &nodes[0].node, compare));
+    ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+
+    for(unsigned i = cldm_arrsize(nodes) - 1; i > 0; i--) {
+        ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
+        ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+    }
+
+    ASSERT_EQ(tree.left, 0);
+
+    for(unsigned i = 0; i < cldm_arrsize(nodes); i++) {
+        ASSERT_TRUE(cldm_rbtree_insert(&tree, &nodes[i].node, compare));
+    }
+
+    ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+
+    for(unsigned i = cldm_arrsize(nodes) / 2; i < cldm_arrsize(nodes); i++) {
+        ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
+        ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+    }
+
+    for(unsigned i = 0; i < cldm_arrsize(nodes) / 2; i++) {
+        ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
+        ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+    }
+
+    ASSERT_EQ(tree.left, 0);
+
+    for(unsigned i = 0; i < cldm_arrsize(nodes); i++) {
+        ASSERT_TRUE(cldm_rbtree_insert(&tree, &nodes[i].node, compare));
+    }
+
+    ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+
+    for(unsigned i = 0; i < cldm_arrsize(nodes); i += 2) {
+        ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
+        ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+    }
+
+    for(unsigned i = 1; i < cldm_arrsize(nodes); i += 2) {
+        ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
+        ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+    }
+
+    ASSERT_EQ(tree.left, 0);
 }
 
 TEST(cldm_rbtree_for_each) {

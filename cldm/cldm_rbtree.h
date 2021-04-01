@@ -49,6 +49,10 @@ bool cldm_rbtree_insert(cldm_rbtree *restrict tree, struct cldm_rbnode *restrict
 struct cldm_rbnode *cldm_rbtree_find(cldm_rbtree *restrict tree, struct cldm_rbnode const *restrict node, cldm_rbcompare compare);
 struct cldm_rbnode *cldm_rbtree_remove(cldm_rbtree *restrict tree, struct cldm_rbnode const *restrict node, cldm_rbcompare compare);
 
+inline void cldm_rbtree_clear(cldm_rbtree *tree) {
+    tree->left = 0;
+}
+
 inline unsigned cldm_rbstack_capacity(struct cldm_rbstack const *stack) {
     return cldm_arrsize(stack->data);
 }

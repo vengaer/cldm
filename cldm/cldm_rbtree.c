@@ -5,6 +5,7 @@
 #define link(node, idx)     \
     (*(struct cldm_rbnode **)((unsigned char *)&(node)->left + ((unsigned char *)&(node)->right - (unsigned char*)&(node)->left) * (idx)))
 
+void cldm_rbtree_clear(cldm_rbtree *tree);
 unsigned cldm_rbstack_capacity(struct cldm_rbstack const *stack);
 unsigned cldm_rbstack_size(struct cldm_rbstack const *stack);
 void cldm_rbstack_push(struct cldm_rbstack *restrict stack, struct cldm_rbstack_node const *restrict node);
