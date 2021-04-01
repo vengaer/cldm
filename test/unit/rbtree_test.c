@@ -279,3 +279,27 @@ TEST(cldm_rbtree_for_each) {
         ASSERT_EQ(nodeval(rbiter), ref[i++]);
     }
 }
+
+TEST(cldm_rbtree_size) {
+    enum { SIZE = 2048 };
+
+    struct inode nodes[SIZE];
+
+    for(unsigned i = 0; i < cldm_arrsize(nodes); i++) {
+        nodes[i].value = i - cldm_arrsize(nodes) / 2;
+    }
+
+    struct cldm_rbtree tree = cldm_rbtree_init();
+
+    for(unsigned i = 0; i < cldm_arrsize(nodes); i++) {
+        ASSERT_TRUE(cldm_rbtree_insert(&tree, &nodes[i].node, compare));
+        ASSERT_EQ(cldm_rbtree_size(&tree), i + 1);
+    }
+
+    for(unsigned i = 0; i < cldm_arrsize(nodes); i++) {
+        ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
+        ASSERT_EQ(cldm_rbtree_size(&tree), cldm_arrsize(nodes) - i - 1);
+    }
+
+    ASSERT_EQ(cldm_rbroot(&tree), 0);
+}
