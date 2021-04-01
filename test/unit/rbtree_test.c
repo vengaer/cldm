@@ -125,6 +125,27 @@ TEST(cldm_rbtree_insert) {
         cldm_rbtree_insert(&tree, &iter->node, compare);
         ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
     }
+
+    cldm_rbtree_clear(&tree);
+    ASSERT_EQ(tree.left, 0);
+
+    for(unsigned i = 0; i < cldm_arrsize(nodes); i += 2) {
+        cldm_rbtree_insert(&tree, &nodes[i].node, compare);
+        ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+    }
+
+    for(unsigned i = 1; i < cldm_arrsize(nodes); i += 2) {
+        cldm_rbtree_insert(&tree, &nodes[i].node, compare);
+        ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+    }
+
+    cldm_rbtree_clear(&tree);
+    ASSERT_EQ(tree.left, 0);
+
+    for(unsigned i = 0; i < cldm_arrsize(nodes); i++) {
+        cldm_rbtree_insert(&tree, &nodes[cldm_arrsize(nodes) - i - 1].node, compare);
+        ASSERT_GE(adheres_to_rbproperties(tree.left), 0);
+    }
 }
 
 TEST(cldm_rbtree_find) {
