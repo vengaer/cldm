@@ -227,8 +227,8 @@ struct cldm_rbnode *cldm_rbtree_remove(cldm_rbtree *restrict tree, struct cldm_r
         fdir = (enum cldm_rbdir) (fparent->right == found);
         gpdir = (enum cldm_rbdir) (gparent->right == parent);
 
-        parent->left = found->left;
-        parent->right = found->right;
+        parent->left = (struct cldm_rbnode *)((size_t)found->left * (found->left != parent));
+        parent->right = (struct cldm_rbnode *)((size_t)found->right * (found->right != parent));
         parent->color = found->color;
 
         link(fparent, fdir) = parent;
