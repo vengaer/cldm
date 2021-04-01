@@ -98,3 +98,20 @@ def test_fails_only_on_assertion_triggered():
     gen_makefile(__TESTFILE)
 
     run(ContainsMatcher(r'(foo|bar|baz).*pass.*(foo|bar|baz).*pass.*(foo|bar|baz).*pass'), rvmatcher = RvEqMatcher(0))
+
+def test_failure_log_resizing():
+    cgen = CGen(__TESTFILE)
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'foo'):
+        with cgen.open_for('int', 'i', 0, 512):
+            cgen.append_line('ASSERT_EQ(1, 0);')
+
+    cgen.write()
+    gen_makefile(__TESTFILE)
+
+    _, __, error = run(ContainsMatcher(r'foo.*fail'),
+                       ContainsMatcher(r'512/512\s*assertions\s*failed\s*across\s*1\s*test'),
+                       RvDiffMatcher(0))
+
+    assert error.decode('utf-8').count('(1) == (0)') == 512

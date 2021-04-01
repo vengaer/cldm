@@ -57,3 +57,5 @@ def run(stdout_matcher, stderr_matcher=DummyMatcher(), rvmatcher=RvEqMatcher(0))
     stdout_matcher.run(output)
     stderr_matcher.run(error)
 
+    return retval, output, error
+
