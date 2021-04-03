@@ -15,16 +15,6 @@ ssize_t cldm_strscpy(char *restrict dst, char const *restrict src, size_t dstsiz
     return srclen;
 }
 
-char const *cldm_ntbs_find_substr(char const *restrict str, char const *restrict substr) {
-    char const *d = substr;
-
-    for(;*str && *d; ++str) {
-        d = *str == *d ? d + 1 : substr;
-    }
-
-    return *d ? 0 : str - strlen(substr);
-}
-
 int cldm_ntbscmp(char const *restrict str0, char const *restrict str1) {
     int diff = 0;
     do {

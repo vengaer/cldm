@@ -24,14 +24,6 @@ TEST(cldm_strscpy) {
     ASSERT_EQ(dst[strlen(src)], 0);
 }
 
-TEST(cldm_ntbs_find_substr) {
-    char const *str = "a string with a substring";
-
-    ASSERT_EQ(cldm_ntbs_find_substr(str, "substring"), str + 16);
-    ASSERT_EQ(cldm_ntbs_find_substr(str, "string"), str + 2);
-    ASSERT_EQ(cldm_ntbs_find_substr(str, "automata"), 0);
-}
-
 TEST(cldm_ntbscmp) {
     ASSERT_EQ(cldm_ntbscmp("a string", "a string"), 0);
     ASSERT_LT(cldm_ntbscmp("a strin", "a string"), 0);
