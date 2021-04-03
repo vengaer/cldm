@@ -24,6 +24,7 @@ void cldm_rbtree_clear(struct cldm_rbtree *tree);
 size_t cldm_rbtree_size(struct cldm_rbtree const *tree);
 bool cldm_rbnode_has_child(struct cldm_rbnode const *node, enum cldm_rbdir dir);
 struct cldm_rbnode *cldm_rbnode_successor(struct cldm_rbnode *node);
+bool cldm_rbtree_empty(struct cldm_rbtree const *tree);
 
 static inline unsigned cldm_rbstack_capacity(struct cldm_rbstack const *stack) {
     return cldm_arrsize(stack->data);

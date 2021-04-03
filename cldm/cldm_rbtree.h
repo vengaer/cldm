@@ -55,6 +55,10 @@ inline void cldm_rbtree_clear(struct cldm_rbtree *tree) {
     tree->size = 0u;
 }
 
+inline bool cldm_rbtree_empty(struct cldm_rbtree const *tree) {
+    return tree->sentinel.flags == CLDM_RBLEAF;
+}
+
 inline size_t cldm_rbtree_size(struct cldm_rbtree const *tree) {
     return tree->size;
 }
