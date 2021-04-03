@@ -157,7 +157,7 @@ static void *cldm_elf_baseaddr(struct cldm_elfmap const *map) {
             cldm_err("Failed to resolve base address of executable");
             return 0;
         default:
-            // NOP
+            /* NOP */
             break;
     }
 
@@ -176,7 +176,7 @@ static size_t cldm_elf_symaddr(struct cldm_elfmap const *restrict map, Elf64_Sym
         case SHN_ABS:
             return sym->st_value;
         default:
-            // NOP
+            /* NOP */
             break;
     }
 
