@@ -1,6 +1,6 @@
 #include "cldm_io.h"
+#include "cldm_limits.h"
 #include "cldm_log.h"
-#include "cldm_mem.h"
 #include "cldm_ntbs.h"
 
 #include <errno.h>
@@ -43,7 +43,7 @@ epilogue:
 }
 
 static int cldm_io_dump_capture(FILE *restrict redirected, char const *restrict capture, FILE *restrict dumpstream, char const *restrict name) {
-    char buffer[CLDM_PAGE_SIZE];
+    char buffer[CLDM_PGSIZE];
     FILE *fp;
     size_t linelen;
     int fd;

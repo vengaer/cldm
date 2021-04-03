@@ -45,7 +45,7 @@ def test_alignof():
     expected = expected.strip().split(' ')
 
     cgen = CGen('main.c')
-    cgen.append_include('cldm_mem.h', system_header=False)              \
+    cgen.append_include('cldm_macro.h', system_header=False)            \
         .append_include('stdio.h')                                      \
         .append_include('stdalign.h')                                   \
         .append_line('#define ARRSIZE(a) (sizeof(a) / sizeof(a[0]))')

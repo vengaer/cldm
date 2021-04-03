@@ -1,7 +1,7 @@
 #include "cldm_dl.h"
 #include "cldm_io.h"
 #include "cldm_log.h"
-#include "cldm_mem.h"
+
 #include "cldm_mock.h"
 #include "cldm_ntbs.h"
 #include "cldm_rtassert.h"

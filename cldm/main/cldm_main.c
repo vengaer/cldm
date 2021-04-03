@@ -5,7 +5,7 @@
 #include "cldm_log.h"
 #include "cldm_macro.h"
 #include "cldm_mock.h"
-#include "cldm_mem.h"
+
 #include "cldm_rbtree.h"
 #include "cldm_test.h"
 

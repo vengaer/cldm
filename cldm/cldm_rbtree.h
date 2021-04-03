@@ -2,7 +2,7 @@
 #define CLDM_RBTREE_H
 
 #include "cldm_macro.h"
-#include "cldm_mem.h"
+
 #include "cldm_rtassert.h"
 
 #include <stdbool.h>

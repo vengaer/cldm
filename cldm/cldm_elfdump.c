@@ -1,9 +1,10 @@
 #include "cldm_elfdump.h"
+#include "cldm_limits.h"
 #include "cldm_log.h"
-#include "cldm_mem.h"
 #include "cldm_ntbs.h"
 
 #include <elf.h>
+#include <string.h>
 
 static char const *cldm_elf_section_type(Elf64_Word type) {
     switch(type) {
@@ -48,7 +49,7 @@ static char const *cldm_elf_section_type(Elf64_Word type) {
 
 
 int cldm_elfdump_strtab(struct cldm_elfmap const *restrict map, char const *restrict section) {
-    char buffer[CLDM_PAGE_SIZE];
+    char buffer[CLDM_PGSIZE];
     ssize_t nbytes;
 
     nbytes = cldm_elf_read_strtab(map, buffer, section, sizeof(buffer));
@@ -65,7 +66,7 @@ int cldm_elfdump_strtab(struct cldm_elfmap const *restrict map, char const *rest
 }
 
 int cldm_elfdump_needed(struct cldm_elfmap const *map) {
-    char buffer[CLDM_PAGE_SIZE];
+    char buffer[CLDM_PGSIZE];
     ssize_t nbytes;
 
     nbytes = cldm_elf_read_needed(map, buffer, sizeof(buffer));
@@ -86,7 +87,7 @@ void cldm_elfdump_sections(struct cldm_elfmap const *map) {
 
     cldm_log("sections:");
     for(Elf64_Half i = 0; i < map->m_un.ehdr->e_shnum; i++) {
-        cldm_mcpy(&shdr, cldm_elf_shdr(map, i), sizeof(shdr));
+        memcpy(&shdr, cldm_elf_shdr(map, i), sizeof(shdr));
 
         cldm_log("name: %-20s type: %-20s offset: %#lx", map->shstrtab + shdr.sh_name, cldm_elf_section_type(shdr.sh_type), shdr.sh_offset);
     }
