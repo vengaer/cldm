@@ -446,3 +446,33 @@ def test_assign_arg():
     rv, output, _ = exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))
     assert rv == 0
     assert output.decode('utf-8').strip().split('\n') == ['10', '12']
+
+def test_force_disable():
+    target = 'mockups_test'
+    symbol_tu = 'syms.c'
+
+    db = read_db()
+    cgen = CGen('main.c')
+    cgen.append_include('cldm.h', system_header=False)      \
+        .append_include('syms.h', system_header=False)      \
+        .append_include('stdio.h')                          \
+        .append_include('stdlib.h')
+
+    with cgen.open_function('int', 'main'):
+        cgen.append_line('extern bool cldm_mock_force_disable;')    \
+            .append_line('cldm_mock_force_disable = true;')         \
+            .append_line('EXPECT_CALL(atoi).WILL_ONCE(RETURN(5));') \
+            .append_line('printf("%d\\n", atoi("1"));')
+    cgen.write()
+
+    cgen = CGen(symbol_tu)
+    cgen.generate_matching_symbols()
+    cgen.write()
+
+    mgen = Makegen(target, src='main.c')
+    mgen.default(mgen, target, symbol_tu)
+    mgen.generate()
+
+    assert exec_bash('make -C {}'.format(working_dir))[0] == 0
+    rv, output, _ = exec_bash('LD_PRELOAD={} LD_LIBRARY_PATH={} {}'.format(solib, working_dir, working_dir / target))
+    assert output.decode('utf-8').strip().split('\n') == ['1']
