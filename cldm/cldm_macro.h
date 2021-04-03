@@ -94,7 +94,8 @@
     cldm_for_each_zip6(it0, it1, arr0, arr1, size, 1)
 
 #define cldm_for_each_zip4(it0, it1, arr0, arr1)                                            \
-    cldm_for_each_zip5(it0, it1, arr0, arr1, cldm_arrsize(arr0))
+    cldm_for_each_zip5(it0, it1, arr0, arr1, cldm_arrsize(arr0) < cldm_arrsize(arr1) ?      \
+                                                cldm_arrsize(arr0) : cldm_arrsize(arr1))
 
 #define cldm_for_each_zip(...)                                                              \
     cldm_overload(cldm_for_each_zip,__VA_ARGS__)
