@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+enum { SIZE = 2048 };
+
 enum {
     RED_VIOLATION         = -0x1,
     LEFT_CHILD_VIOLATION  = -0x2,
@@ -31,7 +33,7 @@ static int compare(struct cldm_rbnode const *restrict l, struct cldm_rbnode cons
 }
 
 static inline bool is_leaf(struct cldm_rbnode const *node) {
-    return node->left == 0 && node->right == 0;
+    return (node->flags & CLDM_RBLEAF) == CLDM_RBLEAF;
 }
 
 static inline bool is_red(struct cldm_rbnode const *node) {
@@ -42,8 +44,8 @@ static inline bool is_black(struct cldm_rbnode const *node) {
     return node->color == cldm_rbcolor_black;
 }
 
-static inline bool is_red_safe(struct cldm_rbnode const *node) {
-    return node && is_red(node);
+static inline bool is_red_safe(struct cldm_rbnode const *node, enum cldm_rbdir dir) {
+    return  !(node->flags & (1 << dir)) && is_red(dir == cldm_rbdir_left ? node->left : node->right);
 }
 
 static int adheres_to_rbproperties(struct cldm_rbnode const *node) {
@@ -53,25 +55,21 @@ static int adheres_to_rbproperties(struct cldm_rbnode const *node) {
     int lheight;
     int rheight;
 
-    if(!node) {
-        return 0;
-    }
-
-    if(is_red(node) && (is_red_safe(node->left) || is_red_safe(node->right))) {
+    if(is_red(node) && (is_red_safe(node, cldm_rbdir_left) || is_red_safe(node, cldm_rbdir_right))) {
         return RED_VIOLATION;
     }
 
-    if(node->left && compare(node->left, node) <= 0) {
+    if(cldm_rbnode_has_child(node, cldm_rbdir_left) && compare(node->left, node) <= 0) {
         return LEFT_CHILD_VIOLATION;
     }
 
-    if(node->right && compare(node, node->right) <= 0) {
+    if(cldm_rbnode_has_child(node, cldm_rbdir_right) && compare(node, node->right) <= 0) {
         return RIGHT_CHILD_VIOLATION;
     }
 
     hcontrib = is_black(node);
 
-    if(node->left && node->right) {
+    if(!node->flags) {
         lheight = adheres_to_rbproperties(node->left);
         if(lheight < 0) {
             return lheight;
@@ -88,7 +86,7 @@ static int adheres_to_rbproperties(struct cldm_rbnode const *node) {
         return lheight + hcontrib;
     }
     else if(!is_leaf(node)) {
-        if(node->left) {
+        if(node->flags & CLDM_RBTHREADR) {
             rnode = node->left;
         }
         else {
@@ -109,7 +107,6 @@ static int adheres_to_rbproperties(struct cldm_rbnode const *node) {
 }
 
 TEST(cldm_rbtree_insert) {
-    enum { SIZE = 2048 };
     struct inode nodes[SIZE];
     struct inode *iter;
 
@@ -127,7 +124,7 @@ TEST(cldm_rbtree_insert) {
     }
 
     cldm_rbtree_clear(&tree);
-    ASSERT_EQ(cldm_rbroot(&tree), 0);
+    ASSERT_EQ(tree.sentinel.flags & CLDM_RBLEAF, CLDM_RBLEAF);
 
     for(unsigned i = 0; i < cldm_arrsize(nodes); i += 2) {
         cldm_rbtree_insert(&tree, &nodes[i].node, compare);
@@ -140,7 +137,7 @@ TEST(cldm_rbtree_insert) {
     }
 
     cldm_rbtree_clear(&tree);
-    ASSERT_EQ(cldm_rbroot(&tree), 0);
+    ASSERT_EQ(tree.sentinel.flags & CLDM_RBLEAF, CLDM_RBLEAF);
 
     for(unsigned i = 0; i < cldm_arrsize(nodes); i++) {
         cldm_rbtree_insert(&tree, &nodes[cldm_arrsize(nodes) - i - 1].node, compare);
@@ -149,8 +146,6 @@ TEST(cldm_rbtree_insert) {
 }
 
 TEST(cldm_rbtree_find) {
-    enum { SIZE = 64 };
-
     struct inode nodes[SIZE];
 
     for(unsigned i = 0; i < cldm_arrsize(nodes); i++) {
@@ -172,8 +167,6 @@ TEST(cldm_rbtree_find) {
 }
 
 TEST(cldm_rbtree_remove) {
-    enum { SIZE = 2048 };
-
     struct inode nodes[SIZE];
 
     for(unsigned i = 0; i < cldm_arrsize(nodes); i++) {
@@ -194,7 +187,7 @@ TEST(cldm_rbtree_remove) {
         ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
     }
 
-    ASSERT_EQ(cldm_rbroot(&tree), 0);
+    ASSERT_EQ(tree.sentinel.flags & CLDM_RBLEAF, CLDM_RBLEAF);
 
     for(unsigned i = 1; i < cldm_arrsize(nodes); i++) {
         ASSERT_TRUE(cldm_rbtree_insert(&tree, &nodes[i].node, compare));
@@ -208,7 +201,7 @@ TEST(cldm_rbtree_remove) {
         ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
     }
 
-    ASSERT_EQ(cldm_rbroot(&tree), 0);
+    ASSERT_EQ(tree.sentinel.flags & CLDM_RBLEAF, CLDM_RBLEAF);
 
     for(unsigned i = 0; i < cldm_arrsize(nodes); i++) {
         ASSERT_TRUE(cldm_rbtree_insert(&tree, &nodes[i].node, compare));
@@ -226,7 +219,7 @@ TEST(cldm_rbtree_remove) {
         ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
     }
 
-    ASSERT_EQ(cldm_rbroot(&tree), 0);
+    ASSERT_EQ(tree.sentinel.flags & CLDM_RBLEAF, CLDM_RBLEAF);
 
     for(unsigned i = 0; i < cldm_arrsize(nodes); i++) {
         ASSERT_TRUE(cldm_rbtree_insert(&tree, &nodes[i].node, compare));
@@ -244,12 +237,10 @@ TEST(cldm_rbtree_remove) {
         ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
     }
 
-    ASSERT_EQ(cldm_rbroot(&tree), 0);
+    ASSERT_EQ(tree.sentinel.flags & CLDM_RBLEAF, CLDM_RBLEAF);
 }
 
 TEST(cldm_rbtree_for_each) {
-    enum { SIZE = 1024 };
-
     struct inode nodes[SIZE];
     struct inode *iiter;
     struct cldm_rbnode *rbiter;
@@ -261,7 +252,7 @@ TEST(cldm_rbtree_for_each) {
     }
 
     for(i = 0; i < cldm_arrsize(nodes) / 2; i++) {
-        ref[i] = -1023 + 2 * (int)i;
+        ref[i] = -(cldm_arrsize(nodes) - 1) + 2 * (int)i;
     }
 
     for(; i < cldm_arrsize(nodes); i++) {
@@ -281,8 +272,6 @@ TEST(cldm_rbtree_for_each) {
 }
 
 TEST(cldm_rbtree_size) {
-    enum { SIZE = 2048 };
-
     struct inode nodes[SIZE];
 
     for(unsigned i = 0; i < cldm_arrsize(nodes); i++) {
@@ -301,5 +290,5 @@ TEST(cldm_rbtree_size) {
         ASSERT_EQ(cldm_rbtree_size(&tree), cldm_arrsize(nodes) - i - 1);
     }
 
-    ASSERT_EQ(cldm_rbroot(&tree), 0);
+    ASSERT_EQ(tree.sentinel.flags & CLDM_RBLEAF, CLDM_RBLEAF);
 }
