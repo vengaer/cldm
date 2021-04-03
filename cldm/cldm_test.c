@@ -208,7 +208,7 @@ void cldm_assert_internal(bool eval, char const *restrict expr, char const *rest
         return;
     }
 
-    char const *basename = cldm_ntbscrchr(file, '/');
+    char const *basename = strrchr(file, '/');
     basename = basename ? basename + 1 : file;
     if(cldm_current_test.passed) {
         ++cldm_test_log.failed_tests;
@@ -234,7 +234,7 @@ void cldm_assert_internal(bool eval, char const *restrict expr, char const *rest
         if((lhs) cmp (rhs)) {                                                               \
             return;                                                                         \
         }                                                                                   \
-        char const *basename = cldm_ntbscrchr(file, '/');                                   \
+        char const *basename = strrchr(file, '/');                                          \
         basename = basename ? basename + 1 : file;                                          \
         if(cldm_current_test.passed) {                                                      \
             ++cldm_test_log.failed_tests;                                                   \

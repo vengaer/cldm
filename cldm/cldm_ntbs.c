@@ -1,24 +1,5 @@
 #include "cldm_ntbs.h"
 
-#include <string.h>
-
-char *cldm_ntbschr(char *str, int c) {
-    while(*str != (char)c && *str) {
-        ++str;
-    }
-    return *str ? str : 0;
-}
-
-char const *cldm_ntbscrchr(char const *str, int c) {
-    char const *res = 0;
-    while(*str++) {
-        if(*str == c) {
-            res = str;
-        }
-    }
-    return res;
-}
-
 ssize_t cldm_ntbscpy(char *restrict dst, char const *restrict src, size_t dstsize) {
     size_t const srclen = strlen(src);
     size_t i = dstsize;

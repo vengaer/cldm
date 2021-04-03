@@ -44,8 +44,8 @@ class Makegen():
         mgen.adjust('LDFLAGS', '-shared', Mod.REMOVE)
         mgen.adjust('LDFLAGS', '-L. -L{} -lcldm'.format(project_root), Mod.APPEND)
         mgen.adjust('LDLIBS', '-ltest', Mod.APPEND)
-        mgen.add_rule('libtest.so', '$(builddir)/syms.o', '$(QUIET)$(CC) -o $@ $^ -shared $(LDFLAGS) $(LDLIBS)', '[LD] $@')
-        mgen.add_rule('$(builddir)/syms.o', str(working_dir / symbol_tu), '$(QUIET)$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -fPIC', '[CC] $@')
+        mgen.add_rule('libtest.so', '$(builddir)/syms.o', '$(QUIET)$(CC) -o $@ $^ -shared $(LDFLAGS) $(LDLIBS)')
+        mgen.add_rule('$(builddir)/syms.o', str(working_dir / symbol_tu), '$(QUIET)$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -fPIC')
         mgen.add_prereq(target, 'libtest.so')
 
     def adjust(self, varname, value, mode=Mod.APPEND):
@@ -89,10 +89,8 @@ class Makegen():
                       '.PHONY: all',
                       'all: $(target)',
                       '$(target): $(obj)',
-                      '\t$(info [LD] $@)',
                       '\t$(QUIET)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)',
                      f'$(builddir)/%.{self.__OEXT}: $(srcdir)/%.{self.__CEXT} | $(builddir)',
-                      '\t$(info [CC] $@)',
                       '\t$(QUIET)$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $^',
                       '$(builddir):',
                       '\t$(QUIET)mkdir -p $@',
