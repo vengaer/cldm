@@ -4,6 +4,7 @@
 #include "cldm_io.h"
 #include "cldm_log.h"
 #include "cldm_macro.h"
+#include "cldm_mock.h"
 #include "cldm_mem.h"
 #include "cldm_rbtree.h"
 #include "cldm_test.h"
@@ -18,6 +19,8 @@ int main(int argc, char *argv[argc + 1]) {
     struct cldm_elfmap map;
     struct cldm_rbtree tests = cldm_rbtree_init();
 
+    cldm_mock_force_disable = true;
+
     cldm_log("cldm version " cldm_str_expand(CLDM_VERSION));
     cldm_log("Report bugs to vilhelm.engstrom@tuta.io\n");
 
@@ -30,11 +33,6 @@ int main(int argc, char *argv[argc + 1]) {
 
     if(!cldm_is_elf64(&map) || !cldm_elf_is_executable(&map)) {
         cldm_err("%s is not a 64-bit ELF executable", argv[0]);
-        goto epilogue;
-    }
-
-    if(cldm_dlgentab(&map)) {
-        cldm_err("Could not set up function table");
         goto epilogue;
     }
 
@@ -79,10 +77,6 @@ epilogue:
         if(cldm_io_restore_stderr()) {
             cldm_warn("Failed to restore stderr");
         }
-    }
-
-    if(cldm_dlclose()) {
-        cldm_warn("Could not close libc handle");
     }
 
     return status;

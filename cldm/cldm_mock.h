@@ -15,6 +15,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+extern bool cldm_mock_force_disable;
+
+#define cldm_mock_enable()                                                                      \
+    for(int cldm_cat_expand(cldm_mockenbl, __LINE__) = (cldm_mock_force_disable = false, 0);    \
+        !cldm_cat_expand(cldm_mockenbl, __LINE__);                                              \
+        cldm_cat_expand(cldm_mockenbl, __LINE__) = (cldm_mock_force_disable = true, 1))
+
+#define cldm_mock_disable()                                                                     \
+    for(int cldm_cat_expand(cldm_mockdble, __LINE__) = (cldm_mock_force_disable = true, 0);     \
+        !cldm_cat_expand(cldm_mockdble, __LINE__);                                              \
+        cldm_cat_expand(cldm_mockdble, __LINE__) = (cldm_mock_force_disable = false, 1))
+
 #define cldm_mock_function2(...)   cldm_mock_function(__VA_ARGS__)
 #define cldm_mock_function3(...)   cldm_mock_function(__VA_ARGS__)
 #define cldm_mock_function4(...)   cldm_mock_function(__VA_ARGS__)
@@ -235,7 +247,6 @@ enum cldm_opmode {
         rvinit;                                                                                                     \
         void const *argaddrs[cldm_count(__VA_ARGS__)];                                                              \
         cldm_argframe_populate(argaddrs, __VA_ARGS__);                                                              \
-        extern bool cldm_mock_force_disable;                                                                        \
         if(!cldm_mock_force_disable && cldm_mock_ ## name.invocations) {                                            \
             if(cldm_mock_ ## name.invocations != -1) {                                                              \
                 --cldm_mock_ ## name.invocations;                                                                   \
@@ -281,9 +292,11 @@ enum cldm_opmode {
             retstatement;                                                                                           \
         }                                                                                                           \
         rettype(* cldm_handle_ ## name)(__VA_ARGS__);                                                               \
-        *(void **) (& cldm_handle_ ## name) = cldm_dlsym_next(#name);                                               \
-        cldm_rtassert(cldm_handle_ ## name);                                                                        \
-        call_prefix cldm_handle_ ## name(cldm_arglist(cldm_count(__VA_ARGS__)));                                    \
+        cldm_mock_disable() {                                                                                       \
+            *(void **) (& cldm_handle_ ## name) = cldm_dlsym_next(#name);                                           \
+            cldm_rtassert(cldm_handle_ ## name);                                                                    \
+            call_prefix cldm_handle_ ## name(cldm_arglist(cldm_count(__VA_ARGS__)));                                \
+        }                                                                                                           \
         retstatement;                                                                                               \
     }                                                                                                               \
     void cldm_trailing_ ## name (void)
@@ -305,7 +318,6 @@ enum cldm_opmode {
     };                                                                                          \
     rettype name(void) {                                                                        \
         rvinit;                                                                                 \
-        extern bool cldm_mock_force_disable;                                                    \
         if(!cldm_mock_force_disable && cldm_mock_ ## name.invocations) {                        \
             if(cldm_mock_ ## name.invocations != -1) {                                          \
                 --cldm_mock_ ## name.invocations;                                               \
@@ -331,9 +343,11 @@ enum cldm_opmode {
             retstatement;                                                                       \
         }                                                                                       \
         rettype(* cldm_handle_ ## name)(void);                                                  \
-        *(void **) (& cldm_handle_ ## name) = cldm_dlsym_next(#name);                           \
-        cldm_rtassert(cldm_handle_ ## name);                                                    \
-        call_prefix cldm_handle_ ## name ();                                                    \
+        cldm_mock_disable() {                                                                   \
+            *(void **) (& cldm_handle_ ## name) = cldm_dlsym_next(#name);                       \
+            cldm_rtassert(cldm_handle_ ## name);                                                \
+            call_prefix cldm_handle_ ## name ();                                                \
+        }                                                                                       \
         retstatement;                                                                           \
     }                                                                                           \
     void cldm_trailing_ ## name (void)

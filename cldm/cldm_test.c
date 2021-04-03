@@ -1,11 +1,13 @@
 #include "cldm_dl.h"
-#include "cldm_dlwrp.h"
 #include "cldm_io.h"
 #include "cldm_log.h"
 #include "cldm_mem.h"
+#include "cldm_mock.h"
 #include "cldm_ntbs.h"
 #include "cldm_rtassert.h"
 #include "cldm_test.h"
+
+#include <stdlib.h>
 
 enum { CLDM_ASSERTION_LEN = 256 };
 enum { CLDM_LOG_INITIAL_CAP = 32 };
@@ -164,7 +166,9 @@ int cldm_test_invoke_each(struct cldm_rbtree const *restrict tests, struct cldm_
     glob_teardown = cldm_test_global_teardown(map);
     cldm_log("");
 
-    glob_setup();
+    cldm_mock_enable() {
+        glob_setup();
+    }
 
     testidx = 0;
     cldm_rbtree_for_each(iter, tests) {
@@ -177,14 +181,18 @@ int cldm_test_invoke_each(struct cldm_rbtree const *restrict tests, struct cldm_
         idxpad = (length <= CLDM_IDXWIDTH) * (CLDM_IDXWIDTH - length);
 
         cldm_log_raw("[Running %s]%-*s (%llu/%zu)%-*s", record->name, runpad, "", testidx, ntests, idxpad, "");
-        lcl_setup();
-        record->handle();
-        lcl_teardown();
+        cldm_mock_enable() {
+            lcl_setup();
+            record->handle();
+            lcl_teardown();
+        }
 
         cldm_log("  %s", cldm_current_test.passed ? "pass" : "fail");
     }
 
-    glob_teardown();
+    cldm_mock_enable() {
+        glob_teardown();
+    }
 
     cldm_test_summary(ntests);
     cldm_test_free();
