@@ -2,8 +2,9 @@
 #define CLDM_TESTREC_H
 
 #include "cldm_macro.h"
-#include "cldm_ntbs.h"
 #include "cldm_rbtree.h"
+
+#include <string.h>
 
 struct cldm_testrec {
     char const *name;
@@ -24,8 +25,8 @@ struct cldm_testrec {
 inline int cldm_testrec_compare(struct cldm_rbnode const *restrict left, struct cldm_rbnode const *restrict right) {
     struct cldm_testrec const *l = cldm_testrec_get(left, const);
     struct cldm_testrec const *r = cldm_testrec_get(right, const);
-    int diff = cldm_ntbscmp(l->file, r->file);
-    return (-1) * (diff + !diff * cldm_ntbscmp(l->name, r->name));
+    int diff = strcmp(l->file, r->file);
+    return (-1) * (diff + !diff * strcmp(l->name, r->name));
 }
 
 #endif /* CLDM_TESTREC_H */

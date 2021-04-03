@@ -57,10 +57,10 @@ static int cldm_elf_map_sections(struct cldm_elfmap *map) {
         memcpy(&shdr, addr, sizeof(shdr));
 
         if(shdr.sh_type == SHT_STRTAB) {
-            if(cldm_ntbscmp(map->shstrtab + shdr.sh_name, ".strtab") == 0) {
+            if(strcmp(map->shstrtab + shdr.sh_name, ".strtab") == 0) {
                 strtab_hdr = addr;
             }
-            else if(cldm_ntbscmp(map->shstrtab + shdr.sh_name, ".dynstr") == 0) {
+            else if(strcmp(map->shstrtab + shdr.sh_name, ".dynstr") == 0) {
                 dynstr_hdr = addr;
             }
         }
@@ -85,7 +85,7 @@ static void *cldm_elf_section(struct cldm_elfmap const *restrict map, Elf64_Word
     for(Elf64_Half i = 0; i < map->m_un.ehdr->e_shnum; i++) {
         addr = cldm_elf_shdr(map, i);
         memcpy(&shdr, addr, sizeof(shdr));
-        if(shdr.sh_type == type && cldm_ntbscmp(map->shstrtab + shdr.sh_name, secname) == 0) {
+        if(shdr.sh_type == type && strcmp(map->shstrtab + shdr.sh_name, secname) == 0) {
             return addr;
         }
     }
@@ -115,7 +115,7 @@ static void *cldm_elf_sym(struct cldm_elfmap const *restrict map, char const *re
             for(Elf64_Xword j = 0; j < shdr.sh_size; j += sizeof(sym)) {
                 addr = (unsigned char *)map->m_un.addr + shdr.sh_offset + j;
                 memcpy(&sym, addr, sizeof(sym));
-                if(sym.st_name != STN_UNDEF && cldm_ntbscmp(symbol, map->strtab.addr + sym.st_name) == 0) {
+                if(sym.st_name != STN_UNDEF && strcmp(symbol, map->strtab.addr + sym.st_name) == 0) {
                     return addr;
                 }
             }
@@ -271,14 +271,14 @@ ssize_t cldm_elf_read_strtab(struct cldm_elfmap const *restrict map, char *restr
     Elf64_Shdr shdr;
     void *strtab;
 
-    if(cldm_ntbscmp(section, ".strtab") == 0) {
+    if(strcmp(section, ".strtab") == 0) {
         if(bufsize < map->strtab.size) {
             return -E2BIG;
         }
         memcpy(buffer, map->strtab.addr, map->strtab.size);
         return map->strtab.size;
     }
-    else if(cldm_ntbscmp(section, ".dynstr") == 0) {
+    else if(strcmp(section, ".dynstr") == 0) {
         if(bufsize < map->dynstr.size) {
             return -E2BIG;
         }

@@ -127,7 +127,7 @@ ssize_t cldm_test_collect(struct cldm_rbtree *restrict tree, struct cldm_elfmap 
     struct cldm_testrec *record;
 
     for(size_t i = 0; i < map->strtab.size; i += strlen(map->strtab.addr + i) + 1) {
-        if(cldm_ntbsncmp(cldm_str_expand(cldm_testrec_prefix), map->strtab.addr + i, sizeof(cldm_str_expand(cldm_testrec_prefix)) - 1) == 0) {
+        if(strncmp(cldm_str_expand(cldm_testrec_prefix), map->strtab.addr + i, sizeof(cldm_str_expand(cldm_testrec_prefix)) - 1) == 0) {
             record = cldm_elf_testrec(map, map->strtab.addr + i);
             if(!record) {
                 cldm_err("Could not map test record for %s", map->strtab.addr + i + sizeof(cldm_str_expand(cldm_testrec_prefix)) - 1);
