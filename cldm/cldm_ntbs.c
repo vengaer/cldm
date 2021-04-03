@@ -1,5 +1,7 @@
 #include "cldm_ntbs.h"
 
+#include <string.h>
+
 char *cldm_ntbschr(char *str, int c) {
     while(*str != (char)c && *str) {
         ++str;
@@ -17,15 +19,8 @@ char const *cldm_ntbscrchr(char const *str, int c) {
     return res;
 }
 
-size_t cldm_ntbslen(char const *str) {
-    char const *s = str;
-    while(*s++);
-
-    return s - str - 1;
-}
-
 ssize_t cldm_ntbscpy(char *restrict dst, char const *restrict src, size_t dstsize) {
-    size_t const srclen = cldm_ntbslen(src);
+    size_t const srclen = strlen(src);
     size_t i = dstsize;
     char *d = dst;
 
@@ -46,7 +41,7 @@ char const *cldm_ntbs_find_substr(char const *restrict str, char const *restrict
         d = *str == *d ? d + 1 : substr;
     }
 
-    return *d ? 0 : str - cldm_ntbslen(substr);
+    return *d ? 0 : str - strlen(substr);
 }
 
 int cldm_ntbscmp(char const *restrict str0, char const *restrict str1) {

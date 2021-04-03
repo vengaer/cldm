@@ -58,7 +58,7 @@ int cldm_elfdump_strtab(struct cldm_elfmap const *restrict map, char const *rest
     }
 
     cldm_log("%s", section);
-    for(ssize_t i = 0; i < nbytes; i += cldm_ntbslen(buffer + i) + 1) {
+    for(ssize_t i = 0; i < nbytes; i += strlen(buffer + i) + 1) {
         cldm_log("name: %-30s offset: %llu", buffer + i, (unsigned long long)i);
     }
 
@@ -76,7 +76,7 @@ int cldm_elfdump_needed(struct cldm_elfmap const *map) {
     }
 
     cldm_log("needed:");
-    for(ssize_t i = 0; i < nbytes; i += cldm_ntbslen(buffer + i) + 1) {
+    for(ssize_t i = 0; i < nbytes; i += strlen(buffer + i) + 1) {
         cldm_log("%s", buffer + i);
     }
     return 0;

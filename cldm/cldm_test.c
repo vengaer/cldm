@@ -8,6 +8,7 @@
 #include "cldm_test.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 enum { CLDM_ASSERTION_LEN = 256 };
 enum { CLDM_LOG_INITIAL_CAP = 32 };
@@ -125,7 +126,7 @@ ssize_t cldm_test_collect(struct cldm_rbtree *restrict tree, struct cldm_elfmap 
     ssize_t ntests = 0;
     struct cldm_testrec *record;
 
-    for(size_t i = 0; i < map->strtab.size; i += cldm_ntbslen(map->strtab.addr + i) + 1) {
+    for(size_t i = 0; i < map->strtab.size; i += strlen(map->strtab.addr + i) + 1) {
         if(cldm_ntbsncmp(cldm_str_expand(cldm_testrec_prefix), map->strtab.addr + i, sizeof(cldm_str_expand(cldm_testrec_prefix)) - 1) == 0) {
             record = cldm_elf_testrec(map, map->strtab.addr + i);
             if(!record) {
@@ -175,7 +176,7 @@ int cldm_test_invoke_each(struct cldm_rbtree const *restrict tests, struct cldm_
         record = cldm_testrec_get(iter, const);
         cldm_test_set(record->name);
 
-        length = cldm_ntbslen(record->name) + sizeof("[Running ]") - 1;
+        length = strlen(record->name) + sizeof("[Running ]") - 1;
         runpad = (length <= CLDM_RUNWIDTH) * (CLDM_RUNWIDTH - length);
         length = snprintf(0, 0, "(%llu/%zu)", ++testidx, ntests);
         idxpad = (length <= CLDM_IDXWIDTH) * (CLDM_IDXWIDTH - length);

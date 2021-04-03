@@ -24,12 +24,6 @@ TEST(cldm_ntbscrchr) {
     ASSERT_EQ(cldm_ntbscrchr(str, ' '), 0);
 }
 
-TEST(cldm_ntbslen) {
-    ASSERT_EQ(cldm_ntbslen("a string"), 8);
-    ASSERT_EQ(cldm_ntbslen("another string"), 14);
-    ASSERT_EQ(cldm_ntbslen("a"), 1);
-}
-
 TEST(cldm_ntbscpy) {
     enum { BUFSIZE = 64 };
     char src[BUFSIZE];

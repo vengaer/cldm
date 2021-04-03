@@ -61,24 +61,3 @@ def test_find_substr_address():
 
     run(['0'])
 
-def test_ntbslen():
-    strings = ['',
-               'a string',
-               'a' * 200,
-               'in out deaf land'
-    ]
-
-    cgen = CGen('main.c')
-    cgen.append_include('cldm_ntbs.h', system_header=False) \
-        .append_include('stdio.h')                          \
-        .append_include('string.h')
-
-    with cgen.open_function('int', 'main'):
-        for s in strings:
-            cgen.append_line('printf("%d\\n", cldm_ntbslen("{}") == strlen("{}"));'.format(s, s))
-    cgen.write()
-    gen_makefile()
-
-    res = '1 ' * len(strings)
-    run(res.strip().split(' '))
-

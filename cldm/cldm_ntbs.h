@@ -34,7 +34,6 @@
 
 char *cldm_ntbschr(char *str, int c);
 char const *cldm_ntbscrchr(char const *str, int c);
-size_t cldm_ntbslen(char const *str);
 ssize_t cldm_ntbscpy(char *restrict dst, char const *restrict src, size_t dstsize);
 
 char const *cldm_ntbs_find_substr(char const *restrict str, char const *restrict substr);

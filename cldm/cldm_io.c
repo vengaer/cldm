@@ -69,7 +69,7 @@ static int cldm_io_dump_capture(FILE *restrict redirected, char const *restrict 
 
     cldm_log_stream(dumpstream, "\nCaptured %s:", name);
     while(fgets(buffer, sizeof(buffer), fp)) {
-        linelen = cldm_ntbslen(buffer);
+        linelen = strlen(buffer);
         buffer[linelen - 1] = '\0';
         cldm_log_stream(dumpstream, "%s", buffer);
     }
