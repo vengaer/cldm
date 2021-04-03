@@ -270,9 +270,7 @@ struct cldm_rbnode *cldm_rbtree_remove(struct cldm_rbtree *restrict tree, struct
         return 0;
     }
 
-    struct cldm_rbnode faux_root = { .left = &tree->sentinel };
-
-    struct cldm_rbnode *gparent = &faux_root;
+    struct cldm_rbnode *gparent = &(struct cldm_rbnode){ .left = &tree->sentinel };
     struct cldm_rbnode *parent = &tree->sentinel;
     struct cldm_rbnode *n = cldm_rbroot(tree);
 
