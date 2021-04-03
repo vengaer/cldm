@@ -6,6 +6,7 @@
 #include "cldm_macro.h"
 #include "cldm_test.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -625,7 +626,8 @@ enum cldm_opmode {
         rvinit;                                                                                                     \
         void const *argaddrs[cldm_count(__VA_ARGS__)];                                                              \
         cldm_argframe_populate(argaddrs, __VA_ARGS__);                                                              \
-        if(cldm_mock_ ## name.invocations) {                                                                        \
+        extern bool cldm_mock_force_disable;                                                                        \
+        if(!cldm_mock_force_disable && cldm_mock_ ## name.invocations) {                                            \
             if(cldm_mock_ ## name.invocations != -1) {                                                              \
                 --cldm_mock_ ## name.invocations;                                                                   \
             }                                                                                                       \
@@ -694,7 +696,8 @@ enum cldm_opmode {
     };                                                                                          \
     rettype name(void) {                                                                        \
         rvinit;                                                                                 \
-        if(cldm_mock_ ## name.invocations) {                                                    \
+        extern bool cldm_mock_force_disable;                                                    \
+        if(!cldm_mock_force_disable && cldm_mock_ ## name.invocations) {                        \
             if(cldm_mock_ ## name.invocations != -1) {                                          \
                 --cldm_mock_ ## name.invocations;                                               \
             }                                                                                   \
