@@ -46,3 +46,8 @@ TEST(cldm_for_each_word) {
     }
     ASSERT_EQ(idx, 4);
 }
+
+TEST(cldm_basename) {
+    ASSERT_EQ(strcmp("foo", cldm_basename("bar/foo")), 0);
+    ASSERT_EQ(strcmp("foo", cldm_basename("foo")), 0);
+}
