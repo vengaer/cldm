@@ -1,3 +1,4 @@
+#include "cldm_argp.h"
 #include "cldm_dl.h"
 #include "cldm_elf.h"
 #include "cldm_elfdump.h"

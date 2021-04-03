@@ -83,4 +83,20 @@
 #define cldm_for_each(...)                                                  \
     cldm_overload(cldm_for_each,__VA_ARGS__)
 
+#define cldm_for_each_zip6(it0, it1, arr0, arr1, size, step)                                \
+    for(unsigned cldm_cat_expand(cldm_fez,__LINE__) = ((it0) = (arr0), (it1) = (arr1), 0);  \
+        cldm_cat_expand(cldm_fez,__LINE__) < (size);                                        \
+        cldm_cat_expand(cldm_fez,__LINE__) += (step),                                       \
+        (it0) = &(arr0[cldm_cat_expand(cldm_fez,__LINE__)]),                                \
+        (it1) = &(arr1[cldm_cat_expand(cldm_fez,__LINE__)]))
+
+#define cldm_for_each_zip5(it0, it1, arr0, arr1, size)                                      \
+    cldm_for_each_zip6(it0, it1, arr0, arr1, size, 1)
+
+#define cldm_for_each_zip4(it0, it1, arr0, arr1)                                            \
+    cldm_for_each_zip5(it0, it1, arr0, arr1, cldm_arrsize(arr0))
+
+#define cldm_for_each_zip(...)                                                              \
+    cldm_overload(cldm_for_each_zip,__VA_ARGS__)
+
 #endif /* CLDM_MACRO_H */

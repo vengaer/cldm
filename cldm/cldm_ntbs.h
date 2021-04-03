@@ -34,4 +34,9 @@
 
 ssize_t cldm_strscpy(char *restrict dst, char const *restrict src, size_t dstsize);
 
+inline char const *cldm_basename(char const *path) {
+    char const *p = strrchr(path, '/');
+    return p ? p + 1 : path;
+}
+
 #endif /* CLDM_NTBS_H */
