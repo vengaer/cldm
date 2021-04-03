@@ -376,3 +376,13 @@ TEST(cldm_rbtree_size) {
 
     ASSERT_TRUE(cldm_rbtree_empty(&tree));
 }
+
+TEST(cldm_rbtree_empty) {
+    struct inode node = { .value = 3 };
+    struct cldm_rbtree tree = cldm_rbtree_init();
+    ASSERT_TRUE(cldm_rbtree_empty(&tree));
+    ASSERT_TRUE(cldm_rbtree_insert(&tree, &node.node, compare));
+    ASSERT_FALSE(cldm_rbtree_empty(&tree));
+    ASSERT_EQ(cldm_rbtree_remove(&tree, &node.node, compare), &node.node);
+    ASSERT_TRUE(cldm_rbtree_empty(&tree));
+}
