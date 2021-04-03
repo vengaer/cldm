@@ -6,21 +6,21 @@
 
 #include <sys/types.h>
 
-TEST(cldm_ntbscpy) {
+TEST(cldm_strscpy) {
     enum { BUFSIZE = 64 };
     char src[BUFSIZE];
     char dst[BUFSIZE];
 
     strcpy(src, "a string");
 
-    ASSERT_EQ(cldm_ntbscpy(dst, src, sizeof(src)), (ssize_t)strlen(src));
+    ASSERT_EQ(cldm_strscpy(dst, src, sizeof(src)), (ssize_t)strlen(src));
     ASSERT_EQ(strcmp(dst, src), 0);
 
-    ASSERT_LT(cldm_ntbscpy(dst, src, 4), 0);
+    ASSERT_LT(cldm_strscpy(dst, src, 4), 0);
     ASSERT_EQ(dst[3], 0);
     ASSERT_EQ(strcmp(dst, "a s"), 0);
 
-    ASSERT_EQ(cldm_ntbscpy(dst, src, 9), (ssize_t)strlen(src));
+    ASSERT_EQ(cldm_strscpy(dst, src, 9), (ssize_t)strlen(src));
     ASSERT_EQ(dst[strlen(src)], 0);
 }
 

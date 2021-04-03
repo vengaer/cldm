@@ -319,7 +319,7 @@ ssize_t cldm_elf_read_needed(struct cldm_elfmap const *restrict map, char *restr
     for(Elf64_Xword i = 0; i < shdr.sh_size; i += sizeof(dyn)) {
         memcpy(&dyn, (unsigned char *)map->m_un.addr + shdr.sh_offset + i, sizeof(dyn));
         if(dyn.d_tag == DT_NEEDED) {
-            nbytes = cldm_ntbscpy(buffer + offset, map->dynstr.addr + dyn.d_un.d_val, bufsize - offset);
+            nbytes = cldm_strscpy(buffer + offset, map->dynstr.addr + dyn.d_un.d_val, bufsize - offset);
             if(nbytes < 0 || (size_t)(offset + nbytes + 1) >= bufsize) {
                 cldm_err("Adding needed library %s to the list would cause overflow", map->dynstr.addr + dyn.d_un.d_val);
                 return nbytes;
