@@ -1,7 +1,6 @@
 #include "cldm_elfdump.h"
 #include "cldm_limits.h"
 #include "cldm_log.h"
-#include "cldm_ntbs.h"
 
 #include <elf.h>
 #include <string.h>

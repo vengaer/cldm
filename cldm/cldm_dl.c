@@ -1,8 +1,5 @@
 #include "cldm_dl.h"
-#include "cldm_limits.h"
 #include "cldm_log.h"
-#include "cldm_macro.h"
-#include "cldm_ntbs.h"
 
 #include <dlfcn.h>
 

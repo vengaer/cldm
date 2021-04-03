@@ -1,7 +1,6 @@
 #include "cldm_io.h"
 #include "cldm_limits.h"
 #include "cldm_log.h"
-#include "cldm_ntbs.h"
 
 #include <errno.h>
 #include <string.h>
