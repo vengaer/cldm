@@ -7,14 +7,15 @@
 #define CLDM_FNV_OFFSET_BASIS 0xcbf29ce484222325llu
 #define CLDM_FNV_PRIME 0x100000001b3llu
 
-enum { CLDM_HT_POS_OPEN = 1 };
+/* Represents previously occupied entry */
+enum { CLDM_HASH_VACANT = 1 };
 
 void cldm_ht_free(struct cldm_ht *ht);
 size_t cldm_ht_size(struct cldm_ht const *ht);
 size_t cldm_ht_capacity(struct cldm_ht const *ht);
 
-static inline bool cldm_ht_slot_open(union cldm_ht_internal_entry const *entry) {
-    return entry->status <= CLDM_HT_POS_OPEN;
+static inline bool cldm_ht_slot_vacant(union cldm_ht_internal_entry const *entry) {
+    return entry->status <= CLDM_HASH_VACANT;
 }
 
 static inline size_t cldm_hash_entry(struct cldm_ht_entry const *entry) {
@@ -22,6 +23,7 @@ static inline size_t cldm_hash_entry(struct cldm_ht_entry const *entry) {
 }
 
 static size_t cldm_ht_sizeup(size_t current) {
+    /* Double size, set bit 0 to ensure value is odd and find next prime */
     current = ((current << 1) | 0x1);
     while(!cldm_is_prime(current)) {
         current += 2;
@@ -34,19 +36,21 @@ static inline union cldm_ht_internal_entry *cldm_ht_storage(struct cldm_ht *ht) 
 }
 
 static inline bool cldm_ht_should_expand(struct cldm_ht const *ht) {
+    /* Rehash at 50% usage */
     return ht->size + 1 > (ht->capacity >> 1);
 }
 
-static union cldm_ht_internal_entry *cldm_ht_probe(struct cldm_ht *restrict ht, struct cldm_ht_entry const *restrict entry, bool first_open) {
+static union cldm_ht_internal_entry *cldm_ht_probe(struct cldm_ht *restrict ht, struct cldm_ht_entry const *restrict entry, bool reuse_vacant) {
     union cldm_ht_internal_entry *entries;
     size_t idx;
 
     entries = cldm_ht_storage(ht);
     idx = cldm_hash_entry(entry) % ht->capacity;
 
+    /* Probe for next vacant entry */
     for(; entries[idx].status; idx = (idx + 1) % ht->capacity) {
-        if(cldm_ht_slot_open(&entries[idx])) {
-            if(first_open) {
+        if(cldm_ht_slot_vacant(&entries[idx])) {
+            if(reuse_vacant) {
                 return &entries[idx];
             }
             continue;
@@ -57,7 +61,6 @@ static union cldm_ht_internal_entry *cldm_ht_probe(struct cldm_ht *restrict ht, 
     }
 
     return &entries[idx];
-
 }
 
 static bool cldm_ht_expand(struct cldm_ht *ht) {
@@ -78,10 +81,12 @@ static bool cldm_ht_expand(struct cldm_ht *ht) {
     }
 
     if(ht->capacity == cldm_ht_static_capacity()) {
+        /* Stack storage used */
         memcpy(t_un.stat, ht->t_un.stat, sizeof(t_un.stat));
         pdyn = false;
     }
     else {
+        /* Heap storage used */
         t_un.dyn = ht->t_un.dyn;
         pdyn = true;
     }
@@ -91,7 +96,7 @@ static bool cldm_ht_expand(struct cldm_ht *ht) {
     ht->capacity = new_capacity;
     ht->size = 0u;
 
-
+    /* Rehash by inserting each value in new storage */
     if(pdyn) {
         for(unsigned i = 0; i < prev_capacity; i++) {
             if(t_un.dyn[i].status) {
@@ -127,7 +132,7 @@ struct cldm_ht_entry *cldm_ht_find(struct cldm_ht *restrict ht, struct cldm_ht_e
     union cldm_ht_internal_entry *found;
 
     found = cldm_ht_probe(ht, entry, false);
-    return cldm_ht_slot_open(found) ? 0 : found->ent;
+    return cldm_ht_slot_vacant(found) ? 0 : found->ent;
 }
 
 struct cldm_ht_entry *cldm_ht_insert(struct cldm_ht *restrict ht, struct cldm_ht_entry *restrict entry) {
@@ -151,7 +156,8 @@ struct cldm_ht_entry *cldm_ht_remove(struct cldm_ht *restrict ht, struct cldm_ht
 
     slot = cldm_ht_probe(ht, entry, false);
     ret = slot->ent;
-    slot->status = CLDM_HT_POS_OPEN;
+    /* Mark slot as previously occupied */
+    slot->status = CLDM_HASH_VACANT;
     --ht->size;
 
     return ret;
