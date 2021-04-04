@@ -288,3 +288,19 @@ def test_argp_positional_param_order_override():
 
     runcmd = gen_runcmd('foo_test.c gen_test.c bar_test.c')
     run(ContainsMatcher(r'Running\s*foo.*Running\s*virginti.*Running\s*bar.*Running\s*baz'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+def test_argp_invalid_positional_param():
+    file = 'baz.c'
+    cgen = CGen('test.c')
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('ASSERT_EQ(1, 2);')
+    with cgen.open_macro('TEST', 'foo'):
+        cgen.append_line('ASSERT_TRUE(1);')
+    cgen.write()
+
+    gen_makefile()
+
+    runcmd = gen_runcmd(file)
+    run(DummyMatcher(), stderr_matcher=ContainsMatcher(r"File '{}' not found".format(file)), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
