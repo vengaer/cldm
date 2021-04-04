@@ -36,7 +36,11 @@ pipeline {
             }
             steps {
                 echo '-- Running Tests --'
-                sh 'make test'
+                sh '''
+                    make cldmtest
+                    LD_LIBRARY_PATH=. valgrind ./cldmtest
+                    make functional
+                '''
             }
         }
         stage('Gitlab Success') {
