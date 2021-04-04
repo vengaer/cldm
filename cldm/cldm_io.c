@@ -177,6 +177,10 @@ int cldm_io_restore_stderr(void) {
 }
 
 int cldm_io_remove_captured_stdout(void) {
+    if(stat(CLDM_CAPTURE_STDOUT, &(struct stat){ 0 })) {
+        return 0;
+    }
+
     int res = remove(CLDM_CAPTURE_STDOUT);
     if(res) {
         cldm_err("Could not remove %s: %s", CLDM_CAPTURE_STDOUT, strerror(errno));
@@ -185,6 +189,9 @@ int cldm_io_remove_captured_stdout(void) {
 }
 
 int cldm_io_remove_captured_stderr(void) {
+    if(stat(CLDM_CAPTURE_STDERR, &(struct stat){ 0 })) {
+        return 0;
+    }
     int res = remove(CLDM_CAPTURE_STDERR);
     if(res) {
         cldm_err("Could not remove %s: %s", CLDM_CAPTURE_STDERR, strerror(errno));

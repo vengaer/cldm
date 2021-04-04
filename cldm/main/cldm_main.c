@@ -36,12 +36,12 @@ static void cldm_dump_capture(void) {
     if(cldm_io_dump_captured_stderr()) {
         cldm_warn("Could not read captured stderr");
     }
-
-    cldm_io_remove_captured_stdout();
-    cldm_io_remove_captured_stderr();
 }
 
 static void cldm_restore_captures(void) {
+    cldm_io_remove_captured_stdout();
+    cldm_io_remove_captured_stderr();
+
     if(cldm_stdout) {
         if(cldm_io_restore_stdout()) {
             cldm_warn("Failed to restore stdout");
