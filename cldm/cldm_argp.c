@@ -19,7 +19,8 @@ static char const *cldm_argp_posarg = "[FILE]...";
 static char const *cldm_argp_swdesc[] = {
     "Print this help message and exit",
     "Print version and exit",
-    "Exit after first failed test, if any"
+    "Exit after first failed test, if any",
+    "Do not capture stdout and stderr. This will cause potential output to be mixed with test logs"
 };
 static char const *cldm_argp_posdesc = "Run the tests specified in the space-separated list FILE..., all files must have been compiled ínto the binary";
 static struct cldm_nfa_state2 **cldm_argp_states;
