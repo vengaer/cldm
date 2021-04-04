@@ -140,7 +140,7 @@ ssize_t cldm_test_collect(struct cldm_rbtree *restrict tree, struct cldm_elfmap 
     return ntests;
 }
 
-int cldm_test_invoke_each(struct cldm_rbtree const *restrict tests, struct cldm_elfmap const *restrict map, size_t ntests) {
+int cldm_test_invoke_each(struct cldm_rbtree const *restrict tests, struct cldm_elfmap const *restrict map, size_t ntests, bool fail_fast) {
     unsigned long long testidx;
     struct cldm_rbnode *iter;
     struct cldm_testrec const *record;
@@ -187,6 +187,10 @@ int cldm_test_invoke_each(struct cldm_rbtree const *restrict tests, struct cldm_
         }
 
         cldm_log("  %s", cldm_current_test.passed ? "pass" : "fail");
+
+        if(fail_fast && !cldm_current_test.passed) {
+            break;
+        }
     }
 
     cldm_mock_enable() {

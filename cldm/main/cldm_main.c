@@ -63,7 +63,7 @@ int main(int argc, char *argv[argc + 1]) {
     }
 
     cldm_log("Collected %lld tests", (long long)ntests);
-    status = cldm_test_invoke_each(&tests, &map, (size_t)ntests);
+    status = cldm_test_invoke_each(&tests, &map, (size_t)ntests, args.fail_fast);
 
     if(cldm_io_dump_captured_stdout()) {
         cldm_warn("Could not read captured stdout");
