@@ -1,0 +1,46 @@
+#ifndef CLDM_HASH_H
+#define CLDM_HASH_H
+
+#include "cldm_macro.h"
+
+#include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
+
+enum { CLDM_HASH_STATIC_SIZE = 31 };
+
+struct cldm_ht_entry {
+    void *key;
+    size_t size;
+};
+
+struct cldm_ht {
+    union {
+        struct cldm_ht_entry *stat[CLDM_HASH_STATIC_SIZE];
+        struct cldm_ht_entry **dyn;
+    } t_un;
+    size_t size;
+    size_t capacity;
+};
+
+#define cldm_ht_entry_str(str)  \
+    (struct cldm_ht_entry){ .key = str, .size = strlen(str) }
+
+#define cldm_ht_static_capacity()   \
+    cldm_arrsize(((struct cldm_ht *)0)->t_un.stat)
+
+#define cldm_ht_init()    \
+    { .capacity = cldm_ht_static_capacity() }
+
+size_t cldm_hash_fnv1a(unsigned char const *data, size_t size);
+
+inline void cldm_ht_free(struct cldm_ht *ht) {
+    if(ht->capacity > cldm_ht_static_capacity()) {
+        free(ht->t_un.dyn);
+    }
+}
+
+struct cldm_ht_entry *cldm_ht_find(struct cldm_ht *restrict ht, struct cldm_ht_entry *restrict entry);
+struct cldm_ht_entry *cldm_ht_insert(struct cldm_ht *restrict ht, struct cldm_ht_entry *restrict entry);
+
+#endif /* CLDM_HASH_H */
