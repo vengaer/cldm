@@ -9,6 +9,8 @@
 enum { CLDM_HT_POS_OPEN = 1 };
 
 void cldm_ht_free(struct cldm_ht *ht);
+size_t cldm_ht_size(struct cldm_ht const *ht);
+size_t cldm_ht_capacity(struct cldm_ht const *ht);
 
 static inline bool cldm_ht_slot_open(union cldm_ht_internal_entry const *entry) {
     return entry->status <= CLDM_HT_POS_OPEN;
