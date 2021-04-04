@@ -48,7 +48,7 @@ static ssize_t cldm_collect_files(struct cldm_ht *restrict ht, struct cldm_rbtre
         /* Insert 1 record per file */
         if(file && strcmp(file, basename)) {
             if(!cldm_insert_file(ht, begin, iter, file, &nodes[nodeidx++], ntests)) {
-                goto error;
+                return -1;
             }
             begin = iter;
             ntests = 0;
@@ -59,16 +59,11 @@ static ssize_t cldm_collect_files(struct cldm_ht *restrict ht, struct cldm_rbtre
 
     if(file) {
         if(!cldm_insert_file(ht, begin, iter, file, &nodes[nodeidx++], ntests)) {
-            goto error;
+            return -1;
         }
     }
 
     return cldm_ht_size(ht);
-
-error:
-    free(nodes);
-    cldm_ht_free(ht);
-    return -1;
 }
 
 static int cldm_collect_and_run_specified(struct cldm_rbtree const *restrict tests, struct cldm_elfmap const *restrict map, bool fail_fast, char **restrict files, size_t nfiles) {
@@ -122,6 +117,7 @@ int cldm_collect_and_run(struct cldm_elfmap const *restrict map, bool fail_fast,
     }
 
     if(!nfiles) {
+        /* No files specified on command line, run all tests */
         return cldm_test_invoke_each(&tests, map, fail_fast);
     }
 
