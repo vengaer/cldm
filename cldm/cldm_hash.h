@@ -10,21 +10,29 @@
 enum { CLDM_HASH_STATIC_SIZE = 31 };
 
 struct cldm_ht_entry {
-    void *key;
+    void const *key;
     size_t size;
+};
+
+union cldm_ht_internal_entry {
+    struct cldm_ht_entry *ent;
+    size_t status;
 };
 
 struct cldm_ht {
     union {
-        struct cldm_ht_entry *stat[CLDM_HASH_STATIC_SIZE];
-        struct cldm_ht_entry **dyn;
+        union cldm_ht_internal_entry stat[CLDM_HASH_STATIC_SIZE];
+        union cldm_ht_internal_entry *dyn;
     } t_un;
     size_t size;
     size_t capacity;
 };
 
-#define cldm_ht_entry_str(str)  \
+#define cldm_ht_mkentry_str(str)    \
     (struct cldm_ht_entry){ .key = str, .size = strlen(str) }
+
+#define cldm_ht_mkentry(val)    \
+    (struct cldm_ht_entry){ .key = &(val), .size = sizeof(val) }
 
 #define cldm_ht_static_capacity()   \
     cldm_arrsize(((struct cldm_ht *)0)->t_un.stat)
@@ -40,7 +48,8 @@ inline void cldm_ht_free(struct cldm_ht *ht) {
     }
 }
 
-struct cldm_ht_entry *cldm_ht_find(struct cldm_ht *restrict ht, struct cldm_ht_entry *restrict entry);
+struct cldm_ht_entry *cldm_ht_find(struct cldm_ht *restrict ht, struct cldm_ht_entry const *restrict entry);
 struct cldm_ht_entry *cldm_ht_insert(struct cldm_ht *restrict ht, struct cldm_ht_entry *restrict entry);
+struct cldm_ht_entry *cldm_ht_remove(struct cldm_ht *restrict ht, struct cldm_ht_entry const *restrict entry);
 
 #endif /* CLDM_HASH_H */
