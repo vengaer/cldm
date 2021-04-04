@@ -447,7 +447,7 @@ void cldm_argp_usage(char const *argv0) {
 
 void cldm_argp_version(void) {
     cldm_log("cldm version " cldm_str_expand(CLDM_VERSION));
-    cldm_log("Report bugs to vilhelm.engstrom@tuta.io\n");
+    cldm_log("Report bugs to vilhelm.engstrom@tuta.io");
 }
 
 bool cldm_argp_parse(struct cldm_args *restrict args, int argc, char **restrict argv) {
