@@ -6,8 +6,7 @@
 #include "cldm_log.h"
 #include "cldm_macro.h"
 #include "cldm_mock.h"
-
-#include "cldm_rbtree.h"
+#include "cldm_runner.h"
 #include "cldm_test.h"
 
 #include <stdbool.h>
@@ -55,10 +54,8 @@ static void cldm_restore_captures(void) {
 }
 
 int main(int argc, char **argv) {
-    ssize_t ntests;
     int status;
     struct cldm_elfmap map;
-    struct cldm_rbtree tests = cldm_rbtree_init();
     struct cldm_args args;
 
     cldm_mock_force_disable = true;
@@ -92,14 +89,7 @@ int main(int argc, char **argv) {
         goto epilogue;
     }
 
-    ntests = cldm_test_collect(&tests, &map);
-    if(ntests < 0) {
-        cldm_err("Error collecting tests");
-        goto epilogue;
-    }
-
-    cldm_log("Collected %lld tests", (long long)ntests);
-    status = cldm_test_invoke_each(&tests, &map, (size_t)ntests, args.fail_fast);
+    status = cldm_collect_and_run(&map, args.fail_fast, &argv[args.posind], (unsigned)argc - args.posind);
 
     if(!args.no_capture) {
         cldm_dump_capture();

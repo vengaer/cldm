@@ -38,7 +38,7 @@ struct cldm_rbtree {
 };
 
 #define cldm_rbtree_init()              \
-    { .sentinel = { .flags = CLDM_RBLEAF }, .size = 0u }
+    (struct cldm_rbtree){ .sentinel = { .flags = CLDM_RBLEAF }, .size = 0u }
 
 #define cldm_rbroot(tree)   \
     (tree)->sentinel.left
@@ -71,10 +71,19 @@ inline struct cldm_rbnode *cldm_rbnode_successor(struct cldm_rbnode *node) {
     return cldm_rbnode_has_child(node, cldm_rbdir_right) ? cldm_rbtree_leftmost(node->right) : node->right;
 }
 
-#define cldm_rbtree_for_each(iter, tree)                        \
-    for(iter = cldm_rbtree_leftmost(cldm_rbroot(tree));         \
-        iter != &(tree)->sentinel;                              \
+#define cldm_rbtree_for_each4(iter, tree, begin, end)           \
+    for(iter = begin;                                           \
+        iter != end;                                            \
         iter = cldm_rbnode_successor(iter))
+
+#define cldm_rbtree_for_each3(iter, tree, begin)                \
+    cldm_rbtree_for_each4(iter, tree, begin, &(tree)->sentinel)
+
+#define cldm_rbtree_for_each2(iter, tree)                       \
+    cldm_rbtree_for_each3(iter, tree, cldm_rbtree_leftmost(cldm_rbroot(tree)))
+
+#define cldm_rbtree_for_each(...)                               \
+    cldm_overload(cldm_rbtree_for_each,__VA_ARGS__)
 
 
 #endif /* CLDM_RBTREE_H */

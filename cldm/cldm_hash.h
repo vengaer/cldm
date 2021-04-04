@@ -38,7 +38,7 @@ struct cldm_ht {
     cldm_arrsize(((struct cldm_ht *)0)->t_un.stat)
 
 #define cldm_ht_init()    \
-    { .capacity = cldm_ht_static_capacity() }
+    (struct cldm_ht){ .capacity = cldm_ht_static_capacity() }
 
 size_t cldm_hash_fnv1a(unsigned char const *data, size_t size);
 

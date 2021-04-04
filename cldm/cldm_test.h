@@ -3,6 +3,7 @@
 
 #include "cldm_config.h"
 #include "cldm_elf.h"
+#include "cldm_hash.h"
 #include "cldm_macro.h"
 #include "cldm_rbtree.h"
 #include "cldm_testrec.h"
@@ -12,8 +13,16 @@
 
 #include <sys/types.h>
 
+struct cldm_rbht_node {
+    struct cldm_rbnode *begin;
+    struct cldm_rbnode *end;
+    size_t ntests;
+    struct cldm_ht_entry entry;
+};
+
 ssize_t cldm_test_collect(struct cldm_rbtree *restrict tree, struct cldm_elfmap const *restrict map);
-int cldm_test_invoke_each(struct cldm_rbtree const *restrict tests, struct cldm_elfmap const *restrict map, size_t ntotal, bool fail_fast);
+int cldm_test_invoke_each(struct cldm_rbtree const *restrict tests, struct cldm_elfmap const *restrict map, bool fail_fast);
+int cldm_test_invoke_specified(struct cldm_ht *restrict lookup_table, struct cldm_elfmap const *restrict map, bool fail_fast, size_t ntests, char **restrict files, size_t nfiles);
 
 #define cldm_testproc_prefix        \
     cldm_testproc_
