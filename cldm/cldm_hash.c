@@ -1,3 +1,4 @@
+#include "cldm_algo.h"
 #include "cldm_hash.h"
 #include "cldm_macro.h"
 
@@ -16,30 +17,13 @@ static inline bool cldm_ht_slot_open(union cldm_ht_internal_entry const *entry) 
     return entry->status <= CLDM_HT_POS_OPEN;
 }
 
-static bool cldm_hash_is_prime(size_t num) {
-    if(num == 2 || num == 3) {
-        return true;
-    }
-    if((!num % 2) || !(num % 3)) {
-        return false;
-    }
-
-    for(size_t div = 6u; div * div - 2 * div < num; div += 6u) {
-        if(!(num % (div - 1)) || !(num % div + 1)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 static inline size_t cldm_hash_entry(struct cldm_ht_entry const *entry) {
     return cldm_hash_fnv1a(entry->key, entry->size);
 }
 
 static size_t cldm_ht_sizeup(size_t current) {
     current = ((current << 1) | 0x1);
-    while(!cldm_hash_is_prime(current)) {
+    while(!cldm_is_prime(current)) {
         current += 2;
     }
     return current;

@@ -1,8 +1,11 @@
 #include <cldm/cldm.h>
+#include <cldm/cldm_algo.h>
 #include <cldm/cldm_hash.h>
 #include <cldm/cldm_macro.h>
 
+#include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 TEST(cldm_ht_insert_static) {
     enum { SIZE = 8 };
@@ -140,7 +143,7 @@ TEST(cldm_ht_remove) {
 }
 
 TEST(cldm_ht_size) {
-    enum { SIZE = 32 };
+    enum { SIZE = 2048 };
 
     struct cldm_ht_entry entries[SIZE];
     unsigned us[SIZE];
@@ -161,6 +164,29 @@ TEST(cldm_ht_size) {
         ASSERT_EQ(cldm_ht_remove(&ht, &cldm_ht_mkentry(us[i])), &entries[i]);
         ASSERT_EQ(cldm_ht_size(&ht), cldm_arrsize(entries) - i - 1);
     }
+
+    cldm_ht_free(&ht);
+}
+
+TEST(cldm_ht_capacity_is_prime) {
+    enum { SIZE = 16384 };
+    struct cldm_ht_entry *entries = malloc(SIZE * sizeof(*entries));
+    unsigned *us = malloc(SIZE * sizeof(*us));
+
+    struct cldm_ht ht = cldm_ht_init();
+
+    ASSERT_TRUE(entries);
+    ASSERT_TRUE(us);
+
+    for(unsigned i = 0; i < SIZE; i++) {
+        us[i] = i;
+        entries[i] = cldm_ht_mkentry(us[i]);
+        cldm_ht_insert(&ht, &entries[i]);
+        ASSERT_TRUE(cldm_is_prime(cldm_ht_capacity(&ht)));
+    }
+
+    free(us);
+    free(entries);
 
     cldm_ht_free(&ht);
 }

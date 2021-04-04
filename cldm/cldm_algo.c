@@ -4,6 +4,23 @@
 #include <stdlib.h>
 #include <string.h>
 
+bool cldm_is_prime(size_t num) {
+    if(num == 2 || num == 3) {
+        return true;
+    }
+    if((!num % 2) || !(num % 3)) {
+        return false;
+    }
+
+    for(size_t div = 6u; div * div - 2 * div < num; div += 6u) {
+        if(!(num % (div - 1)) || !(num % div + 1)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 ssize_t cldm_stable_partition(void *data, size_t elemsize, size_t nelems, bool(*predicate)(void const *)) {
     unsigned char *arr;
     unsigned char *elem;
