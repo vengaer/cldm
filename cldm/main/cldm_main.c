@@ -41,7 +41,20 @@ static void cldm_dump_capture(void) {
     cldm_io_remove_captured_stderr();
 }
 
-int main(int argc, char *argv[argc + 1]) {
+static void cldm_restore_captures(void) {
+    if(cldm_stdout) {
+        if(cldm_io_restore_stdout()) {
+            cldm_warn("Failed to restore stdout");
+        }
+    }
+    if(cldm_stderr) {
+        if(cldm_io_restore_stderr()) {
+            cldm_warn("Failed to restore stderr");
+        }
+    }
+}
+
+int main(int argc, char **argv) {
     ssize_t ntests;
     int status;
     struct cldm_elfmap map;
@@ -51,7 +64,7 @@ int main(int argc, char *argv[argc + 1]) {
     cldm_mock_force_disable = true;
 
     if(!cldm_argp_parse(&args, argc, argv)) {
-        return 1;
+        return 2;
     }
 
     if(args.help) {
@@ -67,7 +80,7 @@ int main(int argc, char *argv[argc + 1]) {
 
     if(cldm_map_elf(&map, argv[0])) {
         cldm_err("Mapping %s failed", argv[0]);
-        return 1;
+        return 2;
     }
 
     if(!cldm_is_elf64(&map) || !cldm_elf_is_executable(&map)) {
@@ -94,16 +107,7 @@ int main(int argc, char *argv[argc + 1]) {
 
 epilogue:
     cldm_unmap_elf(&map);
-    if(cldm_stdout) {
-        if(cldm_io_restore_stdout()) {
-            cldm_warn("Failed to restore stdout");
-        }
-    }
-    if(cldm_stderr) {
-        if(cldm_io_restore_stderr()) {
-            cldm_warn("Failed to restore stderr");
-        }
-    }
+    cldm_restore_captures();
 
     return status;
 }
