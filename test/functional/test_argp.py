@@ -55,6 +55,30 @@ def test_argp_short_version():
     runcmd = gen_runcmd('-- -V')
     run(ContainsNotMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
+def test_argp_short_fail_fast():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('ASSERT_EQ(1, 2);')
+    with cgen.open_macro('TEST', 'foo'):
+        cgen.append_line('ASSERT_EQ(1, 1);')
+
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('')
+    run(ContainsMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-x')
+    run(ContainsNotMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-xv -- --help')
+    run(ContainsNotMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-- -x')
+    run(ContainsMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
 def test_argp_long_help():
     cgen = CGen('tests.c')
     cgen.append_include('cldm.h', system_header=False)
@@ -90,3 +114,27 @@ def test_argp_long_version():
 
     runcmd = gen_runcmd('-- --version')
     run(ContainsNotMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+def test_argp_long_fail_fast():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('ASSERT_EQ(1, 2);')
+    with cgen.open_macro('TEST', 'foo'):
+        cgen.append_line('ASSERT_EQ(1, 1);')
+
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('')
+    run(ContainsMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('--fail-fast')
+    run(ContainsNotMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-v --fail-fast -- --help')
+    run(ContainsNotMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-- --fail-fast')
+    run(ContainsMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
