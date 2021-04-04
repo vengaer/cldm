@@ -35,7 +35,7 @@ def test_argp_short_help():
     run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-- -h')
-    run(ContainsNotMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
 def test_argp_short_version():
     cgen = CGen('tests.c')
@@ -53,7 +53,7 @@ def test_argp_short_version():
     run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-- -V')
-    run(ContainsNotMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
 def test_argp_short_fail_fast():
     cgen = CGen('tests.c')
@@ -77,7 +77,7 @@ def test_argp_short_fail_fast():
     run(ContainsNotMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-- -x')
-    run(ContainsMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
 def test_argp_short_no_capture():
     cgen = CGen('tests.c')
@@ -97,10 +97,10 @@ def test_argp_short_no_capture():
     run(ContainsMatcher(r'Running\s*bar.*text.*pass'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-s -- --help')
-    run(ContainsMatcher(r'Running\s*bar.*text.*pass'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher(r'Running\s*bar.*text.*pass'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-- -s')
-    run(ContainsMatcher(r'Running\s*bar.*pass.*text'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher(r'Running\s*bar.*pass.*text'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
 def test_argp_long_help():
     cgen = CGen('tests.c')
@@ -114,11 +114,11 @@ def test_argp_long_help():
     runcmd = gen_runcmd('-x --fail-fast --help')
     run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
-    runcmd = gen_runcmd('-x --help -- --help')
+    runcmd = gen_runcmd('-x --help --')
     run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-x -- --help')
-    run(ContainsNotMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
 def test_argp_long_version():
     cgen = CGen('tests.c')
@@ -132,11 +132,11 @@ def test_argp_long_version():
     runcmd = gen_runcmd('-x --version')
     run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
-    runcmd = gen_runcmd('-x --version -- --help')
+    runcmd = gen_runcmd('-x --version --')
     run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-- --version')
-    run(ContainsNotMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
 def test_argp_long_fail_fast():
     cgen = CGen('tests.c')
@@ -156,11 +156,11 @@ def test_argp_long_fail_fast():
     runcmd = gen_runcmd('--fail-fast')
     run(ContainsNotMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
-    runcmd = gen_runcmd('--fail-fast -- --help')
+    runcmd = gen_runcmd('--fail-fast --')
     run(ContainsNotMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-- --fail-fast')
-    run(ContainsMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
 def test_argp_long_no_capture():
     cgen = CGen('tests.c')
@@ -179,8 +179,112 @@ def test_argp_long_no_capture():
     runcmd = gen_runcmd('--no-capture')
     run(ContainsMatcher(r'Running\s*bar.*text.*pass'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
-    runcmd = gen_runcmd('--no-capture -- --help')
+    runcmd = gen_runcmd('--no-capture --')
     run(ContainsMatcher(r'Running\s*bar.*text.*pass'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-- --no-capture')
-    run(ContainsMatcher(r'Running\s*bar.*pass.*text'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher(r'Running\s*bar.*pass.*text'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+def test_argp_positional_param_invocation():
+    cgen = CGen('bar_test.c')
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('ASSERT_EQ(1, 1);')
+    cgen.write()
+
+    cgen = CGen('foo_test.c')
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'foo'):
+        cgen.append_line('ASSERT_EQ(2, 2);')
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('')
+    run(ContainsMatcher(r'Running\s*bar.*Running\s*foo'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('bar_test.c')
+    run(ContainsNotMatcher(r'Running\s*foo'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsMatcher(r'Running\s*bar'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+def test_argp_positional_param_all_tests():
+    cgen = CGen('bar_test.c')
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('ASSERT_EQ(1, 1);')
+    with cgen.open_macro('TEST', 'baz'):
+        cgen.append_line('ASSERT_TRUE(1);')
+    cgen.write()
+
+    cgen = CGen('foo_test.c')
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'foo'):
+        cgen.append_line('ASSERT_EQ(2, 2);')
+    cgen.write()
+
+    cgen = CGen('gen_test.c')
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'virginti'):
+        cgen.append_line('ASSERT_EQ(1,1);')
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('gen_test.c bar_test.c foo_test.c')
+    run(ContainsMatcher(r'Collected\s*4\s*tests.*Running\s*virginti.*Running\s*bar.*Running\s*baz.*Running\s*foo'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+def test_argp_positional_param_fail_fast():
+    cgen = CGen('test.c')
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('ASSERT_EQ(1, 2);')
+    with cgen.open_macro('TEST', 'foo'):
+        cgen.append_line('ASSERT_TRUE(1);')
+    cgen.write()
+    cgen = CGen('goo_test.c')
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'goo'):
+        cgen.append_line('ASSERT_EQ(2, 2);')
+    cgen.write()
+
+    gen_makefile()
+
+    runcmd = gen_runcmd('-x test.c')
+    run(ContainsMatcher(r'Running\s*bar'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher(r'Running\s*foo.*Running\s*goo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+def test_argp_positional_param_order_override():
+    cgen = CGen('bar_test.c')
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('ASSERT_EQ(1, 1);')
+    with cgen.open_macro('TEST', 'baz'):
+        cgen.append_line('ASSERT_TRUE(1);')
+    cgen.write()
+
+    cgen = CGen('foo_test.c')
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'foo'):
+        cgen.append_line('ASSERT_EQ(2, 2);')
+    cgen.write()
+
+    cgen = CGen('gen_test.c')
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'virginti'):
+        cgen.append_line('ASSERT_EQ(1,1);')
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('gen_test.c bar_test.c foo_test.c')
+    run(ContainsMatcher(r'Running\s*virginti.*Running\s*bar.*Running\s*baz.*Running\s*foo'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('foo_test.c gen_test.c bar_test.c')
+    run(ContainsMatcher(r'Running\s*foo.*Running\s*virginti.*Running\s*bar.*Running\s*baz'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
