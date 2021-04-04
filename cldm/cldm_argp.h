@@ -6,7 +6,7 @@
 
 struct cldm_args {
     size_t posind;
-    bool verbose;
+    bool no_capture;
     bool fail_fast;
     bool help;
     bool version;

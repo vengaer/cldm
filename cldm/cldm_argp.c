@@ -13,8 +13,8 @@
 enum { CLDM_ARGP_OPTINDENT = 2 };
 enum { CLDM_ARGP_ADJ = 40 };
 
-static char cldm_argp_short[] = { 'h', 'V', 'x' };
-static char const *cldm_argp_long[] = { "help", "version", "fail-fast" };
+static char cldm_argp_short[] = { 'h', 'V', 'x', 's' };
+static char const *cldm_argp_long[] = { "help", "version", "fail-fast", "no-capture" };
 static char const *cldm_argp_posarg = "[FILE]...";
 static char const *cldm_argp_swdesc[] = {
     "Print this help message and exit",
@@ -87,15 +87,27 @@ cldm_nfa_genstate(16);
         }                                                                               \
     }
 
-cldm_nfa_state(12) cldm_nfa_state_sh_help;
-cldm_nfa_state(12) cldm_nfa_state_sh_version;
-cldm_nfa_state(12) cldm_nfa_state_sh_fail_fast;
+cldm_nfa_state(14) cldm_nfa_state_sh_help;
+cldm_nfa_state(14) cldm_nfa_state_sh_version;
+cldm_nfa_state(14) cldm_nfa_state_sh_fail_fast;
+cldm_nfa_state(14) cldm_nfa_state_sh_no_capture;
 
 cldm_nfa_defstate(reject,        cldm_nfa_reject, cldm_argtype_none, CLDM_SHOPT_NONE, cldm_nfa_transition(cldm_nfa_any, reject));
 cldm_nfa_defstate(accept,        cldm_nfa_accept, cldm_argtype_none, CLDM_SHOPT_NONE, cldm_nfa_transition(cldm_nfa_any, accept));
 
+/* state -s */
+cldm_nfa_defstate(sh_no_capture, cldm_nfa_accept,  cldm_argtype_short, 's',
+    cldm_nfa_transition('s',          sh_no_capture),
+    cldm_nfa_transition('V',          sh_version),
+    cldm_nfa_transition('x',          sh_fail_fast),
+    cldm_nfa_transition('h',          sh_help),
+    cldm_nfa_transition(cldm_nfa_end, accept),
+    cldm_nfa_transition(cldm_nfa_any, reject)
+);
+
 /* state -h */
 cldm_nfa_defstate(sh_help,       cldm_nfa_accept,  cldm_argtype_short, 'h',
+    cldm_nfa_transition('s',          sh_no_capture),
     cldm_nfa_transition('V',          sh_version),
     cldm_nfa_transition('x',          sh_fail_fast),
     cldm_nfa_transition('h',          sh_help),
@@ -105,6 +117,7 @@ cldm_nfa_defstate(sh_help,       cldm_nfa_accept,  cldm_argtype_short, 'h',
 
 /* state -V */
 cldm_nfa_defstate(sh_version,    cldm_nfa_accept,  cldm_argtype_short, 'V',
+    cldm_nfa_transition('s',          sh_no_capture),
     cldm_nfa_transition('V',          sh_version),
     cldm_nfa_transition('x',          sh_fail_fast),
     cldm_nfa_transition('h',          sh_help),
@@ -114,6 +127,7 @@ cldm_nfa_defstate(sh_version,    cldm_nfa_accept,  cldm_argtype_short, 'V',
 
 /* state -x */
 cldm_nfa_defstate(sh_fail_fast,  cldm_nfa_accept,  cldm_argtype_short, 'x',
+    cldm_nfa_transition('s',          sh_no_capture),
     cldm_nfa_transition('V',          sh_version),
     cldm_nfa_transition('x',          sh_fail_fast),
     cldm_nfa_transition('h',          sh_help),
@@ -128,22 +142,22 @@ cldm_nfa_defstate(posparam,      cldm_nfa_pending, cldm_argtype_posparam, CLDM_S
 );
 
 /* state --help */
-cldm_nfa_defstate(lo_help,      cldm_nfa_pending, cldm_argtype_long, 'h',
+cldm_nfa_defstate(lo_help,       cldm_nfa_pending, cldm_argtype_long, 'h',
     cldm_nfa_transition(cldm_nfa_end, accept)
 );
 
 /* state --hel */
-cldm_nfa_defstate(lo_hel,       cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+cldm_nfa_defstate(lo_hel,        cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
     cldm_nfa_transition('p',          lo_help)
 );
 
 /* state --he */
-cldm_nfa_defstate(lo_he,        cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+cldm_nfa_defstate(lo_he,         cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
     cldm_nfa_transition('l',          lo_hel)
 );
 
 /* state --h */
-cldm_nfa_defstate(lo_h,         cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+cldm_nfa_defstate(lo_h,          cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
     cldm_nfa_transition('e',          lo_he)
 );
 
@@ -153,82 +167,133 @@ cldm_nfa_defstate(lo_fail_fast, cldm_nfa_pending, cldm_argtype_long, 'x',
 );
 
 /* state --fail-fas */
-cldm_nfa_defstate(lo_fail_fas,  cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+cldm_nfa_defstate(lo_fail_fas,   cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
     cldm_nfa_transition('t',          lo_fail_fast)
 );
 
 /* state --fail-fa */
-cldm_nfa_defstate(lo_fail_fa,   cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+cldm_nfa_defstate(lo_fail_fa,    cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
     cldm_nfa_transition('s',          lo_fail_fas)
 );
 
 /* state --fail-f */
-cldm_nfa_defstate(lo_fail_f,    cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+cldm_nfa_defstate(lo_fail_f,     cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
     cldm_nfa_transition('a',          lo_fail_fa)
 );
 
 /* state --fail- */
-cldm_nfa_defstate(lo_fail_,     cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+cldm_nfa_defstate(lo_fail_,      cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
     cldm_nfa_transition('f',          lo_fail_f)
 );
 
 /* state --fail */
-cldm_nfa_defstate(lo_fail,      cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+cldm_nfa_defstate(lo_fail,       cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
     cldm_nfa_transition('-',          lo_fail_)
 );
 
 /* state --fai */
-cldm_nfa_defstate(lo_fai,       cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+cldm_nfa_defstate(lo_fai,        cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
     cldm_nfa_transition('l',          lo_fail)
 );
 
 /* state --fa */
-cldm_nfa_defstate(lo_fa,        cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+cldm_nfa_defstate(lo_fa,         cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
     cldm_nfa_transition('i',          lo_fai)
 );
 
 /* state --f */
-cldm_nfa_defstate(lo_f,         cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+cldm_nfa_defstate(lo_f,          cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
     cldm_nfa_transition('a',          lo_fa)
 );
 
 /* state --version */
-cldm_nfa_defstate(lo_version,   cldm_nfa_pending, cldm_argtype_long, 'V',
+cldm_nfa_defstate(lo_version,    cldm_nfa_pending, cldm_argtype_long, 'V',
     cldm_nfa_transition(cldm_nfa_end, accept)
 );
 
 /* state --versio */
-cldm_nfa_defstate(lo_versio,    cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+cldm_nfa_defstate(lo_versio,     cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
     cldm_nfa_transition('n',          lo_version)
 );
 
 /* state --versi */
-cldm_nfa_defstate(lo_versi,     cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+cldm_nfa_defstate(lo_versi,      cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
     cldm_nfa_transition('o',          lo_versio)
 );
 
 /* state --vers */
-cldm_nfa_defstate(lo_vers,      cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+cldm_nfa_defstate(lo_vers,       cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
     cldm_nfa_transition('i',          lo_versi)
 );
 
 /* state --ver */
-cldm_nfa_defstate(lo_ver,       cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+cldm_nfa_defstate(lo_ver,        cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
     cldm_nfa_transition('s',          lo_vers)
 );
 
 /* state --ve */
-cldm_nfa_defstate(lo_ve,        cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+cldm_nfa_defstate(lo_ve,         cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
     cldm_nfa_transition('r',          lo_ver)
 );
 
 /* state --v */
-cldm_nfa_defstate(lo_v,         cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+cldm_nfa_defstate(lo_v,          cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
     cldm_nfa_transition('e',          lo_ve)
 );
 
+/* state --no-capture */
+cldm_nfa_defstate(lo_no_capture, cldm_nfa_pending, cldm_argtype_long, 's',
+    cldm_nfa_transition(cldm_nfa_end, accept)
+);
+
+/* state --no-captur */
+cldm_nfa_defstate(lo_no_captur,  cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+    cldm_nfa_transition('e',          lo_no_capture)
+);
+
+/* state --no-captu */
+cldm_nfa_defstate(lo_no_captu,   cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+    cldm_nfa_transition('r',          lo_no_captur)
+);
+
+/* state --no-capt */
+cldm_nfa_defstate(lo_no_capt,    cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+    cldm_nfa_transition('u',          lo_no_captu)
+);
+
+/* state --no-cap */
+cldm_nfa_defstate(lo_no_cap,     cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+    cldm_nfa_transition('t',          lo_no_capt)
+);
+
+/* state --no-ca */
+cldm_nfa_defstate(lo_no_ca,      cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+    cldm_nfa_transition('p',          lo_no_cap)
+);
+
+/* state --no-c */
+cldm_nfa_defstate(lo_no_c,       cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+    cldm_nfa_transition('a',          lo_no_ca)
+);
+
+/* state --no- */
+cldm_nfa_defstate(lo_no_,        cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+    cldm_nfa_transition('c',          lo_no_c)
+);
+
+/* state --no */
+cldm_nfa_defstate(lo_no,         cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+    cldm_nfa_transition('-',          lo_no_)
+);
+
+/* state --n */
+cldm_nfa_defstate(lo_n,          cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
+    cldm_nfa_transition('o',          lo_no)
+);
+
 /* state -- */
-cldm_nfa_defstate(double_dash,  cldm_nfa_pending, cldm_argtype_divider, CLDM_SHOPT_NONE,
+cldm_nfa_defstate(double_dash,   cldm_nfa_pending, cldm_argtype_divider, CLDM_SHOPT_NONE,
+    cldm_nfa_transition('n',          lo_n),
     cldm_nfa_transition('h',          lo_h),
     cldm_nfa_transition('f',          lo_f),
     cldm_nfa_transition('v',          lo_v),
@@ -237,6 +302,7 @@ cldm_nfa_defstate(double_dash,  cldm_nfa_pending, cldm_argtype_divider, CLDM_SHO
 
 /* state - */
 cldm_nfa_defstate(single_dash,   cldm_nfa_pending, cldm_argtype_short, CLDM_SHOPT_NONE,
+    cldm_nfa_transition('s',          sh_no_capture),
     cldm_nfa_transition('V',          sh_version),
     cldm_nfa_transition('x',          sh_fail_fast),
     cldm_nfa_transition('h',          sh_help),
@@ -279,8 +345,8 @@ static void cldm_argp_setarg(int opt, struct cldm_args *args) {
         case 'V':
             args->version = true;
             break;
-        case 'v':
-            args->verbose = true;
+        case 's':
+            args->no_capture = true;
             break;
         case 'x':
             args->fail_fast = true;

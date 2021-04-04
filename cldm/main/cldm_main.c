@@ -10,7 +10,36 @@
 #include "cldm_rbtree.h"
 #include "cldm_test.h"
 
+#include <stdbool.h>
+
 #include <sys/types.h>
+
+static bool cldm_capture(void) {
+    if(cldm_io_capture_stdout()) {
+        cldm_err("Error redirecting stdout");
+        false;
+    }
+
+    if(cldm_io_capture_stderr()) {
+        cldm_err("Error redirecting stderr");
+        false;
+    }
+
+    return true;
+}
+
+static void cldm_dump_capture(void) {
+    if(cldm_io_dump_captured_stdout()) {
+        cldm_warn("Could not read captured stdout");
+    }
+
+    if(cldm_io_dump_captured_stderr()) {
+        cldm_warn("Could not read captured stderr");
+    }
+
+    cldm_io_remove_captured_stdout();
+    cldm_io_remove_captured_stderr();
+}
 
 int main(int argc, char *argv[argc + 1]) {
     ssize_t ntests;
@@ -46,13 +75,7 @@ int main(int argc, char *argv[argc + 1]) {
         goto epilogue;
     }
 
-    if(cldm_io_capture_stdout()) {
-        cldm_err("Error redirecting stdout");
-        goto epilogue;
-    }
-
-    if(cldm_io_capture_stderr()) {
-        cldm_err("Error redirecting stderr");
+    if(!args.no_capture && !cldm_capture()) {
         goto epilogue;
     }
 
@@ -65,16 +88,9 @@ int main(int argc, char *argv[argc + 1]) {
     cldm_log("Collected %lld tests", (long long)ntests);
     status = cldm_test_invoke_each(&tests, &map, (size_t)ntests, args.fail_fast);
 
-    if(cldm_io_dump_captured_stdout()) {
-        cldm_warn("Could not read captured stdout");
+    if(!args.no_capture) {
+        cldm_dump_capture();
     }
-
-    if(cldm_io_dump_captured_stderr()) {
-        cldm_warn("Could not read captured stderr");
-    }
-
-    cldm_io_remove_captured_stdout();
-    cldm_io_remove_captured_stderr();
 
 epilogue:
     cldm_unmap_elf(&map);
