@@ -28,10 +28,10 @@ def test_argp_short_help():
     runcmd = gen_runcmd('-h')
     run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
-    runcmd = gen_runcmd('-xvh')
+    runcmd = gen_runcmd('-xh')
     run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
-    runcmd = gen_runcmd('-xvh -- --help')
+    runcmd = gen_runcmd('-xh -- --help')
     run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-- -h')
@@ -46,10 +46,10 @@ def test_argp_short_version():
     runcmd = gen_runcmd('-V')
     run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
-    runcmd = gen_runcmd('-xvV')
+    runcmd = gen_runcmd('-xV')
     run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
-    runcmd = gen_runcmd('-xvV -- --help')
+    runcmd = gen_runcmd('-xV -- --help')
     run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-- -V')
@@ -73,7 +73,7 @@ def test_argp_short_fail_fast():
     runcmd = gen_runcmd('-x')
     run(ContainsNotMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
-    runcmd = gen_runcmd('-xv -- --help')
+    runcmd = gen_runcmd('-x -- --help')
     run(ContainsNotMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-- -x')
@@ -88,13 +88,13 @@ def test_argp_long_help():
     runcmd = gen_runcmd('--help')
     run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
-    runcmd = gen_runcmd('-xvv --verbose --help')
+    runcmd = gen_runcmd('-x --fail-fast --help')
     run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
-    runcmd = gen_runcmd('-xv --help -- --help')
+    runcmd = gen_runcmd('-x --help -- --help')
     run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
-    runcmd = gen_runcmd('-xv -- --help')
+    runcmd = gen_runcmd('-x -- --help')
     run(ContainsNotMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
 def test_argp_long_version():
@@ -106,10 +106,10 @@ def test_argp_long_version():
     runcmd = gen_runcmd('--version')
     run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
-    runcmd = gen_runcmd('-xv --version')
+    runcmd = gen_runcmd('-x --version')
     run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
-    runcmd = gen_runcmd('-xv --version -- --help')
+    runcmd = gen_runcmd('-x --version -- --help')
     run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-- --version')
@@ -133,7 +133,7 @@ def test_argp_long_fail_fast():
     runcmd = gen_runcmd('--fail-fast')
     run(ContainsNotMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
-    runcmd = gen_runcmd('-v --fail-fast -- --help')
+    runcmd = gen_runcmd('--fail-fast -- --help')
     run(ContainsNotMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-- --fail-fast')
