@@ -1,0 +1,92 @@
+from cgen import *
+from cldm import *
+from config import *
+from makegen import *
+from runner import *
+from util import *
+
+_BINARY='argp_test'
+
+def gen_runcmd(flags):
+    return 'LD_LIBRARY_PATH={} {}/{} {}'.format(project_root, working_dir, _BINARY, flags)
+
+def gen_makefile():
+    mgen = Makegen(_BINARY)
+    mgen.adjust('CFLAGS', '-fPIC', Mod.REMOVE)
+    mgen.adjust('LDFLAGS', '-shared', Mod.REMOVE)
+    mgen.adjust('LDFLAGS', '-L{}'.format(project_root), Mod.APPEND)
+    mgen.adjust('LDLIBS', '-lcldm -lcldm_main')
+    mgen.export('LD_LIBRARY_PATH', project_root)
+    mgen.generate()
+
+def test_argp_short_help():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('-h')
+    run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-xvh')
+    run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-xvh -- --help')
+    run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-- -h')
+    run(ContainsNotMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+def test_argp_short_version():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('-V')
+    run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-xvV')
+    run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-xvV -- --help')
+    run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-- -V')
+    run(ContainsNotMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+def test_argp_long_help():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('--help')
+    run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-xvv --verbose --help')
+    run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-xv --help -- --help')
+    run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-xv -- --help')
+    run(ContainsNotMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+def test_argp_long_version():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('--version')
+    run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-xv --version')
+    run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-xv --version -- --help')
+    run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-- --version')
+    run(ContainsNotMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)

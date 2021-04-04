@@ -31,6 +31,10 @@ class ContainsMatcher(TextMatcher):
     def run(self, output):
         assert re.search(self.ref, ' '.join(TextMatcher._preproc(output)))
 
+class ContainsNotMatcher(TextMatcher):
+    def run(self, output):
+        assert not re.search(self.ref, ' '.join(TextMatcher._preproc(output)))
+
 class ContainsOnceMatcher(ContainsMatcher):
     def __init__(self, pattern, exclusive):
         super().__init__(pattern)
@@ -50,9 +54,9 @@ class RvDiffMatcher(RvMatcher):
     def run(self, rv):
         assert rv != self.ref
 
-def run(stdout_matcher, stderr_matcher=DummyMatcher(), rvmatcher=RvEqMatcher(0)):
+def run(stdout_matcher, stderr_matcher=DummyMatcher(), rvmatcher=RvEqMatcher(0), runcmd='make -sC {} run'.format(working_dir)):
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
-    retval, output, error = exec_bash('make -sC {} run'.format(working_dir))
+    retval, output, error = exec_bash(runcmd)
     rvmatcher.run(retval)
     stdout_matcher.run(output)
     stderr_matcher.run(error)
