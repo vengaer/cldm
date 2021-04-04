@@ -18,14 +18,18 @@
 extern bool cldm_mock_force_disable;
 
 #define cldm_mock_enable()                                                                      \
-    for(int cldm_cat_expand(cldm_mockenbl, __LINE__) = (cldm_mock_force_disable = false, 0);    \
-        !cldm_cat_expand(cldm_mockenbl, __LINE__);                                              \
-        cldm_cat_expand(cldm_mockenbl, __LINE__) = (cldm_mock_force_disable = true, 1))
+    for(bool cldm_cat_expand(cldm_mockes,__LINE__) = cldm_mock_force_disable,                   \
+             cldm_cat_expand(cldm_mockenbl,__LINE__) = (cldm_mock_force_disable = false);       \
+        !cldm_cat_expand(cldm_mockenbl,__LINE__);                                               \
+        cldm_cat_expand(cldm_mockenbl,__LINE__) =                                               \
+            (cldm_mock_force_disable = cldm_cat_expand(cldm_mockes,__LINE__), true))
 
 #define cldm_mock_disable()                                                                     \
-    for(int cldm_cat_expand(cldm_mockdble, __LINE__) = (cldm_mock_force_disable = true, 0);     \
-        !cldm_cat_expand(cldm_mockdble, __LINE__);                                              \
-        cldm_cat_expand(cldm_mockdble, __LINE__) = (cldm_mock_force_disable = false, 1))
+    for(bool cldm_cat_expand(cldm_mockds,__LINE__) = cldm_mock_force_disable,                   \
+             cldm_cat_expand(cldm_mockdble,__LINE__) = (cldm_mock_force_disable = true, false); \
+        !cldm_cat_expand(cldm_mockdble,__LINE__);                                               \
+        cldm_cat_expand(cldm_mockdble,__LINE__) =                                               \
+            (cldm_mock_force_disable = cldm_cat_expand(cldm_mockds,__LINE__), true))
 
 #define cldm_mock_function2(...)   cldm_mock_function(__VA_ARGS__)
 #define cldm_mock_function3(...)   cldm_mock_function(__VA_ARGS__)
