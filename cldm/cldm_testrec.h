@@ -6,10 +6,13 @@
 
 #include <string.h>
 
+/* Record representing a test */
 struct cldm_testrec {
     char const *name;
     char const *file;
+    /* For storing in tree */
     struct cldm_rbnode rbnode;
+    /* Address of test */
     void(*handle)(void);
 };
 

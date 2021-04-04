@@ -58,10 +58,11 @@ int main(int argc, char **argv) {
     struct cldm_elfmap map;
     struct cldm_args args;
 
+    /* Prevent mocks from interfering with internals */
     cldm_mock_force_disable = true;
 
     if(!cldm_argp_parse(&args, argc, argv)) {
-        return 2;
+        return -1;
     }
 
     if(args.help) {
@@ -73,12 +74,12 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    status = 2;
-
     if(cldm_map_elf(&map, argv[0])) {
         cldm_err("Mapping %s failed", argv[0]);
-        return 2;
+        return -1;
     }
+
+    status = -1;
 
     if(!cldm_is_elf64(&map) || !cldm_elf_is_executable(&map)) {
         cldm_err("%s is not a 64-bit ELF executable", argv[0]);
@@ -92,6 +93,7 @@ int main(int argc, char **argv) {
     status = cldm_collect_and_run(&map, args.fail_fast, &argv[args.posind], (unsigned)argc - args.posind);
 
     if(!args.no_capture) {
+        /* Print captured output */
         cldm_dump_capture();
     }
 

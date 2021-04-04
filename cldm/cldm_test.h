@@ -13,6 +13,7 @@
 
 #include <sys/types.h>
 
+/* For storing tests corresponding to a single file in hash table */
 struct cldm_rbht_node {
     struct cldm_rbnode *begin;
     struct cldm_rbnode *end;

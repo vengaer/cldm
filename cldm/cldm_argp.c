@@ -53,6 +53,7 @@ enum {
     CLDM_SHOPT_NONE = 0,
 };
 
+/* Emulate flexible array member in static context */
 #define cldm_nfa_genstate(size)                     \
     struct cldm_cat_expand(cldm_nfa_state, size) {  \
         enum cldm_nfa_action action;                \
@@ -61,6 +62,7 @@ enum {
         struct cldm_nfa_edge edges[size / 2];       \
     }
 
+/* Define structs */
 cldm_nfa_genstate(2);
 cldm_nfa_genstate(4);
 cldm_nfa_genstate(6);
@@ -365,6 +367,7 @@ static inline bool cldm_nfa_valid_state(struct cldm_nfa_state2 const *state) {
 }
 
 static struct cldm_nfa_state2 *cldm_nfa_simulate(struct cldm_args *restrict args, char **restrict input) {
+    /* (Ab)use the fact that a struct may alias with its first member */
     union {
         enum cldm_nfa_action *action;
         struct cldm_nfa_state2 *state;
@@ -379,6 +382,7 @@ static struct cldm_nfa_state2 *cldm_nfa_simulate(struct cldm_args *restrict args
     p = input[0];
 
     while(cldm_nfa_valid_state(s_un.state)) {
+        /* Try each edge */
         for(unsigned i = 0;; i++) {
             if(cldm_nfa_edge_match(&p, &s_un.state->edges[i])) {
                 state = s_un.state;
@@ -386,6 +390,7 @@ static struct cldm_nfa_state2 *cldm_nfa_simulate(struct cldm_args *restrict args
                 break;
             }
         }
+        /* Accept if valid short option */
         if(cldm_nfa_accept_shopt(s_un.state)) {
             cldm_argp_setarg(s_un.state->shopt, args);
         }
@@ -402,9 +407,11 @@ static struct cldm_nfa_state2 *cldm_nfa_simulate(struct cldm_args *restrict args
         return 0;
     }
 
+    /* Arg is '--', remaining args are positional parameters */
     if(state->argtype == cldm_argtype_divider) {
         treat_as_posparam = true;
     }
+    /* Valid switch */
     else if(state->argtype != cldm_argtype_posparam) {
         cldm_argp_setarg(state->shopt, args);
     }
@@ -412,6 +419,7 @@ static struct cldm_nfa_state2 *cldm_nfa_simulate(struct cldm_args *restrict args
     return state;
 }
 
+/* Predicate for cldm_stable_partition */
 static bool cldm_argp_is_posparam(void const *param) {
     (void)param;
     static unsigned i = 0;
@@ -448,6 +456,7 @@ bool cldm_argp_parse(struct cldm_args *restrict args, int argc, char **restrict 
     success = false;
     *args = (struct cldm_args){ 0 };
 
+    /* For telling positional parameters and switches apart when partitioning */
     cldm_argp_states = malloc((argc - 1) * sizeof(*cldm_argp_states));
 
     if(!cldm_argp_states) {
@@ -462,12 +471,15 @@ bool cldm_argp_parse(struct cldm_args *restrict args, int argc, char **restrict 
         }
     }
 
+    /* Partition s.t. positional parameters are at the end of argv */
     posind = cldm_stable_partition(&argv[1], sizeof(*argv), argc - 1, cldm_argp_is_posparam);
 
+    /* Partition failure */
     if(posind < 0) {
         goto epilogue;
     }
 
+    /* Account for argv[0] */
     args->posind = (size_t)posind + 1;
 
     success = true;

@@ -10,7 +10,7 @@
 
 enum { CLDM_ASSERTION_LEN = 256 };
 enum { CLDM_LOG_INITIAL_CAP = 32 };
-enum { CLDM_RUNWIDTH = 40 };
+enum { CLDM_RUNWIDTH = 48 };
 enum { CLDM_IDXWIDTH = 10 };
 
 struct cldm_test_log {
@@ -43,7 +43,6 @@ static void cldm_test_empty_func(void) { }
     else {                                                                                  \
         cldm_log("Detected " cldm_str_expand(scope) " " cldm_str_expand(stage));            \
     }
-
 
 static void (*cldm_test_local_setup(struct cldm_elfmap const *map))(void) {
     void (*setup)(void) = { 0 };
@@ -182,8 +181,11 @@ static void cldm_test_invoke(struct cldm_testrec const *restrict record, size_t 
 ssize_t cldm_test_collect(struct cldm_rbtree *restrict tree, struct cldm_elfmap const *restrict map) {
     struct cldm_testrec *record;
 
+    /* Look up tests in strtab section */
     for(size_t i = 0; i < map->strtab.size; i += strlen(map->strtab.addr + i) + 1) {
+        /* Identify by test prefix */
         if(strncmp(cldm_str_expand(cldm_testrec_prefix), map->strtab.addr + i, sizeof(cldm_str_expand(cldm_testrec_prefix)) - 1) == 0) {
+            /* Compute address of test record and store in tree */
             record = cldm_elf_testrec(map, map->strtab.addr + i);
             if(!record) {
                 cldm_err("Could not map test record for %s", map->strtab.addr + i + sizeof(cldm_str_expand(cldm_testrec_prefix)) - 1);
@@ -198,9 +200,9 @@ ssize_t cldm_test_collect(struct cldm_rbtree *restrict tree, struct cldm_elfmap 
 }
 
 int cldm_test_invoke_each(struct cldm_rbtree const *restrict tests, struct cldm_elfmap const *restrict map, bool fail_fast) {
-    size_t testidx;
-    struct cldm_rbnode *iter;
     struct cldm_testrec const *record;
+    struct cldm_rbnode *iter;
+    size_t testidx;
 
     void (*lcl_setup)(void);
     void (*lcl_teardown)(void);
@@ -210,7 +212,7 @@ int cldm_test_invoke_each(struct cldm_rbtree const *restrict tests, struct cldm_
     }
 
     if(cldm_test_prologue(map, cldm_rbtree_size(tests), &lcl_setup, &lcl_teardown)) {
-        return 1;
+        return -1;
     }
 
     testidx = 0;
@@ -227,12 +229,11 @@ int cldm_test_invoke_each(struct cldm_rbtree const *restrict tests, struct cldm_
 }
 
 int cldm_test_invoke_specified(struct cldm_ht *restrict lookup_table, struct cldm_elfmap const *restrict map, bool fail_fast, size_t ntests, char **restrict files, size_t nfiles) {
-    size_t testidx;
     struct cldm_testrec const *record;
-
-    struct cldm_ht_entry *entry;
     struct cldm_rbht_node *node;
+    struct cldm_ht_entry *entry;
     struct cldm_rbnode *rbiter;
+    size_t testidx;
     char **iter;
 
     void (*lcl_setup)(void);
@@ -243,7 +244,7 @@ int cldm_test_invoke_specified(struct cldm_ht *restrict lookup_table, struct cld
     }
 
     if(cldm_test_prologue(map, ntests, &lcl_setup, &lcl_teardown)) {
-        return 1;
+        return -1;
     }
 
     testidx = 0;
