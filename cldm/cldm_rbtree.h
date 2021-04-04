@@ -29,6 +29,8 @@ struct cldm_rbnode {
     struct cldm_rbnode *left;
     struct cldm_rbnode *right;
     enum cldm_rbcolor color;
+    /* bit 0 set -> left link is thread,
+     * bit 1 set -> right link is thread */
     cldm_rbnode_flags flags;
 };
 

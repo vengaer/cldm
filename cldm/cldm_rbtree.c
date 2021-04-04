@@ -1,8 +1,9 @@
 #include "cldm_rbtree.h"
 
+#include <limits.h>
 #include <stdbool.h>
 
-enum { CLDM_MAX_RBTREE_DEPTH = 64 };
+enum { CLDM_MAX_RBTREE_DEPTH = sizeof(size_t) * CHAR_BIT };
 
 #define link(node, idx)     \
     (*(struct cldm_rbnode **)((unsigned char *)&(node)->left + ((unsigned char *)&(node)->right - (unsigned char *)&(node)->left) * (idx)))
@@ -21,10 +22,10 @@ struct cldm_rbstack {
 };
 
 void cldm_rbtree_clear(struct cldm_rbtree *tree);
+bool cldm_rbtree_empty(struct cldm_rbtree const *tree);
 size_t cldm_rbtree_size(struct cldm_rbtree const *tree);
 bool cldm_rbnode_has_child(struct cldm_rbnode const *node, enum cldm_rbdir dir);
 struct cldm_rbnode *cldm_rbnode_successor(struct cldm_rbnode *node);
-bool cldm_rbtree_empty(struct cldm_rbtree const *tree);
 
 static inline unsigned cldm_rbstack_capacity(struct cldm_rbstack const *stack) {
     return cldm_arrsize(stack->data);
@@ -35,7 +36,6 @@ static inline unsigned cldm_rbstack_size(struct cldm_rbstack const *stack) {
 }
 
 static inline void cldm_rbstack_push(struct cldm_rbstack *restrict stack, struct cldm_rbstack_node const *restrict node) {
-    cldm_rtassert(cldm_rbstack_size(stack) < cldm_rbstack_capacity(stack));
     stack->data[stack->top++] = *node;
 }
 
@@ -91,6 +91,8 @@ static struct cldm_rbnode *cldm_rbtree_rotate_single(struct cldm_rbnode *root, e
     struct cldm_rbnode *n = link(root, !dir);
 
     if(cldm_rbnode_is_thread(n, dir)) {
+        /* Links already referring to correct nodes,
+         * enough to modify thread flags */
         cldm_rbnode_set_thread(root, !dir);
         cldm_rbnode_unset_thread(n, dir);
     }
@@ -228,6 +230,7 @@ bool cldm_rbtree_insert(struct cldm_rbtree *restrict tree, struct cldm_rbnode *r
     link(n, dir) = node;
     cldm_rbnode_unset_thread(n, dir);
 
+    /* Balance */
     while(!cldm_rbstack_empty(&stack)) {
         child = cldm_rbtree_balance_insertion(n, dir);
 
@@ -292,6 +295,7 @@ struct cldm_rbnode *cldm_rbtree_remove(struct cldm_rbtree *restrict tree, struct
 
         dir = (enum cldm_rbdir) (relation > 0);
 
+        /* Balance while descending */
         if(!cldm_rbnode_is_red(n) && !cldm_rbnode_is_red_safe(n, dir)) {
             cldm_rbtree_balance_removal(n, &parent, &gparent, dir);
         }
