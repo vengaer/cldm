@@ -17,12 +17,13 @@ static char cldm_argp_short[] = { 'h', 'V', 'x', 's' };
 static char const *cldm_argp_long[] = { "help", "version", "fail-fast", "no-capture" };
 static char const *cldm_argp_posarg = "[FILE]...";
 static char const *cldm_argp_swdesc[] = {
-    "Print this help message and exit",
-    "Print version and exit",
-    "Exit after first failed test, if any",
+    "Print this help message and exit.",
+    "Print version and exit.",
+    "Exit after first failed test, if any.",
     "Do not capture stdout and stderr. This will cause potential output to be mixed with test logs"
 };
-static char const *cldm_argp_posdesc = "Run the tests specified in the space-separated list FILE..., all files must have been compiled ínto the binary";
+static char const *cldm_argp_posdesc = "Run only tests specified in the space-separated file list FILE..., all files provided must have been compiled into the binary.\n"
+                                       "The files are identified by their respective basenames rather than full paths.";
 static struct cldm_nfa_state2 **cldm_argp_states;
 
 enum cldm_nfa_action {
@@ -431,6 +432,7 @@ void cldm_argp_usage(char const *argv0) {
     char const *basename = cldm_basename(argv0);
     char *it0;
     char const **it1;
+    int const swindent = sizeof("- , --");
 
     cldm_log_raw("%s", basename);
     cldm_for_each_zip(it0, it1, cldm_argp_short, cldm_argp_long) {
@@ -442,7 +444,12 @@ void cldm_argp_usage(char const *argv0) {
     for(unsigned i = 0; i < cldm_arrsize(cldm_argp_short); i++) {
         cldm_log("%-*s-%c, --%-*s %s", CLDM_ARGP_OPTINDENT, "", cldm_argp_short[i], CLDM_ARGP_ADJ, cldm_argp_long[i], cldm_argp_swdesc[i]);
     }
-    cldm_log("%-*s%-*s%s", CLDM_ARGP_OPTINDENT, "", CLDM_ARGP_ADJ + (int)sizeof("- , --"), cldm_argp_posarg, cldm_argp_posdesc);
+    cldm_log_raw("%-*s%-*s", CLDM_ARGP_OPTINDENT, "", CLDM_ARGP_ADJ + swindent, cldm_argp_posarg);
+
+    cldm_for_each_word(it0, cldm_argp_posdesc, '\n') {
+        cldm_log_raw("%s\n%-*s", it0, CLDM_ARGP_OPTINDENT + CLDM_ARGP_ADJ + swindent, "");
+    }
+    cldm_log_raw("%s", "\r");
 }
 
 void cldm_argp_version(void) {
