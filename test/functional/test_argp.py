@@ -79,6 +79,29 @@ def test_argp_short_fail_fast():
     runcmd = gen_runcmd('-- -x')
     run(ContainsMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
+def test_argp_short_no_capture():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)  \
+        .append_include('stdio.h')
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('puts("text");')  \
+            .append_line('ASSERT_EQ(1, 1);')
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('')
+    run(ContainsMatcher(r'Running\s*bar.*pass.*text'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-s')
+    run(ContainsMatcher(r'Running\s*bar.*text.*pass'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-s -- --help')
+    run(ContainsMatcher(r'Running\s*bar.*text.*pass'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-- -s')
+    run(ContainsMatcher(r'Running\s*bar.*pass.*text'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
 def test_argp_long_help():
     cgen = CGen('tests.c')
     cgen.append_include('cldm.h', system_header=False)
@@ -138,3 +161,26 @@ def test_argp_long_fail_fast():
 
     runcmd = gen_runcmd('-- --fail-fast')
     run(ContainsMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+def test_argp_long_no_capture():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)  \
+        .append_include('stdio.h')
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('puts("text");')  \
+            .append_line('ASSERT_EQ(1, 1);')
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('')
+    run(ContainsMatcher(r'Running\s*bar.*pass.*text'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('--no-capture')
+    run(ContainsMatcher(r'Running\s*bar.*text.*pass'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('--no-capture -- --help')
+    run(ContainsMatcher(r'Running\s*bar.*text.*pass'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-- --no-capture')
+    run(ContainsMatcher(r'Running\s*bar.*pass.*text'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
