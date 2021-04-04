@@ -87,7 +87,7 @@ static bool read_elf(char const *argv0) {
             fprintf(stderr, "Could not read from %s: %s\n", argv0, strerror(errno));
             goto epilogue;
         case sizeof(ehdr):
-            /* NOP */
+            /* nop */
             break;
         default:
             fprintf(stderr, "Got %lld instead of %zu bytes\n", (long long)nbytes, sizeof(ehdr));

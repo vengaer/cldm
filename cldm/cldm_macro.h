@@ -70,7 +70,7 @@
 
 #define cldm_for_each4(iter, array, size, step)                             \
     for(unsigned cldm_cat_expand(cldm_fe,__LINE__) = ((iter) = (array), 0); \
-        cldm_cat_expand(cldm_fe,__LINE__) < (size);                         \
+        cldm_cat_expand(cldm_fe,__LINE__) < (unsigned)(size);               \
         cldm_cat_expand(cldm_fe,__LINE__) += (step),                        \
         (iter) = &(array)[cldm_cat_expand(cldm_fe,__LINE__)])
 
@@ -85,7 +85,7 @@
 
 #define cldm_for_each_zip6(it0, it1, arr0, arr1, size, step)                                \
     for(unsigned cldm_cat_expand(cldm_fez,__LINE__) = ((it0) = (arr0), (it1) = (arr1), 0);  \
-        cldm_cat_expand(cldm_fez,__LINE__) < (size);                                        \
+        cldm_cat_expand(cldm_fez,__LINE__) < (unsigned)(size);                              \
         cldm_cat_expand(cldm_fez,__LINE__) += (step),                                       \
         (it0) = &(arr0[cldm_cat_expand(cldm_fez,__LINE__)]),                                \
         (it1) = &(arr1[cldm_cat_expand(cldm_fez,__LINE__)]))

@@ -12,18 +12,27 @@
 
 #include <sys/types.h>
 
-unsigned char cldm_datavar = 0;
-
 int main(int argc, char *argv[argc + 1]) {
     ssize_t ntests;
     int status;
     struct cldm_elfmap map;
     struct cldm_rbtree tests = cldm_rbtree_init();
+    struct cldm_args args;
 
     cldm_mock_force_disable = true;
 
-    cldm_log("cldm version " cldm_str_expand(CLDM_VERSION));
-    cldm_log("Report bugs to vilhelm.engstrom@tuta.io\n");
+    if(!cldm_argp_parse(&args, argc, argv)) {
+        return 1;
+    }
+
+    if(args.help) {
+        cldm_argp_usage(argv[0]);
+        return 0;
+    }
+    if(args.version) {
+        cldm_argp_version();
+        return 0;
+    }
 
     status = 2;
 

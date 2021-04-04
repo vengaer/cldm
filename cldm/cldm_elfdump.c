@@ -40,7 +40,7 @@ static char const *cldm_elf_section_type(Elf64_Word type) {
         case SHT_HIUSER:
             return "SHT_HIUSER";
         default:
-            /* NOP */
+            /* nop */
             break;
     }
     return "Unknown";
