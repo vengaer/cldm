@@ -5,12 +5,13 @@
 #include "cldm_log.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #define cldm_rtassert_trigger(condition, ...)       \
     do {                                            \
         if(!(condition)) {                          \
             cldm_log_stream(stderr, __VA_ARGS__);   \
-            _Exit(1);                               \
+            exit(2);                                \
         }                                           \
     } while (0)
 
