@@ -3,8 +3,6 @@
 
 #include <dlfcn.h>
 
-static void *cldm_libchandle;
-
 void *cldm_dlsym_next(char const *symname) {
     char *err;
     void *sym;
@@ -19,8 +17,4 @@ void *cldm_dlsym_next(char const *symname) {
     }
 
     return sym;
-}
-
-int cldm_dlclose(void) {
-    return dlclose(cldm_libchandle);
 }
