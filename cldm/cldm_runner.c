@@ -11,7 +11,7 @@
 
 #include <sys/types.h>
 
-static bool cldm_insert_file(struct cldm_ht *restrict ht, struct cldm_rbnode *restrict begin, struct cldm_rbnode *end, char const *file, struct cldm_rbht_node *restrict node, size_t ntests) {
+static bool cldm_insert_file(struct cldm_ht *restrict ht, struct cldm_rbnode *restrict begin, struct cldm_rbnode *restrict end, char const *restrict file, struct cldm_rbht_node *restrict node, size_t ntests) {
     *node = (struct cldm_rbht_node) {
         .begin = begin,
         .end = end,
