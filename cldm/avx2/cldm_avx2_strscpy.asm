@@ -75,10 +75,11 @@ cldm_avx2_strscpy:
 
     section .text
 
+    xor     eax, eax                        ; Destination length
+
     cmp     rdx, 0                          ; Check for zero-size destination buffer
     je      .dstsize0
 
-    xor     eax, eax                        ; Destination length
     mov     r11d, 0x5                       ; Set r11 to 5 for clamping jump offset
 
     vpxor   ymm15, ymm15                    ; Zero for detecting null in x/ymm word
