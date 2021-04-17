@@ -21,7 +21,7 @@ struct inode {
 };
 
 static inline int rand_range(int low, int high) {
-    return low + (double)(rand() / RAND_MAX) * (high - low);
+    return low + (double)rand() / RAND_MAX * (high - low);
 }
 
 static inline int nodeval(struct cldm_rbnode const *node) {
