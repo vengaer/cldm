@@ -8,8 +8,6 @@
 #include <stddef.h>
 #include <string.h>
 
-#include <sys/types.h>
-
 #define cldm_for_each_word3(iter, str, sep)                                                 \
     for(char cldm_cat_expand(cldm_few_buf,__LINE__)[CLDM_PATH_MAX],                         \
             *cldm_cat_expand(cldm_few_end,__LINE__) =                                       \
@@ -32,7 +30,7 @@
 #define cldm_for_each_word(...) \
     cldm_overload(cldm_for_each_word,__VA_ARGS__)
 
-ssize_t cldm_strscpy(char *restrict dst, char const *restrict src, size_t dstsize);
+long long cldm_strscpy(char *restrict dst, char const *restrict src, size_t dstsize);
 
 inline char const *cldm_basename(char const *path) {
     char const *p = strrchr(path, '/');
