@@ -1,4 +1,6 @@
 include     scripts/modules.mk
+include     scripts/fuzz.mk
+include     scripts/build_config.mk
 
 CC          ?= gcc
 AS          := nasm
@@ -39,9 +41,10 @@ link        := $(libstem).$(soext)
 lcldm_main  := $(libstem)_main.$(aext)
 
 cldmtest    := cldmtest
+cldmfuzz    := cldmfuzz
 
 cldmgen     := $(libsrcdir)/cldmgen.h
-config      := $(libsrcdir)/cldm_config.h
+cldm_config := $(libsrcdir)/cldm_config.h
 
 MOCKUPS     ?= $(abspath $(libsrcdir)/mockups.h)
 
@@ -51,8 +54,12 @@ CPPFLAGS     = -D_GNU_SOURCE -DCLDM_VERSION=$(cldmver) -I$(root)
 LDFLAGS     := -shared -Wl,-soname,$(libstem).$(soext).$(socompat)
 LDLIBS      := -ldl
 
-TLDFLAGS    := -L$(root)
-TLDLIBS     := $(patsubst lib%,-l%,$(libstem)) $(patsubst lib%.a,-l%,$(lcldm_main))
+testldflags := -L$(root)
+testldlibs  := $(patsubst lib%,-l%,$(libstem)) $(patsubst lib%.a,-l%,$(lcldm_main))
+
+fuzzcflags  := $(fuzzinstr) $(CFLAGS)
+fuzzldflags := -L$(root) $(fuzzinstr)
+fuzzldlibs  := $(patsubst lib%,-l%,$(libstem))
 
 ARFLAGS     := -rcs
 LNFLAGS     := -sf
@@ -69,6 +76,8 @@ module_mk   := Makefile
 prepare     := $(builddir)/.prepare.stamp
 
 prepdeps    :=
+
+$(call set-build-config)
 
 .PHONY: all
 all: $(link) $(lcldm_main)
@@ -90,13 +99,17 @@ $(lcldm): $(lcldm_obj)
 
 $(cldmtest): $(cldmtest_obj) $(link) $(lcldm_main)
 	$(info [LD]  $@)
-	$(QUIET)$(CC) -o $@ $(cldmtest_obj) $(TLDFLAGS) $(TLDLIBS)
+	$(QUIET)$(CC) -o $@ $(cldmtest_obj) $(testldflags) $(testldlibs)
+
+$(cldmfuzz): $(cldmfuzz_obj) $(link)
+	$(info [LD]  $@)
+	$(QUIET)$(FUZZCC) -o $@ $(cldmfuzz_obj) $(fuzzldflags) $(fuzzldlibs)
 
 $(lcldm_main): $(lcldm_main_obj)
 	$(info [AR]  $@)
 	$(QUIET)$(AR) $(ARFLAGS) $@ $^
 
-$(builddir)/%.$(oext): $(root)/%.$(cext) $(cldmgen) $(config)
+$(builddir)/%.$(oext): $(root)/%.$(cext) $(cldmgen) $(cldm_config)
 	$(info [CC]  $(notdir $@))
 	$(QUIET)$(CC) -o $@ $< $(CFLAGS) $(CPPFLAGS)
 
@@ -108,7 +121,7 @@ $(cldmgen): $(MOCKUPS)
 	$(info [GEN] $(notdir $@))
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CLDMGEN_H\n#define CLDMGEN_H\n#include "$^"\n#endif /* CLDMGEN_H */' > $@
 
-$(config): $(prepare)
+$(cldm_config): $(prepare)
 	$(info [GEN] $(notdir $@))
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CLDM_CONFIG_H\n#define CLDM_CONFIG_H\n' > $@
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '$(if $(filter y,$(has_generic)),#define CLDM_HAS_GENERIC)\n' >> $@
@@ -128,14 +141,29 @@ functional:
 unit: $(cldmtest)
 	$(QUIET)LD_LIBRARY_PATH=$(root) ./$<
 
+.PHONY: fuzz
+fuzz: $(cldmfuzz)
+
 .PHONY: test
 test: unit functional
 
 .PHONY: check
 check: test
 
+.PHONY: fuzzrun
+fuzzrun: $(cldmfuzz)
+	$(QUIET)LD_LIBRARY_PATH=$(root) ./$^ $(FUZZFLAGS)
+	$(QUIET)llvm-profdata $(PROFFLAGS)
+	$(QUIET)llvm-cov $(COVFLAGS)
+	$(QUIET)llvm-cov $(COVREPFLAGS)
+
+.PHONY: fuzzmerge
+fuzzmerge: $(call require-corpora,fuzzmerge)
+fuzzmerge: $(cldmfuzz)
+	$(QUIET)LD_LIBRARY_PATH=$(root) ./$^ $(MERGEFLAGS)
+
 .PHONY: clean
 clean:
-	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(lcldm) $(lcldm_main) $(link) $(help) $(cldmgen) $(cldmtest) $(config)
+	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(lcldm) $(lcldm_main) $(link) $(help) $(cldmgen) $(cldmtest) $(cldm_config) crash-*
 
 -include $(obj:.$(oext)=.$(dext))

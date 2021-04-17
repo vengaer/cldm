@@ -7,27 +7,28 @@ lang_stack     :=
 
 # $(call mk-module-build_dir)
 define mk-module-build-dir
-$(shell $(MKDIR) $(MKDIRFLAGS) $(patsubst $(root)/%,$(builddir)/%,$(module_path)))
+$(eval module_builddir := $(patsubst $(root)/%,$(builddir)/%,$(module_path)))
+$(shell $(MKDIR) $(MKDIRFLAGS) $(module_builddir))
 endef
 
 # $(call include-module-prologue, MODULE_NAME)
 define include-module-prologue
 $(if $(DEBUG),$(info include-module-prologue $(1)))
 
-$(eval module_name := $(strip $(1)))
+$(eval module_name    := $(strip $(1)))
 
 $(call stack-push,module_stack,$(module_name))
 $(call stack-push,trivial_stack,$(trivial_module))
 $(call stack-push,required_stack,$(required_by))
 $(call stack-push,lang_stack,$(module_lang))
 
-$(eval module_path := $(module_path)/$(module_name))
+$(eval module_path    := $(module_path)/$(module_name))
 
 $(call mk-module-build-dir)
 
 $(eval trivial_module := n)
-$(eval required_by := )
-$(eval module_lang := $(cext))
+$(eval required_by    := )
+$(eval module_lang    := $(cext))
 endef
 
 # $(call include-module-epilogue)
@@ -54,6 +55,14 @@ define include-module
 $(call include-module-prologue,$(1))
 $(eval include $(module_path)/$(module_mk))
 $(call include-module-epilogue)
+endef
+
+# Include module if its name is found in the
+# build_config variable
+# $(call include-config-module,MODULE_NAME)
+define include-config-module
+$(if $(findstring $(1),$(build_config)),
+    $(call include-module,$(1)))
 endef
 
 # $(call declare-trivial-c-module)

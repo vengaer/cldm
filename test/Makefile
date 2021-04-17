@@ -1,4 +1,5 @@
 $(call include-module,unit)
+$(call include-config-module,fuzz)
 
 ifndef module_name
 target := $(if $(MAKECMDGOALS),$(MAKECMDGOALS),recurse)
