@@ -319,6 +319,9 @@ cldm_avx2_strscpy:
     cmp     ecx, r10d
     cmova   ecx, r10d                       ; Clamp to size of qword
 
+    test    ecx, ecx                        ; Check for end
+    jz      .epi_ovf
+
     sub     edx, ecx                        ; Subtract number of bytes to be checked
 
     vmovq   r8, xmm0                        ; Low qword to r8
