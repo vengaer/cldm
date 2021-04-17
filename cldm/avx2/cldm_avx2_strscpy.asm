@@ -260,6 +260,9 @@ cldm_avx2_strscpy:
     vextracti128    xmm0, ymm0, 1           ; Replace low xmmword with high
 
 .ymmword_null_lxmmwd:                       ; Null byte in low xmmword
+    test    ecx, ecx                        ; Check for null
+    jz      .epi_term
+
     mov     r9d, ecx                        ; Copy bit position
     mov     r10d, 8                         ; Size of qword
     cmp     ecx, r10d
