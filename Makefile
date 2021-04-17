@@ -1,6 +1,7 @@
 include     scripts/modules.mk
 
 CC          ?= gcc
+AS          := nasm
 
 AR          ?= ar
 LN          ?= ln
@@ -16,6 +17,7 @@ libstem     := libcldm
 sover       := 0
 socompat    := 0
 
+asext       := asm
 cext        := c
 oext        := o
 dext        := d
@@ -43,6 +45,7 @@ config      := $(libsrcdir)/cldm_config.h
 
 MOCKUPS     ?= $(abspath $(libsrcdir)/mockups.h)
 
+ASFLAGS     := -felf64 -g -Fdwarf
 CFLAGS      := -std=c99 -Wall -Wextra -Wpedantic -fPIC -c -MD -MP -g
 CPPFLAGS     = -D_GNU_SOURCE -DCLDM_VERSION=$(cldmver) -I$(root)
 LDFLAGS     := -shared -Wl,-soname,$(libstem).$(soext).$(socompat)
@@ -96,6 +99,10 @@ $(lcldm_main): $(lcldm_main_obj)
 $(builddir)/%.$(oext): $(root)/%.$(cext) $(cldmgen) $(config)
 	$(info [CC]  $(notdir $@))
 	$(QUIET)$(CC) -o $@ $< $(CFLAGS) $(CPPFLAGS)
+
+$(builddir)/%.$(oext): $(root)/%.$(asext)
+	$(info [AS]  $(notdir $@))
+	$(QUIET)$(AS) -o $@ $< $(ASFLAGS)
 
 $(cldmgen): $(MOCKUPS)
 	$(info [GEN] $(notdir $@))

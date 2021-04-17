@@ -1,9 +1,6 @@
 trivial_module := y
 required_by    := lcldm
-
-$(call include-module,main)
-$(call include-module,configure)
-$(call include-module,avx2)
+module_lang    := asm
 
 ifndef module_name
 target := $(if $(MAKECMDGOALS),$(MAKECMDGOALS),recurse)
