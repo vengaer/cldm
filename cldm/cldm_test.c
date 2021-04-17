@@ -8,10 +8,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum { CLDM_ASSERTION_LEN = 256 };
+enum { CLDM_ASSERTION_LEN = 1024 };
 enum { CLDM_LOG_INITIAL_CAP = 32 };
 enum { CLDM_RUNWIDTH = 48 };
 enum { CLDM_IDXWIDTH = 10 };
+enum { CLDM_MAX_EXPAND_SIZE = 384 };
 
 struct cldm_test_log {
     union {
@@ -34,6 +35,20 @@ static struct cldm_test_log cldm_test_log;
 static struct cldm_test cldm_current_test;
 
 static void cldm_test_empty_func(void) { }
+
+#define cldm_record_failed_assertion(...)                                                           \
+    do {                                                                                            \
+        if(cldm_current_test.passed) {                                                              \
+            ++cldm_test_log.failed_tests;                                                           \
+            cldm_current_test.passed = false;                                                       \
+        }                                                                                           \
+        ++cldm_test_log.failed_assertions;                                                          \
+        cldm_rtassert(cldm_test_ensure_logcapacity(), "Could not increase test log size");          \
+        snprintf(cldm_test_log.l_un.data[cldm_test_log.size],                                       \
+                 sizeof(cldm_test_log.l_un.data[cldm_test_log.size]),                               \
+                 __VA_ARGS__);                                                                      \
+        ++cldm_test_log.size;                                                                       \
+    } while(0)
 
 #define cldm_load_stage(map, stage, scope)                                                  \
     stage = cldm_elf_func(map, cldm_str_expand(cldm_ ## scope ## _ ## stage ## _ident));    \
@@ -177,6 +192,9 @@ static void cldm_test_invoke(struct cldm_testrec const *restrict record, size_t 
     cldm_log("  %s", cldm_current_test.passed ? "pass" : "fail");
 }
 
+static inline char const *cldm_test_expandsuffix(char const *str) {
+    return strlen(str) > CLDM_MAX_EXPAND_SIZE ? "..." : "";
+}
 
 ssize_t cldm_test_collect(struct cldm_rbtree *restrict tree, struct cldm_elfmap const *restrict map) {
     struct cldm_testrec *record;
@@ -273,20 +291,41 @@ void cldm_assert_internal(bool eval, char const *restrict expr, char const *rest
         return;
     }
 
-    if(cldm_current_test.passed) {
-        ++cldm_test_log.failed_tests;
-        cldm_current_test.passed = false;
+    cldm_record_failed_assertion("| %s:%s: Assertion failure in %s:\n"
+                                 "| '%s'", cldm_basename(file), line, cldm_current_test.name, expr);
+}
+
+void cldm_assert_streq_internal(char const *restrict l, char const *restrict r, char const *restrict lname, char const *restrict rname, char const *restrict file, char const *restrict line) {
+    char const *ll;
+    char const *rr;
+    size_t doffset;
+
+    ++cldm_test_log.total_assertions;
+
+    if(strcmp(l, r) == 0) {
+        return;
     }
 
-    ++cldm_test_log.failed_assertions;
+    ll = l;
+    rr = r;
+    doffset = sizeof("string 0 is '") - 1;
 
-    cldm_rtassert(cldm_test_ensure_logcapacity(), "Could not increase test log size");
+    while(*ll++ == *rr++) {
+        ++doffset;
+    }
 
-    snprintf(cldm_test_log.l_un.data[cldm_test_log.size], sizeof(cldm_test_log.l_un.data[cldm_test_log.size]),
-             "| %s:%s: Assertion failure in %s:\n"
-             "| '%s'", cldm_basename(file), line, cldm_current_test.name, expr);
 
-    ++cldm_test_log.size;
+    cldm_record_failed_assertion("| %s:%s: Assertion failure in %s:\n"
+                                 "| expected '%s' to be equal to '%s' where\n"
+                                 "| string 0 is '%.*s%s' and\n"
+                                 "| string 1 is '%.*s%s'\n"
+                                 "  %-*s^\n"
+                                 "  %-*sdiff\n",
+                                 cldm_basename(file), line, cldm_current_test.name, lname, rname,
+                                 CLDM_MAX_EXPAND_SIZE, l, cldm_test_expandsuffix(l),
+                                 CLDM_MAX_EXPAND_SIZE, r, cldm_test_expandsuffix(r),
+                                 (int)doffset, "", (int)doffset - 1, "");
+
 }
 
 #ifdef CLDM_HAS_GENERIC
@@ -297,19 +336,11 @@ void cldm_assert_internal(bool eval, char const *restrict expr, char const *rest
         if((lhs) cmp (rhs)) {                                                                       \
             return;                                                                                 \
         }                                                                                           \
-        if(cldm_current_test.passed) {                                                              \
-            ++cldm_test_log.failed_tests;                                                           \
-            cldm_current_test.passed = false;                                                       \
-        }                                                                                           \
-        ++cldm_test_log.failed_assertions;                                                          \
-        cldm_rtassert(cldm_test_ensure_logcapacity(), "Could not increase test log size");          \
-        snprintf(cldm_test_log.l_un.data[cldm_test_log.size],                                       \
-                 sizeof(cldm_test_log.l_un.data[cldm_test_log.size]),                               \
-                 "| %s:%s: Assertion failure in %s:\n"                                              \
-                 "| '%s " #cmp " %s' with expansion\n"                                              \
-                 "| '" #fmt " " #cmp " " #fmt "'\n",                                                \
-                 cldm_basename(file), line, cldm_current_test.name, lexpand, rexpand, lhs, rhs);    \
-        ++cldm_test_log.size;                                                                       \
+        cldm_record_failed_assertion("| %s:%s: Assertion failure in %s:\n"                          \
+                                     "| '%s " #cmp " %s' with expansion\n"                          \
+                                     "| '" #fmt " " #cmp " " #fmt "'\n",                            \
+                                     cldm_basename(file), line, cldm_current_test.name,             \
+                                     lexpand, rexpand, lhs, rhs);                                   \
     } while(0)
 
 #define cldm_genassert_defs4(op, opstr, suffix, type)                                                                                                                               \

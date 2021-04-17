@@ -76,9 +76,11 @@ int cldm_test_invoke_specified(struct cldm_ht *restrict lookup_table, struct cld
 #define ASSERT_LE(...)    CLDM_ASSERT_LE(__VA_ARGS__)
 #define ASSERT_GT(...)    CLDM_ASSERT_GT(__VA_ARGS__)
 #define ASSERT_GE(...)    CLDM_ASSERT_GE(__VA_ARGS__)
+#define ASSERT_STREQ(...) CLDM_ASSERT_STREQ(__VA_ARGS__)
 #endif
 
 void cldm_assert_internal(bool eval, char const *restrict expr, char const *restrict file, char const *restrict line);
+void cldm_assert_streq_internal(char const *restrict l, char const *restrict r, char const *restrict lname, char const *restrict rname, char const *restrict file, char const *restrict line);
 
 #define CLDM_ASSERT_TRUE(expr)      \
     cldm_assert_internal(expr, #expr, __FILE__, cldm_str_expand(__LINE__))
@@ -175,5 +177,9 @@ cldm_genassert_decls(le, cldm_genassert_typelist)
     CLDM_ASSERT_TRUE((l) >= (r))
 
 #endif /* CLDM_HAS_GENERIC */
+
+#define CLDM_ASSERT_STREQ(l, r)     \
+    cldm_assert_streq_internal(l, r, #l, #r, __FILE__, cldm_str_expand(__LINE__))
+
 
 #endif /* CLDM_TEST_H */
