@@ -156,6 +156,9 @@ cldm_avx2_strscpy:
 .xmmword_null:                              ; Null byte in xmmword
     bsf     ecx, r8d                        ; Index of null byte in xmmword
 
+    test    ecx, ecx                        ; Check for null
+    jz      .epi_term
+
     mov     r9d, ecx                        ; Copy bit position
     mov     r10d, 8                         ; Size of qword
     cmp     ecx, r10d
