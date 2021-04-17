@@ -60,27 +60,28 @@ int cldm_test_invoke_specified(struct cldm_ht *restrict lookup_table, struct cld
     void cldm_expand(cldm_global_teardown_ident)(void)
 
 #ifndef CLDM_PREFIX_ONLY
-#define TEST(...)         CLDM_TEST(__VA_ARGS__)
+#define TEST(...)           CLDM_TEST(__VA_ARGS__)
 
-#define TEST_SETUP()      CLDM_TEST_SETUP()
-#define TEST_TEARDOWN()   CLDM_TEST_TEARDOWN()
+#define TEST_SETUP()        CLDM_TEST_SETUP()
+#define TEST_TEARDOWN()     CLDM_TEST_TEARDOWN()
 
-#define GLOBAL_SETUP()    CLDM_GLOBAL_SETUP()
-#define GLOBAL_TEARDOWN() CLDM_GLOBAL_TEARDOWN()
+#define GLOBAL_SETUP()      CLDM_GLOBAL_SETUP()
+#define GLOBAL_TEARDOWN()   CLDM_GLOBAL_TEARDOWN()
 
-#define ASSERT_TRUE(...)  CLDM_ASSERT_TRUE(__VA_ARGS__)
-#define ASSERT_FALSE(...) CLDM_ASSERT_FALSE(__VA_ARGS__)
-#define ASSERT_EQ(...)    CLDM_ASSERT_EQ(__VA_ARGS__)
-#define ASSERT_NE(...)    CLDM_ASSERT_NE(__VA_ARGS__)
-#define ASSERT_LT(...)    CLDM_ASSERT_LT(__VA_ARGS__)
-#define ASSERT_LE(...)    CLDM_ASSERT_LE(__VA_ARGS__)
-#define ASSERT_GT(...)    CLDM_ASSERT_GT(__VA_ARGS__)
-#define ASSERT_GE(...)    CLDM_ASSERT_GE(__VA_ARGS__)
-#define ASSERT_STREQ(...) CLDM_ASSERT_STREQ(__VA_ARGS__)
+#define ASSERT_TRUE(...)    CLDM_ASSERT_TRUE(__VA_ARGS__)
+#define ASSERT_FALSE(...)   CLDM_ASSERT_FALSE(__VA_ARGS__)
+#define ASSERT_EQ(...)      CLDM_ASSERT_EQ(__VA_ARGS__)
+#define ASSERT_NE(...)      CLDM_ASSERT_NE(__VA_ARGS__)
+#define ASSERT_LT(...)      CLDM_ASSERT_LT(__VA_ARGS__)
+#define ASSERT_LE(...)      CLDM_ASSERT_LE(__VA_ARGS__)
+#define ASSERT_GT(...)      CLDM_ASSERT_GT(__VA_ARGS__)
+#define ASSERT_GE(...)      CLDM_ASSERT_GE(__VA_ARGS__)
+#define ASSERT_STREQ(...)   CLDM_ASSERT_STREQ(__VA_ARGS__)
+#define ASSERT_STRNEQ(...)  CLDM_ASSERT_STRNEQ(__VA_ARGS__)
 #endif
 
 void cldm_assert_internal(bool eval, char const *restrict expr, char const *restrict file, char const *restrict line);
-void cldm_assert_streq_internal(char const *restrict l, char const *restrict r, char const *restrict lname, char const *restrict rname, char const *restrict file, char const *restrict line);
+void cldm_assert_streq_internal(char const *restrict l, char const *restrict r, long long n, char const *restrict lname, char const *restrict rname, char const *restrict file, char const *restrict line);
 
 #define CLDM_ASSERT_TRUE(expr)      \
     cldm_assert_internal(expr, #expr, __FILE__, cldm_str_expand(__LINE__))
@@ -179,7 +180,10 @@ cldm_genassert_decls(le, cldm_genassert_typelist)
 #endif /* CLDM_HAS_GENERIC */
 
 #define CLDM_ASSERT_STREQ(l, r)     \
-    cldm_assert_streq_internal(l, r, #l, #r, __FILE__, cldm_str_expand(__LINE__))
+    cldm_assert_streq_internal(l, r, -1, #l, #r, __FILE__, cldm_str_expand(__LINE__))
+
+#define CLDM_ASSERT_STRNEQ(l, r, n) \
+    cldm_assert_streq_internal(l, r, n, #l, #r, __FILE__, cldm_str_expand(__LINE__))
 
 
 #endif /* CLDM_TEST_H */

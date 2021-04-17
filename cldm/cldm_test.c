@@ -295,15 +295,25 @@ void cldm_assert_internal(bool eval, char const *restrict expr, char const *rest
                                  "| '%s'", cldm_basename(file), line, cldm_current_test.name, expr);
 }
 
-void cldm_assert_streq_internal(char const *restrict l, char const *restrict r, char const *restrict lname, char const *restrict rname, char const *restrict file, char const *restrict line) {
+void cldm_assert_streq_internal(char const *restrict l, char const *restrict r, long long n, char const *restrict lname, char const *restrict rname, char const *restrict file, char const *restrict line) {
     char const *ll;
     char const *rr;
     size_t doffset;
+    int expandsize;
 
     ++cldm_test_log.total_assertions;
 
-    if(strcmp(l, r) == 0) {
-        return;
+    if(n > 0) {
+        if(strncmp(l, r, n) == 0) {
+            return;
+        }
+        expandsize = n > CLDM_MAX_EXPAND_SIZE ? CLDM_MAX_EXPAND_SIZE : n;
+    }
+    else {
+        if(strcmp(l, r) == 0) {
+            return;
+        }
+        expandsize = CLDM_MAX_EXPAND_SIZE;
     }
 
     ll = l;
@@ -322,8 +332,8 @@ void cldm_assert_streq_internal(char const *restrict l, char const *restrict r, 
                                  "  %-*s^\n"
                                  "  %-*sdiff\n",
                                  cldm_basename(file), line, cldm_current_test.name, lname, rname,
-                                 CLDM_MAX_EXPAND_SIZE, l, cldm_test_expandsuffix(l),
-                                 CLDM_MAX_EXPAND_SIZE, r, cldm_test_expandsuffix(r),
+                                 expandsize, l, cldm_test_expandsuffix(l),
+                                 expandsize, r, cldm_test_expandsuffix(r),
                                  (int)doffset, "", (int)doffset - 1, "");
 
 }
