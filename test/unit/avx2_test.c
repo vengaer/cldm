@@ -22,3 +22,11 @@ TEST(cldm_avx2_strscpy_termination) {
     ASSERT_STRNEQ(src, dst, sizeof(dst) - 1);
     ASSERT_EQ(dst[sizeof(dst) - 1], 0);
 }
+
+TEST(cldm_avx2_strscpy_empty) {
+    enum { SIZE = 32 };
+    char dst[SIZE];
+    char const *src = "";
+    ASSERT_EQ(cldm_avx2_strscpy(dst, src, sizeof(dst)), 0);
+    ASSERT_EQ(dst[0], 0);
+}
