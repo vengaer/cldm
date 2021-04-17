@@ -341,7 +341,7 @@ cldm_avx2_strscpy:
 .ymmword_ovf_xmmwd_wrhigh:
     writebyte 8                             ; Write lsb
 
-    sub     edx, 1                          ; Decrement counter
+    sub     r9d, 1                          ; Decrement counter
     jnz     .ymmword_ovf_xmmwd_wrhigh
 
     jmp     .epi_ovf
