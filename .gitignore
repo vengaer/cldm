@@ -13,3 +13,5 @@ tags
 test/functional/running/**
 crash*
 cldmfuzz
+test/fuzz/corpora/*
+!test/fuzz/corpora/corpus_*
