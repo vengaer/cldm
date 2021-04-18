@@ -30,3 +30,11 @@ TEST(cldm_avx2_strscpy_empty) {
     ASSERT_EQ(cldm_avx2_strscpy(dst, src, sizeof(dst)), 0);
     ASSERT_EQ(dst[0], 0);
 }
+
+TEST(cldm_avx2_strscpy_dstsize_zero) {
+    enum { SIZE = 32 };
+    char dst[SIZE] = { 0x18 };
+    char const *src = "asdf";
+    ASSERT_EQ(cldm_avx2_strscpy(dst, src, 0), -7);
+    ASSERT_EQ(dst[0], 0x18);
+}
