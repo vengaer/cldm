@@ -1,4 +1,5 @@
 FUZZCC                   := clang
+FUZZTARGET               := CLDM_FUZZTARGET
 
 fuzzdir                   = $(testdir)/fuzz
 
@@ -6,7 +7,7 @@ FUZZTIME                 := 240
 FUZZVALPROF              := 1
 FUZZTIMEOUT              := 30
 FUZZLEN                  := 8192
-CORPUSDIR                 = $(fuzzdir)/corpora
+CORPUSDIR                 = $(fuzzdir)/corpora/$(CLDM_FUZZTARGET)
 FUZZFLAGS                 = -max_len=$(FUZZLEN) -max_total_time=$(FUZZTIME) -use_value_profile=$(FUZZVALPROF) \
                             -timeout=$(FUZZTIMEOUT) $(CORPUSDIR)
 
@@ -25,5 +26,10 @@ fuzzinstr                := -fsanitize=fuzzer,address,undefined -fprofile-instr-
 
 # $(call require-corpora,RULE)
 define require-corpora
-$(if $(findstring $(1),$(MAKECMDGOALS)),$(if $(CORPORA),,$(error CORPORA is empty)))
+$(if $(findstring -_-$(MAKECMDGOALS)-_-,-_-$(1)-_-),$(if $(CORPORA),,$(error CORPORA is empty)))
+endef
+
+# $(call require-fuzztarget,RULE)
+define require-fuzztarget
+$(if $(findstring -_-$(MAKECMDGOALS)-_-,-_-$(1)-_-),$(if $($(FUZZTARGET)),,$(error $(FUZZTARGET) is empty)))
 endef

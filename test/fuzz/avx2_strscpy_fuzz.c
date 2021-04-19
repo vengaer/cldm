@@ -1,14 +1,14 @@
+#include "avx2_strscpy_fuzz.h"
+
 #include <limits.h>
 #include <stdbool.h>
-#include <stdint.h>
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
 enum { VECSIZE = 32 };
-enum { STRINGSIZE = 4096 };
+enum { STRINGSIZE = 8192 };
 
 extern long long cldm_avx2_strscpy(char *restrict dst, char const *restrict src, size_t dstsize);
 
@@ -46,7 +46,7 @@ static void report_error(char const *restrict type, char const *restrict src, ch
     fprintf(stderr, "  alignment: %zu\n", compute_alignment(dst));
 }
 
-int LLVMFuzzerTestOneInput(uint8_t const *data, size_t size) {
+int avx2_strscpy_fuzz(uint8_t const *data, size_t size) {
     size_t dstsize;
     long long res;
     bool crash;

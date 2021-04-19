@@ -4,6 +4,7 @@ pipeline {
         DOCKER_IMAGE='cldm/build'
         ARTIFACT_DIR='artifacts'
         NFUZZERRUNS=30
+        FUZZTARGETS='avx2_strscpy'
     }
     stages {
         stage('Gitlab Pending') {
@@ -102,7 +103,13 @@ pipeline {
             }
             steps {
                 echo 'Merging corpora'
-                sh 'make fuzzmerge CORPORA=${ARTIFACT_DIR}/prev'
+                sh '''
+                    for target in ${FUZZTARGETS} ; do
+                        if [ -d ${ARTIFACT_DIR}/prev/$target ] ; then
+                            CLDM_FUZZTARGET="$target" make fuzzmerge CORPORA=${ARTIFACT_DIR}/prev/$target
+                        fi
+                    done
+                '''
             }
         }
         stage('Fuzz') {
@@ -116,10 +123,12 @@ pipeline {
                 docker { image "${DOCKER_IMAGE}" }
             }
             steps {
-                echo '-- Running Fuzzer --'
                 sh '''
-                    for i in $(seq 1 ${NFUZZERRUNS}) ; do
-                        make fuzzrun
+                    for target in ${FUZZTARGETS} ; do
+                        echo "-- Fuzzing $target --"
+                        for i in $(seq 1 ${NFUZZERRUNS}) ; do
+                            CLDM_FUZZTARGET="$target" make fuzzrun
+                        done
                     done
                 '''
             }

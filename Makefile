@@ -151,6 +151,7 @@ test: unit functional
 check: test
 
 .PHONY: fuzzrun
+fuzzrun: $(call require-fuzztarget,fuzzrun)
 fuzzrun: $(cldmfuzz)
 	$(QUIET)LD_LIBRARY_PATH=$(root) ./$^ $(FUZZFLAGS)
 	$(QUIET)llvm-profdata $(PROFFLAGS)
@@ -159,6 +160,7 @@ fuzzrun: $(cldmfuzz)
 
 .PHONY: fuzzmerge
 fuzzmerge: $(call require-corpora,fuzzmerge)
+fuzzmerge: $(call require-fuzztarget,fuzzmerge)
 fuzzmerge: $(cldmfuzz)
 	$(QUIET)LD_LIBRARY_PATH=$(root) ./$^ $(MERGEFLAGS)
 
