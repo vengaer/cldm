@@ -4,6 +4,7 @@ include     scripts/build_config.mk
 
 CC          ?= gcc
 AS          := nasm
+LD          ?= ld
 
 AR          ?= ar
 LN          ?= ln
@@ -34,7 +35,8 @@ testdir     := $(root)/test
 srcdirs     := $(libsrcdir) $(testdir)
 
 # Generated during prepare step
-config_mk   := $(builddir)/config.mk
+binfmt_mk   := $(builddir)/binfmt.mk
+avx2_mk     := $(builddir)/avx2.mk
 
 lcldm       := $(libstem).$(soext).$(sover)
 link        := $(libstem).$(soext)

@@ -65,6 +65,13 @@ $(if $(findstring $(1),$(build_config)),
     $(call include-module,$(1)))
 endef
 
+# Include module if $(VAR) evaluates to y
+# $(call conditional-include-module,MODULE_NAME,VAR)
+define conditional-include-module
+$(if $(findstring -_-y-_-,-_-$($(2))-_-),
+    $(call include-module,$(1)))
+endef
+
 # $(call declare-trivial-c-module)
 define declare-trivial-c-module
 $(if $(DEBUG),$(info declare-trivial-c-module $(module_name)))
