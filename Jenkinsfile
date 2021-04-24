@@ -1,10 +1,14 @@
+class config {
+    public static final int NFUZZRUNS = 30
+}
+
+fuzztargets = ['avx2_strscpy']
+
 pipeline {
     agent none
     environment {
         DOCKER_IMAGE='cldm/build'
         ARTIFACT_DIR='artifacts'
-        NFUZZERRUNS=30
-        FUZZTARGETS='avx2_strscpy'
     }
     stages {
         stage('Gitlab Pending') {
@@ -17,7 +21,7 @@ pipeline {
             agent any
             steps {
                 echo '-- Docker Image --'
-                sh 'docker build -f Dockerfile -t ${DOCKER_IMAGE} .'
+                sh "docker build -f Dockerfile -t ${DOCKER_IMAGE} ."
             }
         }
         stage('Build') {
@@ -26,10 +30,6 @@ pipeline {
             }
             steps {
                 echo '-- Starting Build --'
-
-                echo 'Generating empty mockups.h file'
-                sh 'touch cldm/mockups.h'
-
                 sh 'make -j$(nproc)'
             }
         }
@@ -102,14 +102,14 @@ pipeline {
                 docker { image "${DOCKER_IMAGE}" }
             }
             steps {
-                echo 'Merging corpora'
-                sh '''
-                    for target in ${FUZZTARGETS} ; do
-                        if [ -d ${ARTIFACT_DIR}/prev/$target ] ; then
-                            CLDM_FUZZTARGET="$target" make fuzzmerge CORPORA=${ARTIFACT_DIR}/prev/$target
-                        fi
-                    done
-                '''
+                script {
+                    fuzztargets.each { target ->
+                        echo "Merging ${target} corpora"
+                        if(fileExists("${ARTIFACT_DIR}/prev/${target}")) {
+                            sh "CLDM_FUZZTARGET=${target} make fuzzmerge CORPORA=${ARTIFACT_DIR}/prev/${target}"
+                        }
+                    }
+                }
             }
         }
         stage('Fuzz') {
@@ -123,14 +123,14 @@ pipeline {
                 docker { image "${DOCKER_IMAGE}" }
             }
             steps {
-                sh '''
-                    for target in ${FUZZTARGETS} ; do
-                        echo "-- Fuzzing $target --"
-                        for i in $(seq 1 ${NFUZZERRUNS}) ; do
-                            CLDM_FUZZTARGET="$target" make fuzzrun
-                        done
-                    done
-                '''
+                script {
+                    fuzztargets.each { target ->
+                        echo "Fuzzing ${target}"
+                        for(int i = 0; i < config.NFUZZRUNS; i++) {
+                            sh "CLDM_FUZZTARGET=${target} make fuzzrun"
+                        }
+                    }
+                }
             }
         }
         stage('Gitlab Success') {
@@ -145,7 +145,9 @@ pipeline {
             node(null) {
                 script {
                     if(env.TARGET == 'fuzz') {
-                        sh 'rm -rf ${ARTIFACT_DIR}/corpora.zip'
+                        if(fileExists("${ARTIFACT_DIR}/corpora.zip")) {
+                            sh "rm ${ARTIFACT_DIR}/corpora.zip"
+                        }
 
                         zip zipFile: "$ARTIFACT_DIR/corpora.zip", archive:true, dir: "test/fuzz/corpora", overwrite: false
                         archiveArtifacts artifacts: "${ARTIFACT_DIR}/corpora.zip", fingerprint: true
