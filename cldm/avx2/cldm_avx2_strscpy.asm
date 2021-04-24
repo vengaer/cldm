@@ -357,7 +357,7 @@ cldm_avx2_strscpy:
     ret
 
 .epi_ovf:                                   ; Source overflows destination
-    mov     byte [rdi + rax - 1], 0         ; Null terminate
+    mov     byte [rdi + rdx - 1], 0         ; Null terminate
     mov     rax, -E2BIG                     ; Return -E2BIG
     vzeroupper                              ; Zero ymm state
     ret
