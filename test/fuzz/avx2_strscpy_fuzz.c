@@ -1,5 +1,7 @@
 #include "avx2_strscpy_fuzz.h"
 
+#include <cldm/cldm_config.h>
+
 #include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -10,7 +12,7 @@
 enum { VECSIZE = 32 };
 enum { STRINGSIZE = 8192 };
 
-extern long long cldm_avx2_strscpy(char *restrict dst, char const *restrict src, size_t dstsize);
+extern long long cldm_avx2_strscpy(char *restrict dst, char const *restrict src, unsigned long long dstsize);
 
 static size_t compute_alignment(void const *adstr) {
     size_t boundary = 1ull << (sizeof(size_t) * CHAR_BIT - 1);
@@ -43,6 +45,10 @@ static void report_error(char const *restrict type, char const *restrict src, ch
 }
 
 int avx2_strscpy_fuzz(uint8_t const *data, size_t size) {
+#ifndef CLDM_HAS_AVX2
+    puts("cldm compiled without avx2 support");
+    abort();
+#endif
     size_t dstsize;
     long long res;
     bool crash;

@@ -1,9 +1,12 @@
 #include <cldm/cldm.h>
+#include <cldm/cldm_config.h>
 
 #include <stddef.h>
 #include <string.h>
 
-extern long long cldm_avx2_strscpy(char *restrict dst, char const *restrict src, size_t dstsize);
+#ifdef CLDM_HAS_AVX2
+
+extern long long cldm_avx2_strscpy(char *restrict dst, char const *restrict src, unsigned long long dstsize);
 
 TEST(cldm_avx2_strscpy) {
     enum { SIZE = 256 };
@@ -38,3 +41,5 @@ TEST(cldm_avx2_strscpy_dstsize_zero) {
     ASSERT_EQ(cldm_avx2_strscpy(dst, src, 0), -7);
     ASSERT_EQ(dst[0], 0x18);
 }
+
+#endif /* CLDM_HAS_AVX2 */

@@ -1,5 +1,6 @@
 #include "avx2_strscpy_fuzz.h"
 #include "rbtree_fuzz.h"
+
 #include <cldm/cldm_macro.h>
 
 #include <stdint.h>
@@ -11,7 +12,6 @@ struct cldm_fuzzentry {
     char const *env;
     int(*entry)(uint8_t const *, size_t);
 };
-
 
 int LLVMFuzzerTestOneInput(uint8_t const *data, size_t size) {
     struct cldm_fuzzentry const entrypoints[] = {
