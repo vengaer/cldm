@@ -26,8 +26,8 @@ static inline int rand_in_range(int low, int high) {
 }
 
 static char ascii_cvt(uint8_t src) {
-    if(src > 126 || src < 32) {
-        return (char)rand_in_range(' ', '~');
+    if(src > '~' || src < ' ') {
+        return (char)(((unsigned char)src % ('~' - ' ')) + ' ');
     }
     return (char)src;
 }
@@ -53,7 +53,7 @@ int avx2_strscpy_fuzz(uint8_t const *data, size_t size) {
     char *src;
     char *dst;
 
-    crash = false;
+    crash = true;
 
     if(size < VECSIZE + 1) {
         return 0;
@@ -68,8 +68,6 @@ int avx2_strscpy_fuzz(uint8_t const *data, size_t size) {
     if(!dst) {
         goto epilogue;
     }
-
-    crash = false;
     size = size > STRINGSIZE ? STRINGSIZE : size;
 
     srand(time(0));
@@ -86,16 +84,16 @@ int avx2_strscpy_fuzz(uint8_t const *data, size_t size) {
         if(res == -7) {
             if(size - i <= dstsize) {
                 report_error("erroneous E2BIG", &src[i], dst, size - i, dstsize);
-                crash = true;
                 goto epilogue;
             }
         }
         else if(res != (long long)strlen(&src[i])) {
             report_error("incorrect return value", &src[i], dst, size - i, dstsize);
-            crash = true;
             goto epilogue;
         }
     }
+
+    crash = false;
 
 epilogue:
     if(src) {
