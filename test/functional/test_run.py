@@ -115,3 +115,51 @@ def test_failure_log_resizing():
                        RvDiffMatcher(0))
 
     assert error.decode('utf-8').count('(1) == (0)') == 512
+
+def test_streq_failure():
+    cgen = CGen(__TESTFILE)
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'foo'):
+        cgen.append_line('ASSERT_STREQ("asd", "asdf");')
+
+    cgen.write()
+    gen_makefile(__TESTFILE)
+
+    run(DummyMatcher(), ContainsMatcher('Assertion failure.*expected \'"asd"\' to be equal to \'"asdf"\' where.*string 0 is \'asd\' and.*string 1 is \'asdf\''), RvDiffMatcher(0))
+
+def test_streq_success():
+    cgen = CGen(__TESTFILE)
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('ASSERT_STREQ("asdf", "asdf");')
+
+    cgen.write()
+    gen_makefile(__TESTFILE)
+
+    run(DummyMatcher(), ContainsNotMatcher('Assertion failure.*expected \'"asdf"\' to be equal to \'"asdf"\' where.*string 0 is \'asdf\' and.*string 1 is \'asdf\''), RvEqMatcher(0))
+
+def test_strneq_failure():
+    cgen = CGen(__TESTFILE)
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'foo'):
+        cgen.append_line('ASSERT_STRNEQ("asdfad", "asdfdd", 5);')
+
+    cgen.write()
+    gen_makefile(__TESTFILE)
+
+    run(DummyMatcher(), ContainsMatcher('Assertion failure.*expected 5 initial bytes of \'"asdfad"\' and \'"asdfdd"\' to be equal where.*string 0 is \'asdfa\' and.*string 1 is \'asdfd\''), RvDiffMatcher(0))
+
+def test_strneq_success():
+    cgen = CGen(__TESTFILE)
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('ASSERT_STRNEQ("asdfad", "asdfdd", 4);')
+
+    cgen.write()
+    gen_makefile(__TESTFILE)
+
+    run(DummyMatcher(), ContainsNotMatcher('Assertion failure.*expected 4 initial bytes of \'"asdfad"\' to be equal to \'"asdfdd"\' where.*string 0 is \'asdfad\' and.*string 1 is \'asdfdd\''), RvEqMatcher(0))
