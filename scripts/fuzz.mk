@@ -33,3 +33,14 @@ endef
 define require-fuzztarget
 $(if $(findstring -_-$(MAKECMDGOALS)-_-,-_-$(1)-_-),$(if $($(FUZZTARGET)),,$(error $(FUZZTARGET) is empty)))
 endef
+
+# $(call gen-fuzz-rules,SRC)
+define gen-fuzz-rules
+$(foreach __src,$(1),
+    $(eval __obj           := $(module_builddir)/$(notdir $(patsubst %.$(cext),%.$(oext),$(__src))))
+    $(eval $(cldmfuzz)_obj += $(__obj))
+    $(eval
+        $(__obj): $(__src)
+	        $(QUIET)$(ECHO) "[CC]  $$(notdir $$@)"
+	        $(QUIET)$(FUZZCC) -o $$@ $$< $(fuzzcflags) $(CPPFLAGS)))
+endef
