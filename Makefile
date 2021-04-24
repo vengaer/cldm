@@ -166,6 +166,6 @@ fuzzmerge: $(cldmfuzz)
 
 .PHONY: clean
 clean:
-	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(lcldm) $(lcldm_main) $(link) $(help) $(cldmgen) $(cldmtest) $(cldm_config) crash-*
+	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(lcldm) $(lcldm_main) $(link) $(help) $(cldmgen) $(cldmtest) $(cldmfuzz) $(cldm_config) crash-*
 
 -include $(obj:.$(oext)=.$(dext))
