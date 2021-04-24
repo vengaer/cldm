@@ -316,13 +316,13 @@ cldm_avx2_strscpy:
 
 %define NO_OVFCHECK                         ; Already know how many bytes to write
 
+    test    r9d, r9d                        ; Check for end
+    jz      .epi_ovf
+
     mov     ecx, r9d                        ; Number of remaining bytes
     mov     r10d, 8                         ; Size of qword
     cmp     ecx, r10d
     cmova   ecx, r10d                       ; Clamp to size of qword
-
-    test    ecx, ecx                        ; Check for end
-    jz      .epi_ovf
 
     sub     r9d, ecx                        ; Subtract number of bytes to be checked
 
