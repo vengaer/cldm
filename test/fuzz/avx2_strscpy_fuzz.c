@@ -21,10 +21,6 @@ static size_t compute_alignment(void const *adstr) {
     return boundary;
 }
 
-static inline int rand_in_range(int low, int high) {
-    return low + (double)rand() / RAND_MAX * (high - low);
-}
-
 static char ascii_cvt(uint8_t src) {
     if(src > '~' || src < ' ') {
         return (char)(((unsigned char)src % ('~' - ' ')) + ' ');
@@ -70,14 +66,12 @@ int avx2_strscpy_fuzz(uint8_t const *data, size_t size) {
     }
     size = size > STRINGSIZE ? STRINGSIZE : size;
 
-    srand(time(0));
-
     for(unsigned i = 0; i < size; i++) {
         src[i] = ascii_cvt(data[i]);
     }
     src[size - 1] = 0;
 
-    dstsize = rand_in_range(0, STRINGSIZE);
+    dstsize = ((double)data[0] / UCHAR_MAX) * STRINGSIZE;
 
     for(unsigned i = 0; i < VECSIZE; i++) {
         res = cldm_avx2_strscpy(dst, &src[i], dstsize);
