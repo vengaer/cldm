@@ -15,10 +15,6 @@ struct inode {
     int value;
 };
 
-static inline int rand_range(int low, int high) {
-    return low + (double)rand() / RAND_MAX * (high - low);
-}
-
 static inline int nodeval(struct cldm_rbnode const *node) {
     return cldm_container(node, struct inode, node, const)->value;
 }
@@ -30,11 +26,11 @@ static int compare(struct cldm_rbnode const *restrict l, struct cldm_rbnode cons
 TEST(cldm_rbtree_insert_inorder) {
     struct inode nodes[SIZE];
     struct inode *iter;
-
-    srand(time(0));
+    int i = 0;
 
     cldm_for_each(iter, nodes) {
-        iter->value = rand_range(-100, 99);
+        iter->value = i;
+        i = (i + 1) % cldm_arrsize(nodes) / 2;
     }
 
     struct cldm_rbtree tree = cldm_rbtree_init();
@@ -56,11 +52,11 @@ TEST(cldm_rbtree_insert_inorder) {
 TEST(cldm_rbtree_insert_even_odd) {
     struct inode nodes[SIZE];
     struct inode *iter;
-
-    srand(time(0));
+    int i = 0;
 
     cldm_for_each(iter, nodes) {
-        iter->value = rand_range(-100, 99);
+        iter->value = i;
+        i = (i + 1) % cldm_arrsize(nodes) / 2;
     }
 
     struct cldm_rbtree tree = cldm_rbtree_init();
@@ -79,11 +75,11 @@ TEST(cldm_rbtree_insert_even_odd) {
 TEST(cldm_rbtree_insert_reverse) {
     struct inode nodes[SIZE];
     struct inode *iter;
-
-    srand(time(0));
+    int i = 0;
 
     cldm_for_each(iter, nodes) {
-        iter->value = rand_range(-100, 99);
+        iter->value = i;
+        i = (i + 1) % cldm_arrsize(nodes) / 2;
     }
 
     struct cldm_rbtree tree = cldm_rbtree_init();
