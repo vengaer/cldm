@@ -325,16 +325,30 @@ void cldm_assert_streq_internal(char const *restrict l, char const *restrict r, 
     }
 
 
-    cldm_record_failed_assertion("| %s:%s: Assertion failure in %s:\n"
-                                 "| expected '%s' to be equal to '%s' where\n"
-                                 "| string 0 is '%.*s%s' and\n"
-                                 "| string 1 is '%.*s%s'\n"
-                                 "  %-*s^\n"
-                                 "  %-*sdiff\n",
-                                 cldm_basename(file), line, cldm_current_test.name, lname, rname,
-                                 expandsize, l, cldm_test_expandsuffix(l),
-                                 expandsize, r, cldm_test_expandsuffix(r),
-                                 (int)doffset, "", (int)doffset - 1, "");
+    if(n > 0) {
+        cldm_record_failed_assertion("| %s:%s: Assertion failure in %s:\n"
+                                     "| expected %lld initial bytes of '%s' and '%s' to be equal where\n"
+                                     "| string 0 is '%.*s%s' and\n"
+                                     "| string 1 is '%.*s%s'\n"
+                                     "  %-*s^\n"
+                                     "  %-*sdiff\n",
+                                     cldm_basename(file), line, cldm_current_test.name, n, lname, rname,
+                                     expandsize, l, cldm_test_expandsuffix(l),
+                                     expandsize, r, cldm_test_expandsuffix(r),
+                                     (int)doffset, "", (int)doffset - 1, "");
+    }
+    else {
+        cldm_record_failed_assertion("| %s:%s: Assertion failure in %s:\n"
+                                     "| expected '%s' to be equal to '%s' where\n"
+                                     "| string 0 is '%.*s%s' and\n"
+                                     "| string 1 is '%.*s%s'\n"
+                                     "  %-*s^\n"
+                                     "  %-*sdiff\n",
+                                     cldm_basename(file), line, cldm_current_test.name, lname, rname,
+                                     expandsize, l, cldm_test_expandsuffix(l),
+                                     expandsize, r, cldm_test_expandsuffix(r),
+                                     (int)doffset, "", (int)doffset - 1, "");
+    }
 
 }
 
