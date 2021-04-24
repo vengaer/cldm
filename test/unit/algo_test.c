@@ -12,6 +12,10 @@ static bool gt_5(void const *d) {
     return (*(unsigned const*)d) > 5;
 }
 
+static int ucmp(void const *v0, void const *v1) {
+    return *(int const *)v1 - *(int const *)v0;
+}
+
 TEST(cldm_stable_partition) {
     unsigned arr[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
     unsigned partitioned0[] = { 2, 4, 6, 8, 1, 3, 5, 7 };
@@ -27,5 +31,27 @@ TEST(cldm_stable_partition) {
 
     for(unsigned i = 0; i < cldm_arrsize(arr); i++) {
         ASSERT_EQ(arr[i], partitioned1[i]);
+    }
+}
+
+TEST(cldm_uniq) {
+    unsigned arr[] = { 1, 2, 3, 4, 4, 5, 6, 7, 7, 7, 8 };
+    unsigned res[] = { 1, 2 ,3, 4, 5, 6, 7, 8 };
+    unsigned *it0;
+    unsigned *it1;
+
+    ASSERT_EQ(cldm_uniq(arr, arr, sizeof(arr[0]), cldm_arrsize(arr), ucmp), cldm_arrsize(res));
+
+    cldm_for_each_zip(it0, it1, arr, res) {
+        ASSERT_EQ(*it0, *it1);
+    }
+
+    memcpy(arr, (unsigned[cldm_arrsize(arr)]) { 1, 2, 3, 4, 4, 2, 6, 7, 7, 7, 8 }, sizeof(arr));
+    memcpy(res, (unsigned[cldm_arrsize(res)]) { 1, 2, 3, 4, 2, 6, 7, 8 }, sizeof(res));
+
+    ASSERT_EQ(cldm_uniq(arr, arr, sizeof(arr[0]), cldm_arrsize(arr), ucmp), cldm_arrsize(res));
+
+    cldm_for_each_zip(it0, it1, arr, res) {
+        ASSERT_EQ(*it0, *it1);
     }
 }
