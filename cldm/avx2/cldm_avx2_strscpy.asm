@@ -324,7 +324,7 @@ cldm_avx2_strscpy:
     test    ecx, ecx                        ; Check for end
     jz      .epi_ovf
 
-    sub     edx, ecx                        ; Subtract number of bytes to be checked
+    sub     r9d, ecx                        ; Subtract number of bytes to be checked
 
     vmovq   r8, xmm0                        ; Low qword to r8
 
