@@ -2,18 +2,13 @@
 #include <cldm/cldm_macro.h>
 #include <cldm/cldm_rbtree.h>
 
+#include "rbtree_utils.h"
+
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
 
 enum { SIZE = 2048 };
-
-enum {
-    RED_VIOLATION         = -0x1,
-    LEFT_CHILD_VIOLATION  = -0x2,
-    RIGHT_CHILD_VIOLATION = -0x4,
-    HEIGHT_VIOLATION      = -0x8
-};
 
 struct inode {
     struct cldm_rbnode node;
@@ -32,80 +27,6 @@ static int compare(struct cldm_rbnode const *restrict l, struct cldm_rbnode cons
     return nodeval(r) - nodeval(l);
 }
 
-static inline bool is_leaf(struct cldm_rbnode const *node) {
-    return (node->flags & CLDM_RBLEAF) == CLDM_RBLEAF;
-}
-
-static inline bool is_red(struct cldm_rbnode const *node) {
-    return node->color == cldm_rbcolor_red;
-}
-
-static inline bool is_black(struct cldm_rbnode const *node) {
-    return node->color == cldm_rbcolor_black;
-}
-
-static inline bool is_red_safe(struct cldm_rbnode const *node, enum cldm_rbdir dir) {
-    return  !(node->flags & (1 << dir)) && is_red(dir == cldm_rbdir_left ? node->left : node->right);
-}
-
-static int adheres_to_rbproperties(struct cldm_rbnode const *node) {
-    int rval;
-    struct cldm_rbnode *rnode;
-    int hcontrib;
-    int lheight;
-    int rheight;
-
-    if(is_red(node) && (is_red_safe(node, cldm_rbdir_left) || is_red_safe(node, cldm_rbdir_right))) {
-        return RED_VIOLATION;
-    }
-
-    if(cldm_rbnode_has_child(node, cldm_rbdir_left) && compare(node->left, node) <= 0) {
-        return LEFT_CHILD_VIOLATION;
-    }
-
-    if(cldm_rbnode_has_child(node, cldm_rbdir_right) && compare(node, node->right) <= 0) {
-        return RIGHT_CHILD_VIOLATION;
-    }
-
-    hcontrib = is_black(node);
-
-    if(!node->flags) {
-        lheight = adheres_to_rbproperties(node->left);
-        if(lheight < 0) {
-            return lheight;
-        }
-        rheight = adheres_to_rbproperties(node->right);
-        if(rheight < 0) {
-            return rheight;
-        }
-
-        if(lheight != rheight) {
-            return HEIGHT_VIOLATION;
-        }
-
-        return lheight + hcontrib;
-    }
-    else if(!is_leaf(node)) {
-        if(node->flags & CLDM_RBTHREADR) {
-            rnode = node->left;
-        }
-        else {
-            rnode = node->right;
-        }
-
-        rval = adheres_to_rbproperties(rnode);
-
-        if(rval < 0) {
-            return rval;
-        }
-        else if(rval > 0) {
-            return HEIGHT_VIOLATION;
-        }
-    }
-
-    return hcontrib;
-}
-
 TEST(cldm_rbtree_insert_inorder) {
     struct inode nodes[SIZE];
     struct inode *iter;
@@ -120,7 +41,7 @@ TEST(cldm_rbtree_insert_inorder) {
 
     cldm_for_each(iter, nodes) {
         cldm_rbtree_insert(&tree, &iter->node, compare);
-        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
+        ASSERT_GE(rbtree_adheres_to_rbproperties(cldm_rbroot(&tree), compare), 0);
     }
 
     cldm_rbtree_clear(&tree);
@@ -128,7 +49,7 @@ TEST(cldm_rbtree_insert_inorder) {
 
     for(unsigned i = 0; i < cldm_arrsize(nodes); i++) {
         cldm_rbtree_insert(&tree, &nodes[cldm_arrsize(nodes) - i - 1].node, compare);
-        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
+        ASSERT_GE(rbtree_adheres_to_rbproperties(cldm_rbroot(&tree), compare), 0);
     }
 }
 
@@ -146,12 +67,12 @@ TEST(cldm_rbtree_insert_even_odd) {
 
     for(unsigned i = 0; i < cldm_arrsize(nodes); i += 2) {
         cldm_rbtree_insert(&tree, &nodes[i].node, compare);
-        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
+        ASSERT_GE(rbtree_adheres_to_rbproperties(cldm_rbroot(&tree), compare), 0);
     }
 
     for(unsigned i = 1; i < cldm_arrsize(nodes); i += 2) {
         cldm_rbtree_insert(&tree, &nodes[i].node, compare);
-        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
+        ASSERT_GE(rbtree_adheres_to_rbproperties(cldm_rbroot(&tree), compare), 0);
     }
 }
 
@@ -169,7 +90,7 @@ TEST(cldm_rbtree_insert_reverse) {
 
     for(unsigned i = 0; i < cldm_arrsize(nodes); i++) {
         cldm_rbtree_insert(&tree, &nodes[cldm_arrsize(nodes) - i - 1].node, compare);
-        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
+        ASSERT_GE(rbtree_adheres_to_rbproperties(cldm_rbroot(&tree), compare), 0);
     }
 }
 
@@ -208,11 +129,11 @@ TEST(cldm_rbtree_remove_inorder) {
     }
 
     ASSERT_FALSE(cldm_rbtree_remove(&tree, &nodes[cldm_arrsize(nodes) - 1].node, compare));
-    ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
+    ASSERT_GE(rbtree_adheres_to_rbproperties(cldm_rbroot(&tree), compare), 0);
 
     for(unsigned i = 0; i < cldm_arrsize(nodes) - 1; i++) {
         ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
-        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
+        ASSERT_GE(rbtree_adheres_to_rbproperties(cldm_rbroot(&tree), compare), 0);
     }
 
     ASSERT_TRUE(cldm_rbtree_empty(&tree));
@@ -232,11 +153,11 @@ TEST(cldm_rbtree_remove_reverse) {
     }
 
     ASSERT_FALSE(cldm_rbtree_remove(&tree, &nodes[0].node, compare));
-    ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
+    ASSERT_GE(rbtree_adheres_to_rbproperties(cldm_rbroot(&tree), compare), 0);
 
     for(unsigned i = cldm_arrsize(nodes) - 1; i > 0; i--) {
         ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
-        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
+        ASSERT_GE(rbtree_adheres_to_rbproperties(cldm_rbroot(&tree), compare), 0);
     }
 
     ASSERT_TRUE(cldm_rbtree_empty(&tree));
@@ -255,16 +176,16 @@ TEST(cldm_rbtree_remove_upper_lower) {
         ASSERT_TRUE(cldm_rbtree_insert(&tree, &nodes[i].node, compare));
     }
 
-    ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
+    ASSERT_GE(rbtree_adheres_to_rbproperties(cldm_rbroot(&tree), compare), 0);
 
     for(unsigned i = cldm_arrsize(nodes) / 2; i < cldm_arrsize(nodes); i++) {
         ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
-        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
+        ASSERT_GE(rbtree_adheres_to_rbproperties(cldm_rbroot(&tree), compare), 0);
     }
 
     for(unsigned i = 0; i < cldm_arrsize(nodes) / 2; i++) {
         ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
-        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
+        ASSERT_GE(rbtree_adheres_to_rbproperties(cldm_rbroot(&tree), compare), 0);
     }
 
     ASSERT_TRUE(cldm_rbtree_empty(&tree));
@@ -283,16 +204,16 @@ TEST(cldm_rbtree_remove_even_odd) {
         ASSERT_TRUE(cldm_rbtree_insert(&tree, &nodes[i].node, compare));
     }
 
-    ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
+    ASSERT_GE(rbtree_adheres_to_rbproperties(cldm_rbroot(&tree), compare), 0);
 
     for(unsigned i = 0; i < cldm_arrsize(nodes); i += 2) {
         ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
-        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
+        ASSERT_GE(rbtree_adheres_to_rbproperties(cldm_rbroot(&tree), compare), 0);
     }
 
     for(unsigned i = 1; i < cldm_arrsize(nodes); i += 2) {
         ASSERT_TRUE(cldm_rbtree_remove(&tree, &nodes[i].node, compare));
-        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
+        ASSERT_GE(rbtree_adheres_to_rbproperties(cldm_rbroot(&tree), compare), 0);
     }
 
     ASSERT_TRUE(cldm_rbtree_empty(&tree));
@@ -312,12 +233,12 @@ TEST(cldm_rbtree_remove_root) {
         ASSERT_TRUE(cldm_rbtree_insert(&tree, &nodes[i].node, compare));
     }
 
-    ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
+    ASSERT_GE(rbtree_adheres_to_rbproperties(cldm_rbroot(&tree), compare), 0);
 
     while(cldm_rbtree_size(&tree)) {
         n = cldm_rbroot(&tree);
         ASSERT_EQ(cldm_rbtree_remove(&tree, n, compare), n);
-        ASSERT_GE(adheres_to_rbproperties(cldm_rbroot(&tree)), 0);
+        ASSERT_GE(rbtree_adheres_to_rbproperties(cldm_rbroot(&tree), compare), 0);
     }
 
     ASSERT_TRUE(cldm_rbtree_empty(&tree));

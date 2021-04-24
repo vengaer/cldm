@@ -1,5 +1,5 @@
 trivial_module := y
-required_by    := $(cldmtest)
+required_by    := $(cldmtest) $(cldmfuzz)
 
 ifndef module_name
 target := $(if $(MAKECMDGOALS),$(MAKECMDGOALS),recurse)
