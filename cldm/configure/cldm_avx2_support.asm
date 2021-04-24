@@ -24,11 +24,6 @@
     %define STDERR_FILENO 2
 
     %macro exit_err 2
-        %ifdef CLOSE_FILE
-            mov     eax, SC_CLOSE           ; Close syscall
-            syscall
-        %endif
-
         lea     rsi, [%1]                   ; Load string
         mov     rdx, %2                     ; Load length
 
@@ -108,6 +103,6 @@ _start:
     exit_err    open_fail, open_fail_len
 
 .write_failure:
-%define CLOSE_FILE
+    mov     eax, SC_CLOSE                   ; Close syscall
+    syscall
     exit_err    write_fail, write_fail_len
-%undef CLOSE_FILE
