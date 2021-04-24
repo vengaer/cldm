@@ -43,7 +43,7 @@
 
 _start:
 .argc       equ 0
-.argv1      equ 16
+.argv1      equ 0x10
 
     cmp     dword [rsp + .argc], 1          ; Check for output file
     jng     .no_filearg
@@ -55,14 +55,16 @@ _start:
 
     mov     rbx, r9                         ; Restore rbx
 
-    test    ecx, 0xC000000                  ; Check osxsave and avx feature flags
-    jz      .no_avx2
+    and     ecx, 0xC000000
+    cmp     ecx, 0xC000000                  ; Check osxsave and avx feature flags
+    jne     .no_avx2
 
     xor     ecx, ecx
     xgetbv                                  ; Read extended control register 0
 
-    test    eax, 0x3                        ; Check xmm and ymm state support
-    jz      .no_avx2
+    and     eax, 0x3
+    cmp     eax, 0x3                        ; Check xmm and ymm state support
+    jne     .no_avx2
 
     lea     r8, [avx2_y]                    ; Load avx2 string
     mov     r9d, avx2_y_len                 ; Load length
