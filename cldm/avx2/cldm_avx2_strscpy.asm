@@ -31,7 +31,7 @@
         %if %1 != 0
             add rsi, %1                         ; Advance source address
         %endif
-        bsf     r9d, esi                        ; Index of least significant set bit
+        tzcnt   r9, rsi                         ; Index of least significant set bit
         cmp     r9d, 0x4                        ; Check for 32 byte alignment
         cmova   r9d, r11d                       ; Clamp jump address to .rdymmword
 
@@ -157,7 +157,7 @@ cldm_avx2_strscpy:
     jmp     .rdymmword
 
 .xmmword_null:                              ; Null byte in xmmword
-    bsf     ecx, r8d                        ; Index of null byte in xmmword
+    tzcnt   ecx, r8d                        ; Index of null byte in xmmword
 
     test    ecx, ecx                        ; Check for null
     jz      .epi_term
@@ -246,7 +246,7 @@ cldm_avx2_strscpy:
     jmp     .rdymmword
 
 .ymmword_null:                              ; Null byte in ymmword
-    bsf     ecx, r8d                        ; Index of null byte
+    tzcnt   ecx, r8d                        ; Index of null byte
 
     cmp     ecx, 0x10                       ; Check against size of xmmword
     jb      .ymmword_null_lxmmwd
