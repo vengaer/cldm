@@ -31,7 +31,7 @@
         %if %1 != 0
             add rsi, %1                         ; Advance source address
         %endif
-        bsf     r9d, esi                        ; Index of least significant set bit in esi
+        bsf     r9d, esi                        ; Index of least significant set bit
         cmp     r9d, 0x4                        ; Check for 32 byte alignment
         cmova   r9d, r11d                       ; Clamp jump address to .rdymmword
 
@@ -41,10 +41,12 @@
 
     global cldm_avx2_strscpy
 
-; AVX2-accelerated string copy routine. The
-; result is guaranteed to be null-terminated.
-; If source is larger than destination,
-; rdx - 1 bytes of source are written to the
+; AVX2-accelerated string copy routine.
+; Provided that the destination buffer can
+; hold at least 1 byte, the result is
+; guaranteed to be null terminated. If
+; source is larger than destination, rdx - 1
+; bytes of source are written to the
 ; destination.
 ;
 ; Source and destination may not overlap.
@@ -82,7 +84,7 @@ cldm_avx2_strscpy:
 
     mov     r11d, 0x5                       ; Set r11 to 5 for clamping jump offset
 
-    vpxor   ymm15, ymm15                    ; Zero for detecting null in x/ymm word
+    vpxor   ymm15, ymm15                    ; Zero for detecting null in x/ymmword
 
     lea     rcx, [.align_table]             ; Load jump table
     alignjmp  0                             ; Jump to branch
@@ -167,7 +169,7 @@ cldm_avx2_strscpy:
 
     sub     r9d, ecx                        ; Subtract number of bits to be written
 
-    vmovq   r8, xmm0                        ; Low qword of xmm0 to r8
+    vmovq   r8, xmm0                        ; Low qword to r8
 
 .xmmword_null_wrlow:
     writebyte 8                             ; Write lsb
@@ -237,7 +239,7 @@ cldm_avx2_strscpy:
     cmp     r9, 0x20                        ; Check room for 32 bytes
     jb      .ymmword_ovf
 
-    vmovdqu [rdi + rax], ymm0               ; Write xmmword
+    vmovdqu [rdi + rax], ymm0               ; Write ymmword
     add     rax, 0x20                       ; Increment size
     add     rsi, 0x20                       ; Advance source address
 
@@ -271,7 +273,7 @@ cldm_avx2_strscpy:
 
     sub     r9d, ecx                        ; Subtract number of bits to be written
 
-    vmovq   r8, xmm0                        ; Low qword of xmm0 to r8
+    vmovq   r8, xmm0                        ; Low qword to r8
 
 .ymmword_null_lxmmwd_wrlow:
     writebyte 8                             ; Write lsb
