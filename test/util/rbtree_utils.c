@@ -1,9 +1,10 @@
 #include "rbtree_utils.h"
 
-bool is_leaf(struct cldm_rbnode const *node);
-bool is_red(struct cldm_rbnode const *node);
-bool is_black(struct cldm_rbnode const *node);
-bool is_red_safe(struct cldm_rbnode const *node, enum cldm_rbdir dir);
+bool rbtree_is_leaf(struct cldm_rbnode const *node);
+bool rbtree_is_red(struct cldm_rbnode const *node);
+bool rbtree_is_black(struct cldm_rbnode const *node);
+bool rbtree_is_red_safe(struct cldm_rbnode const *node, enum cldm_rbdir dir);
+char const *rbtree_strcolor(struct cldm_rbnode const *node);
 
 int rbtree_adheres_to_rbproperties(struct cldm_rbnode const *node, int(*compare)(struct cldm_rbnode const *restrict, struct cldm_rbnode const *restrict)) {
     int rval;
@@ -12,7 +13,7 @@ int rbtree_adheres_to_rbproperties(struct cldm_rbnode const *node, int(*compare)
     int lheight;
     int rheight;
 
-    if(is_red(node) && (is_red_safe(node, cldm_rbdir_left) || is_red_safe(node, cldm_rbdir_right))) {
+    if(rbtree_is_red(node) && (rbtree_is_red_safe(node, cldm_rbdir_left) || rbtree_is_red_safe(node, cldm_rbdir_right))) {
         return RBTREE_RED_VIOLATION;
     }
 
@@ -24,7 +25,7 @@ int rbtree_adheres_to_rbproperties(struct cldm_rbnode const *node, int(*compare)
         return RBTREE_RIGHT_CHILD_VIOLATION;
     }
 
-    hcontrib = is_black(node);
+    hcontrib = rbtree_is_black(node);
 
     if(!node->flags) {
         lheight = rbtree_adheres_to_rbproperties(node->left, compare);
@@ -42,7 +43,7 @@ int rbtree_adheres_to_rbproperties(struct cldm_rbnode const *node, int(*compare)
 
         return lheight + hcontrib;
     }
-    else if(!is_leaf(node)) {
+    else if(!rbtree_is_leaf(node)) {
         if(node->flags & CLDM_RBTHREADR) {
             rnode = node->left;
         }
@@ -61,4 +62,15 @@ int rbtree_adheres_to_rbproperties(struct cldm_rbnode const *node, int(*compare)
     }
 
     return hcontrib;
+}
+
+char const *rbtree_strviolation(int errnum) {
+    static char const *rbtree_violations[] = {
+        "red violation",
+        "left child violation",
+        "right child violation",
+        "height violation"
+    };
+
+    return rbtree_violations[(-1 * errnum) - 1];
 }

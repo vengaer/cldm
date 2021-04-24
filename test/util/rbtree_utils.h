@@ -13,21 +13,26 @@ enum {
 };
 
 int rbtree_adheres_to_rbproperties(struct cldm_rbnode const *node, int(*compare)(struct cldm_rbnode const *restrict, struct cldm_rbnode const *restrict));
+char const *rbtree_strviolation(int errnum);
 
-inline bool is_leaf(struct cldm_rbnode const *node) {
+inline bool rbtree_is_leaf(struct cldm_rbnode const *node) {
     return (node->flags & CLDM_RBLEAF) == CLDM_RBLEAF;
 }
 
-inline bool is_red(struct cldm_rbnode const *node) {
+inline bool rbtree_is_red(struct cldm_rbnode const *node) {
     return node->color == cldm_rbcolor_red;
 }
 
-inline bool is_black(struct cldm_rbnode const *node) {
+inline bool rbtree_is_black(struct cldm_rbnode const *node) {
     return node->color == cldm_rbcolor_black;
 }
 
-inline bool is_red_safe(struct cldm_rbnode const *node, enum cldm_rbdir dir) {
-    return  !(node->flags & (1 << dir)) && is_red(dir == cldm_rbdir_left ? node->left : node->right);
+inline bool rbtree_is_red_safe(struct cldm_rbnode const *node, enum cldm_rbdir dir) {
+    return  !(node->flags & (1 << dir)) && rbtree_is_red(dir == cldm_rbdir_left ? node->left : node->right);
+}
+
+inline char const *rbtree_strcolor(struct cldm_rbnode const *node) {
+    return rbtree_is_black(node) ? "black" : "red";
 }
 
 
