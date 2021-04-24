@@ -86,7 +86,7 @@ int avx2_strscpy_fuzz(uint8_t const *data, size_t size) {
                 report_error("erroneous E2BIG", &src[i], dst, size - i, dstsize);
                 goto epilogue;
             }
-            else if(dst[dstsize - 1]) {
+            else if(dstsize && dst[dstsize - 1]) {
                 report_error("missing null terminator on E2BIG", &src[i], dst, size - i, dstsize);
                 goto epilogue;
             }
