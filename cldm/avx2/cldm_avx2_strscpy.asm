@@ -80,7 +80,7 @@ cldm_avx2_strscpy:
     xor     eax, eax                        ; Destination length
 
     cmp     rdx, 0                          ; Check for zero-size destination buffer
-    je      .dstsize0
+    jna     .dstsize0
 
     mov     r11d, 0x5                       ; Set r11 to 5 for clamping jump offset
 
