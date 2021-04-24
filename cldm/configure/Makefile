@@ -1,6 +1,6 @@
 $(call mk-build-build-dir)
 
-$(module_name)_target := $(builddir)/cldm_configure
+$(module_name)_target := $(builddir)/cldm_binfmt
 $(module_name)_obj    := $(patsubst $(root)/%.$(cext),$(builddir)/%.$(oext),$(wildcard $(module_path)/*.$(cext)))
 
 $($(module_name)_target): $($(module_name)_obj)
