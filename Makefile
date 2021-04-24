@@ -126,9 +126,10 @@ $(cldmgen): $(MOCKUPS)
 $(cldm_config): $(prepare)
 	$(info [GEN] $(notdir $@))
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CLDM_CONFIG_H\n#define CLDM_CONFIG_H\n' > $@
-	$(QUIET)$(ECHO) $(ECHOFLAGS) '$(if $(filter y,$(has_generic)),#define CLDM_HAS_GENERIC)\n' >> $@
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_ARCH_$(patsubst %-bit,%,$(arch))\n' >> $@
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_ABI_$(abi)\n' >> $@
+	$(QUIET)$(if $(filter y,$(avx2_support)),$(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_AVX2\n' >> $@)
+	$(QUIET)$(if $(filter y,$(has_generic)), $(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_GENERIC\n' >> $@)
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#endif /* CLDM_CONFIG_H */' >> $@
 
 $(MOCKUPS):

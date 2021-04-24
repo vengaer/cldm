@@ -2,7 +2,10 @@
 
 char const *cldm_basename(char const *path);
 
-long long cldm_strscpy(char *restrict dst, char const *restrict src, size_t dstsize) {
+#ifdef CLDM_HAS_AVX2
+long long cldm_strscpy(char *restrict dst, char const *restrict src, unsigned long long dstsize);
+#else
+long long cldm_strscpy(char *restrict dst, char const *restrict src, unsigned long long dstsize) {
     size_t const srclen = strlen(src);
     size_t i = dstsize;
     char *d = dst;
@@ -16,3 +19,4 @@ long long cldm_strscpy(char *restrict dst, char const *restrict src, size_t dsts
 
     return srclen;
 }
+#endif
