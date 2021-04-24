@@ -24,17 +24,17 @@
     %define STDERR_FILENO 2
 
     %macro exit_err 2
+        %ifdef CLOSE_FILE
+            mov     eax, SC_CLOSE           ; Close syscall
+            syscall
+        %endif
+
         lea     rsi, [%1]                   ; Load string
         mov     rdx, %2                     ; Load length
 
         mov     edi, STDERR_FILENO          ; Write to stderr
         mov     eax, SC_WRITE               ; Syscall write
         syscall
-
-        %ifdef CLOSE_FILE
-            mov     eax, SC_CLOSE           ; Close syscall
-            syscall
-        %endif
 
         mov     edi, 1                      ; Exit status
         mov     eax, SC_EXIT                ; Exit syscall
