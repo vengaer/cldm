@@ -55,3 +55,22 @@ ssize_t cldm_stable_partition(void *data, size_t elemsize, size_t nelems, bool(*
 
     return st;
 }
+
+size_t cldm_uniq(void *dst, void const *src, size_t elemsize, size_t nelems, int(*compare)(void const *restrict, void const *restrict)) {
+    unsigned char const *prev = src;
+    unsigned char const *curr = (unsigned char const *)src + elemsize;
+    unsigned char *d = (unsigned char *)dst + elemsize;
+
+    memmove(dst, src, elemsize);
+
+    for(unsigned i = 0; i < nelems - 1; i++) {
+        if(compare(prev, curr)) {
+            memmove(d, curr, elemsize);
+            d += elemsize;
+            prev = curr;
+        }
+        curr += elemsize;
+    }
+
+    return (d - (unsigned char *)dst) / elemsize;
+}
