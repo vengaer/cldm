@@ -5,38 +5,38 @@
     %define E2BIG 7
 
     %macro writebyte 1
-        mov     byte [rdi + rax], r8b           ; Write
+        mov     byte [rdi + rax], r8b       ; Write
 
         %ifdef ZEROCHECK
-            test    r8d, 0xff                   ; Test for null
+            test    r8d, 0xff               ; Test for null
             jz      .epilogue
         %endif
 
-        add     rax, 1                          ; Increment size
+        add     rax, 1                      ; Increment size
         %ifndef NO_OVFCHECK
-            cmp     rax, rdx                    ; Check for end of destination
+            cmp     rax, rdx                ; Check for end of destination
             jnb     .epi_ovf
         %endif
 
         %if %1 != 0
             %ifdef SHR32
-                shr     r8d, %1                 ; Shift byte into position
+                shr     r8d, %1             ; Shift byte into position
             %else
-                shr     r8, %1                  ; Shift byte into position
+                shr     r8, %1              ; Shift byte into position
             %endif
         %endif
     %endmacro
 
     %macro alignjmp 1
         %if %1 != 0
-            add rsi, %1                         ; Advance source address
+            add rsi, %1                     ; Advance source address
         %endif
-        tzcnt   r9, rsi                         ; Index of least significant set bit
-        cmp     r9d, 0x4                        ; Check for 32 byte alignment
-        cmova   r9d, r11d                       ; Clamp jump address to .rdymmword
+        tzcnt   r9, rsi                     ; Index of least significant set bit
+        cmp     r9d, 0x4                    ; Check for 32 byte alignment
+        cmova   r9d, r11d                   ; Clamp jump address to .rdymmword
 
-        shl     r9d, 0x3                        ; Multiply by 8 for offset
-        jmp     [rcx + r9]                      ; Jump to branch
+        shl     r9d, 0x3                    ; Multiply by 8 for offset
+        jmp     [rcx + r9]                  ; Jump to branch
     %endmacro
 
     global cldm_avx2_strscpy
