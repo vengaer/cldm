@@ -57,9 +57,9 @@
 ; risk crossing page boundaries.
 ;
 ; Params:
-;      rdi: address of destination
-;      rsi: address of source
-;      rdx: size of destination
+;     rdi: address of destination
+;     rsi: address of source
+;     rdx: size of destination
 ; Return:
 ;     rax: Size of the string written to
 ;          [rdx], or -7 if the length of
@@ -158,9 +158,7 @@ cldm_avx2_strscpy:
 
 .xmmword_null:                              ; Null byte in xmmword
     tzcnt   ecx, r8d                        ; Index of null byte in xmmword
-
-    test    ecx, ecx                        ; Check for null
-    jz      .epi_term
+    jz      .epi_term                       ; Done if first byte is null
 
     mov     r9d, ecx                        ; Copy bit position
     mov     r10d, 8                         ; Size of qword
@@ -247,6 +245,7 @@ cldm_avx2_strscpy:
 
 .ymmword_null:                              ; Null byte in ymmword
     tzcnt   ecx, r8d                        ; Index of null byte
+    jz      .epi_term                       ; Done is null in first byte
 
     cmp     ecx, 0x10                       ; Check against size of xmmword
     jb      .ymmword_null_lxmmwd
@@ -263,9 +262,6 @@ cldm_avx2_strscpy:
     vextracti128    xmm0, ymm0, 1           ; Replace low xmmword with high
 
 .ymmword_null_lxmmwd:                       ; Null byte in low xmmword
-    test    ecx, ecx                        ; Check for null
-    jz      .epi_term
-
     mov     r9d, ecx                        ; Copy bit position
     mov     r10d, 8                         ; Size of qword
     cmp     ecx, r10d
