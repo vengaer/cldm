@@ -72,12 +72,11 @@ int avx2_strscpy_fuzz(uint8_t const *data, size_t size) {
     }
     size = size > STRINGSIZE ? STRINGSIZE : size;
 
+    dstsize = ((double)data[0] / UCHAR_MAX) * STRINGSIZE;
     for(unsigned i = 0; i < size; i++) {
         src[i] = ascii_cvt(data[i]);
     }
     src[size - 1] = 0;
-
-    dstsize = ((double)data[0] / UCHAR_MAX) * STRINGSIZE;
 
     for(unsigned i = 0; i < VECSIZE; i++) {
         res = cldm_avx2_strscpy(dst, &src[i], dstsize);
