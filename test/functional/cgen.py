@@ -54,8 +54,8 @@ class CGen():
             self.__close_scope(semicolon)
 
     @contextmanager
-    def open_macro(self, macro, optarg=''):
-        self.__open_macro(macro, optarg)
+    def open_macro(self, macro, optargs=[]):
+        self.__open_macro(macro, optargs)
         try:
             yield
         finally:
@@ -134,8 +134,10 @@ class CGen():
         self.__close_scope()
         return self
 
-    def __open_macro(self, macro, optarg=''):
-        self.__append_src_content('{}({}) {{'.format(macro, optarg))
+    def __open_macro(self, macro, optargs=[]):
+        if not type(optargs) == list:
+            optargs = [ optargs ]
+        self.__append_src_content('{}({}) {{'.format(macro, ', '.join(optargs)))
         self.indent = self.indent + 1
         return self
 
