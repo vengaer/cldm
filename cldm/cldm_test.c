@@ -185,7 +185,13 @@ static void cldm_test_invoke(struct cldm_testrec const *restrict record, size_t 
     cldm_log_raw("[Running %s]%-*s (%zu/%zu)%-*s", record->name, runpad, "", *testidx, ntests, idxpad, "");
     cldm_mock_enable() {
         lcl_setup();
+        if(record->runinfo.setup) {
+            record->runinfo.setup();
+        }
         record->handle();
+        if(record->runinfo.teardown) {
+            record->runinfo.teardown();
+        }
         lcl_teardown();
     }
 

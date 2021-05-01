@@ -38,14 +38,25 @@ int cldm_test_invoke_specified(struct cldm_ht *restrict lookup_table, struct cld
 #define cldm_testrec_prefix         \
     cldm_testrec_
 
-#define CLDM_TEST(testname)                                                 \
+#define cldm_test_rinfo(testname, ...)                                      \
     void cldm_cat_expand(cldm_testproc_prefix,testname)(void);              \
     struct cldm_testrec cldm_cat_expand(cldm_testrec_prefix,testname) = {   \
         .name = #testname,                                                  \
         .file = __FILE__,                                                   \
-        .handle = cldm_cat_expand(cldm_testproc_prefix,testname)            \
+        .handle = cldm_cat_expand(cldm_testproc_prefix,testname),           \
+        .runinfo = __VA_ARGS__                                              \
     };                                                                      \
     void cldm_cat_expand(cldm_testproc_prefix,testname)(void)
+
+#define cldm_test3(...)             \
+    cldm_test_rinfo(__VA_ARGS__)
+#define cldm_test2(...)             \
+    cldm_test_rinfo(__VA_ARGS__)
+#define cldm_test1(testname)        \
+    cldm_test_rinfo(testname, { 0 })
+
+#define CLDM_TEST(...)              \
+    cldm_overload(cldm_test, __VA_ARGS__)
 
 #define CLDM_TEST_SETUP()           \
     void cldm_expand(cldm_local_setup_ident)(void)
@@ -59,25 +70,34 @@ int cldm_test_invoke_specified(struct cldm_ht *restrict lookup_table, struct cld
 #define CLDM_GLOBAL_TEARDOWN()      \
     void cldm_expand(cldm_global_teardown_ident)(void)
 
+#define CLDM_UNBOUND_SETUP(name)    \
+    void name(void)
+
+#define CLDM_UNBOUND_TEARDOWN(name)    \
+    void name(void)
+
 #ifndef CLDM_PREFIX_ONLY
-#define TEST(...)           CLDM_TEST(__VA_ARGS__)
+#define TEST(...)             CLDM_TEST(__VA_ARGS__)
 
-#define TEST_SETUP()        CLDM_TEST_SETUP()
-#define TEST_TEARDOWN()     CLDM_TEST_TEARDOWN()
+#define TEST_SETUP()          CLDM_TEST_SETUP()
+#define TEST_TEARDOWN()       CLDM_TEST_TEARDOWN()
 
-#define GLOBAL_SETUP()      CLDM_GLOBAL_SETUP()
-#define GLOBAL_TEARDOWN()   CLDM_GLOBAL_TEARDOWN()
+#define GLOBAL_SETUP()        CLDM_GLOBAL_SETUP()
+#define GLOBAL_TEARDOWN()     CLDM_GLOBAL_TEARDOWN()
 
-#define ASSERT_TRUE(...)    CLDM_ASSERT_TRUE(__VA_ARGS__)
-#define ASSERT_FALSE(...)   CLDM_ASSERT_FALSE(__VA_ARGS__)
-#define ASSERT_EQ(...)      CLDM_ASSERT_EQ(__VA_ARGS__)
-#define ASSERT_NE(...)      CLDM_ASSERT_NE(__VA_ARGS__)
-#define ASSERT_LT(...)      CLDM_ASSERT_LT(__VA_ARGS__)
-#define ASSERT_LE(...)      CLDM_ASSERT_LE(__VA_ARGS__)
-#define ASSERT_GT(...)      CLDM_ASSERT_GT(__VA_ARGS__)
-#define ASSERT_GE(...)      CLDM_ASSERT_GE(__VA_ARGS__)
-#define ASSERT_STREQ(...)   CLDM_ASSERT_STREQ(__VA_ARGS__)
-#define ASSERT_STRNEQ(...)  CLDM_ASSERT_STRNEQ(__VA_ARGS__)
+#define UNBOUND_SETUP(...)    CLDM_UNBOUND_SETUP(__VA_ARGS__)
+#define UNBOUND_TEARDOWN(...) CLDM_UNBOUND_TEARDOWN(__VA_ARGS__)
+
+#define ASSERT_TRUE(...)      CLDM_ASSERT_TRUE(__VA_ARGS__)
+#define ASSERT_FALSE(...)     CLDM_ASSERT_FALSE(__VA_ARGS__)
+#define ASSERT_EQ(...)        CLDM_ASSERT_EQ(__VA_ARGS__)
+#define ASSERT_NE(...)        CLDM_ASSERT_NE(__VA_ARGS__)
+#define ASSERT_LT(...)        CLDM_ASSERT_LT(__VA_ARGS__)
+#define ASSERT_LE(...)        CLDM_ASSERT_LE(__VA_ARGS__)
+#define ASSERT_GT(...)        CLDM_ASSERT_GT(__VA_ARGS__)
+#define ASSERT_GE(...)        CLDM_ASSERT_GE(__VA_ARGS__)
+#define ASSERT_STREQ(...)     CLDM_ASSERT_STREQ(__VA_ARGS__)
+#define ASSERT_STRNEQ(...)    CLDM_ASSERT_STRNEQ(__VA_ARGS__)
 #endif
 
 void cldm_assert_internal(bool eval, char const *restrict expr, char const *restrict file, char const *restrict line);

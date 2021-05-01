@@ -6,6 +6,11 @@
 
 #include <string.h>
 
+struct cldm_aux_runinfo {
+    void(*setup)(void);
+    void(*teardown)(void);
+};
+
 /* Record representing a test */
 struct cldm_testrec {
     char const *name;
@@ -14,6 +19,7 @@ struct cldm_testrec {
     struct cldm_rbnode rbnode;
     /* Address of test */
     void(*handle)(void);
+    struct cldm_aux_runinfo runinfo;
 };
 
 #define cldm_testrec_get2(node, qual)   \
