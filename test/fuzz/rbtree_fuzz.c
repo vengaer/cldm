@@ -34,7 +34,7 @@ static void dump_tree(struct cldm_rbtree const *tree) {
         fprintf(stderr, "  Color: %s\n", rbtree_strcolor(iter));
         fprintf(stderr, "  Flags: %hhu\n", iter->flags);
         fprintf(stderr, "  Left:  %s to %p\n", cldm_rbnode_has_child(iter, cldm_rbdir_left) ? "link" : "thread", (void const *)iter->left);
-        fprintf(stderr, "  right: %s to %p\n", cldm_rbnode_has_child(iter, cldm_rbdir_right) ? "link" : "thread", (void const *)iter->left);
+        fprintf(stderr, "  Right: %s to %p\n", cldm_rbnode_has_child(iter, cldm_rbdir_right) ? "link" : "thread", (void const *)iter->right);
     }
 }
 
