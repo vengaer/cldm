@@ -7,6 +7,7 @@
 #include "cldm_macro.h"
 #include "cldm_rbtree.h"
 #include "cldm_testrec.h"
+#include "cldm_type.h"
 
 #include <stdbool.h>
 #include <stddef.h>

@@ -59,26 +59,26 @@ static void cldm_test_empty_func(void) { }
         cldm_log("Detected " cldm_str_expand(scope) " " cldm_str_expand(stage));            \
     }
 
-static void (*cldm_test_local_setup(struct cldm_elfmap const *map))(void) {
-    void (*setup)(void) = { 0 };
+static cldm_setup_handle cldm_test_local_setup(struct cldm_elfmap const *map) {
+    cldm_setup_handle setup = { 0 };
     cldm_load_stage(map, setup, local);
     return setup;
 }
 
-static void (*cldm_test_local_teardown(struct cldm_elfmap const *map))(void) {
-    void (*teardown)(void) = { 0 };
+static cldm_teardown_handle cldm_test_local_teardown(struct cldm_elfmap const *map) {
+    cldm_teardown_handle teardown = { 0 };
     cldm_load_stage(map, teardown, local);
     return teardown;
 }
 
-static void (*cldm_test_global_setup(struct cldm_elfmap const *map))(void) {
-    void (*setup)(void) = { 0 };
+static cldm_setup_handle cldm_test_global_setup(struct cldm_elfmap const *map) {
+    cldm_setup_handle setup = { 0 };
     cldm_load_stage(map, setup, global);
     return setup;
 }
 
-static void (*cldm_test_global_teardown(struct cldm_elfmap const *map))(void) {
-    void (*teardown)(void) = { 0 };
+static cldm_teardown_handle cldm_test_global_teardown(struct cldm_elfmap const *map) {
+    cldm_teardown_handle teardown = { 0 };
     cldm_load_stage(map, teardown, global);
     return teardown;
 }
@@ -134,7 +134,7 @@ static void cldm_test_summary(size_t ntests) {
     cldm_log("\nSuccessfully finished %llu assertions across %zu test%s", cldm_test_log.total_assertions, ntests, ntests == 1 ? "" : "s");
 }
 
-static int cldm_test_prologue(struct cldm_elfmap const *restrict map, size_t ntests, void(**lcl_setup)(void), void(**lcl_teardown)(void)) {
+static int cldm_test_prologue(struct cldm_elfmap const *restrict map, size_t ntests, cldm_setup_handle *restrict lcl_setup, cldm_teardown_handle *restrict lcl_teardown) {
     void (*glob_setup)(void);
 
     cldm_log("Collected %zu tests", ntests);
@@ -170,7 +170,7 @@ static int cldm_test_epilogue(struct cldm_elfmap const *restrict map, size_t nte
     return !!cldm_test_log.failed_tests;
 }
 
-static void cldm_test_invoke(struct cldm_testrec const *restrict record, size_t *restrict testidx, size_t ntests, void(*lcl_setup)(void), void(*lcl_teardown)(void)) {
+static void cldm_test_invoke(struct cldm_testrec const *restrict record, size_t *restrict testidx, size_t ntests, cldm_setup_handle lcl_setup, cldm_teardown_handle lcl_teardown) {
     unsigned runpad;
     unsigned idxpad;
     unsigned length;

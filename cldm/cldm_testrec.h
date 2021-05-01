@@ -3,12 +3,13 @@
 
 #include "cldm_macro.h"
 #include "cldm_rbtree.h"
+#include "cldm_type.h"
 
 #include <string.h>
 
 struct cldm_aux_runinfo {
-    void(*setup)(void);
-    void(*teardown)(void);
+    cldm_setup_handle setup;
+    cldm_teardown_handle teardown;
 };
 
 /* Record representing a test */
@@ -18,7 +19,7 @@ struct cldm_testrec {
     /* For storing in tree */
     struct cldm_rbnode rbnode;
     /* Address of test */
-    void(*handle)(void);
+    cldm_test_handle handle;
     struct cldm_aux_runinfo runinfo;
 };
 
