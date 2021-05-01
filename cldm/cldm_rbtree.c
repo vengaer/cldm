@@ -1,9 +1,6 @@
 #include "cldm_rbtree.h"
 
-#include <limits.h>
 #include <stdbool.h>
-
-enum { CLDM_MAX_RBTREE_DEPTH = sizeof(size_t) * CHAR_BIT };
 
 #define link(node, idx)     \
     (*(struct cldm_rbnode **)((unsigned char *)&(node)->left + ((unsigned char *)&(node)->right - (unsigned char *)&(node)->left) * (idx)))
