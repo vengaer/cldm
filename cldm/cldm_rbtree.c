@@ -8,48 +8,11 @@ enum { CLDM_MAX_RBTREE_DEPTH = sizeof(size_t) * CHAR_BIT };
 #define link(node, idx)     \
     (*(struct cldm_rbnode **)((unsigned char *)&(node)->left + ((unsigned char *)&(node)->right - (unsigned char *)&(node)->left) * (idx)))
 
-struct cldm_rbstack_node {
-    struct cldm_rbnode *node;
-    enum cldm_rbdir dir;
-};
-
-#define cldm_rbstack_init() \
-    { .top = 0 }
-
-struct cldm_rbstack {
-    struct cldm_rbstack_node data[CLDM_MAX_RBTREE_DEPTH];
-    unsigned top;
-};
-
 void cldm_rbtree_clear(struct cldm_rbtree *tree);
 bool cldm_rbtree_empty(struct cldm_rbtree const *tree);
 size_t cldm_rbtree_size(struct cldm_rbtree const *tree);
 bool cldm_rbnode_has_child(struct cldm_rbnode const *node, enum cldm_rbdir dir);
 struct cldm_rbnode *cldm_rbnode_successor(struct cldm_rbnode *node);
-
-static inline unsigned cldm_rbstack_capacity(struct cldm_rbstack const *stack) {
-    return cldm_arrsize(stack->data);
-}
-
-static inline unsigned cldm_rbstack_size(struct cldm_rbstack const *stack) {
-    return stack->top;
-}
-
-static inline void cldm_rbstack_push(struct cldm_rbstack *restrict stack, struct cldm_rbstack_node const *restrict node) {
-    stack->data[stack->top++] = *node;
-}
-
-static inline struct cldm_rbstack_node *cldm_rbstack_pop(struct cldm_rbstack *stack) {
-    return &stack->data[--stack->top];
-}
-
-static inline struct cldm_rbstack_node *cldm_rbstack_peek(struct cldm_rbstack *stack) {
-    return &stack->data[stack->top - 1];
-}
-
-static inline bool cldm_rbstack_empty(struct cldm_rbstack *stack) {
-    return !cldm_rbstack_size(stack);
-}
 
 static inline void cldm_rbnode_make_red(struct cldm_rbnode *node) {
     node->color = cldm_rbcolor_red;
@@ -112,54 +75,68 @@ static inline struct cldm_rbnode *cldm_rbtree_rotate_double(struct cldm_rbnode *
     return cldm_rbtree_rotate_single(root, dir);
 }
 
-static struct cldm_rbnode *cldm_rbtree_balance_insertion(struct cldm_rbnode *node, enum cldm_rbdir dir) {
-    if(cldm_rbnode_is_red_safe(node, dir)) {
-        if(cldm_rbnode_is_red_safe(node, !dir)) {
-            cldm_rbnode_make_red(node);
-            cldm_rbnode_make_black(node->left);
-            cldm_rbnode_make_black(node->right);
+static void cldm_rbtree_balance_insertion(struct cldm_rbnode *restrict n, struct cldm_rbnode *restrict p, struct cldm_rbnode *restrict gp, struct cldm_rbnode *restrict ggp) {
+    enum cldm_rbdir pdir;
+    enum cldm_rbdir gpdir;
+    enum cldm_rbdir ggpdir;
+
+    cldm_rbnode_make_red(n);
+
+    if(!cldm_rbnode_is_thread(n, cldm_rbdir_left) && !cldm_rbnode_is_thread(n, cldm_rbdir_right)) {
+        cldm_rbnode_make_black(n->left);
+        cldm_rbnode_make_black(n->right);
+    }
+
+    if(cldm_rbnode_is_red(p)) {
+        cldm_rbnode_make_red(gp);
+
+        pdir = (enum cldm_rbdir)(p->right == n);
+        gpdir = (enum cldm_rbdir)(gp->right == p);
+        ggpdir = (enum cldm_rbdir)(ggp->right == gp);
+
+        if(pdir != gpdir) {
+            link(ggp, ggpdir) = cldm_rbtree_rotate_double(gp, !gpdir);
+            cldm_rbnode_make_black(n);
         }
-        else if(cldm_rbnode_is_red_safe(link(node, dir), dir)) {
-            node = cldm_rbtree_rotate_single(node, !dir);
-        }
-        else if(cldm_rbnode_is_red_safe(link(node, dir), !dir)) {
-            node = cldm_rbtree_rotate_double(node, !dir);
+        else {
+            link(ggp, ggpdir) = cldm_rbtree_rotate_single(gp, !gpdir);
+            cldm_rbnode_make_black(p);
         }
     }
-    return node;
 }
 
-static void cldm_rbtree_balance_removal(struct cldm_rbnode *restrict n, struct cldm_rbnode **restrict parent, struct cldm_rbnode **restrict gparent, enum cldm_rbdir dir) {
-    enum cldm_rbdir pdir = (enum cldm_rbdir) ((*parent)->right == n);
-    enum cldm_rbdir gpdir = (enum cldm_rbdir) ((*gparent)->right == *parent);
+static void cldm_rbtree_balance_removal(struct cldm_rbnode *restrict n, struct cldm_rbnode **restrict p, struct cldm_rbnode **restrict gp, enum cldm_rbdir dir) {
+    enum cldm_rbdir pdir;
+    enum cldm_rbdir gpdir;
 
-    struct cldm_rbnode *sibling = link(*parent, !pdir);
+    struct cldm_rbnode *sibling;
+
+    pdir = (enum cldm_rbdir) ((*p)->right == n);
+    gpdir = (enum cldm_rbdir) ((*gp)->right == *p);
 
     if(cldm_rbnode_is_red_safe(n, !dir)) {
-        link(*parent, pdir) = cldm_rbtree_rotate_single(n, dir);
-        *gparent = *parent;
-        *parent = link(*parent, pdir);
+        link(*p, pdir) = cldm_rbtree_rotate_single(n, dir);
+        *p = link(*p, pdir);
     }
-    else if(sibling) {
+    else if(!cldm_rbnode_is_thread(*p, !pdir)) {
+        sibling = link(*p, !pdir);
         if(cldm_rbnode_is_red_safe(sibling, cldm_rbdir_left) || cldm_rbnode_is_red_safe(sibling, cldm_rbdir_right)) {
             if(cldm_rbnode_is_red_safe(sibling, pdir)) {
-                link(*gparent, gpdir) = cldm_rbtree_rotate_double(*parent, pdir);
+                link(*gp, gpdir) = cldm_rbtree_rotate_double(*p, pdir);
             }
             else if(cldm_rbnode_is_red_safe(sibling, !pdir)) {
-                link(*gparent, gpdir) = cldm_rbtree_rotate_single(*parent, pdir);
+                link(*gp, gpdir) = cldm_rbtree_rotate_single(*p, pdir);
             }
 
             cldm_rbnode_make_red(n);
-            cldm_rbnode_make_red(link(*gparent, gpdir));
-            cldm_rbnode_make_black(link(*gparent, gpdir)->left);
-            cldm_rbnode_make_black(link(*gparent, gpdir)->right);
-
-            *gparent = link(*gparent, gpdir);
+            cldm_rbnode_make_red(link(*gp, gpdir));
+            cldm_rbnode_make_black(link(*gp, gpdir)->left);
+            cldm_rbnode_make_black(link(*gp, gpdir)->right);
         }
         else {
             cldm_rbnode_make_red(n);
             cldm_rbnode_make_red(sibling);
-            cldm_rbnode_make_black(*parent);
+            cldm_rbnode_make_black(*p);
         }
     }
 }
@@ -167,29 +144,31 @@ static void cldm_rbtree_balance_removal(struct cldm_rbnode *restrict n, struct c
 static struct cldm_rbnode *cldm_rbtree_find_parent_of(struct cldm_rbtree *restrict tree, struct cldm_rbnode const *restrict node, cldm_rbcompare compare) {
     int relation;
 
-    struct cldm_rbnode *parent = &tree->sentinel;
+    struct cldm_rbnode *p = &tree->sentinel;
     struct cldm_rbnode *n = cldm_rbroot(tree);
     enum cldm_rbdir dir = cldm_rbdir_left;
 
-    while(!cldm_rbnode_is_thread(parent, dir) && n != node) {
+    while(!cldm_rbnode_is_thread(p, dir) && n != node) {
         relation = compare(n, node);
 
         dir = (enum cldm_rbdir) (relation > 0);
-        parent = n;
+        p = n;
         n = link(n, dir);
     }
 
-    return parent;
+    return p;
 }
 
 bool cldm_rbtree_insert(struct cldm_rbtree *restrict tree, struct cldm_rbnode *restrict node, cldm_rbcompare compare) {
-    struct cldm_rbnode *child = 0;
-    struct cldm_rbstack stack = cldm_rbstack_init();
+    struct cldm_rbnode *ggp;
+    struct cldm_rbnode *gp;
+    struct cldm_rbnode *p;
     struct cldm_rbnode *n;
+
     enum cldm_rbdir dir;
     int relation;
 
-    if(cldm_rbnode_is_thread(&tree->sentinel, cldm_rbdir_left)) {
+    if(cldm_rbtree_empty(tree)) {
         *node = (struct cldm_rbnode) {
             .left = &tree->sentinel,
             .right = &tree->sentinel,
@@ -198,18 +177,27 @@ bool cldm_rbtree_insert(struct cldm_rbtree *restrict tree, struct cldm_rbnode *r
         };
         cldm_rbroot(tree) = node;
         cldm_rbnode_unset_thread(&tree->sentinel, cldm_rbdir_left);
+        tree->sentinel.right = &tree->sentinel;
         tree->size = 1u;
         cldm_rbnode_make_black(node);
         return true;
     }
 
+    ggp = &tree->sentinel;
+    gp = &tree->sentinel;
+    p = &tree->sentinel;
     n = cldm_rbroot(tree);
 
     while(1) {
+        if(cldm_rbnode_is_red_safe(n, cldm_rbdir_left) && cldm_rbnode_is_red_safe(n, cldm_rbdir_right)) {
+            /* Percolate red coloring upwards */
+            cldm_rbtree_balance_insertion(n, p, gp, ggp);
+        }
         relation = compare(n, node);
 
         if(!relation) {
             /* Already in tree */
+            cldm_rbnode_make_black(cldm_rbroot(tree));
             return false;
         }
 
@@ -218,30 +206,25 @@ bool cldm_rbtree_insert(struct cldm_rbtree *restrict tree, struct cldm_rbnode *r
             break;
         }
 
-        cldm_rbstack_push(&stack, &(struct cldm_rbstack_node){ .node = n, .dir = dir });
+        ggp = gp;
+        gp = p;
+        p = n;
         n = link(n, dir);
     }
 
-    cldm_rbnode_make_red(node);
+    /* Prepare node */
     cldm_rbnode_make_leaf(node);
     link(node, dir) = link(n, dir);
     link(node, !dir) = n;
 
+    /* Set child of n */
     link(n, dir) = node;
     cldm_rbnode_unset_thread(n, dir);
 
-    /* Balance */
-    while(!cldm_rbstack_empty(&stack)) {
-        child = cldm_rbtree_balance_insertion(n, dir);
-
-        dir = cldm_rbstack_peek(&stack)->dir;
-        n = cldm_rbstack_pop(&stack)->node;
-
-        link(n, dir) = child;
-    }
-
-    cldm_rbroot(tree) = cldm_rbtree_balance_insertion(n, dir);
+    /* Ensure properties are upheld */
+    cldm_rbtree_balance_insertion(node, n, p, gp);
     cldm_rbnode_make_black(cldm_rbroot(tree));
+
     ++tree->size;
 
     return true;
@@ -249,11 +232,11 @@ bool cldm_rbtree_insert(struct cldm_rbtree *restrict tree, struct cldm_rbnode *r
 
 struct cldm_rbnode *cldm_rbtree_find(struct cldm_rbtree *restrict tree, struct cldm_rbnode const *restrict node, cldm_rbcompare compare) {
     int relation;
-    struct cldm_rbnode *parent = &tree->sentinel;
+    struct cldm_rbnode *p = &tree->sentinel;
     struct cldm_rbnode *n = cldm_rbroot(tree);
     enum cldm_rbdir dir = cldm_rbdir_left;
 
-    while(!cldm_rbnode_is_thread(parent, dir)) {
+    while(!cldm_rbnode_is_thread(p, dir)) {
         relation = compare(n, node);
 
         if(!relation) {
@@ -261,7 +244,7 @@ struct cldm_rbnode *cldm_rbtree_find(struct cldm_rbtree *restrict tree, struct c
         }
 
         dir = (enum cldm_rbdir) (relation > 0);
-        parent = n;
+        p = n;
         n = link(n, dir);
     }
 
@@ -273,8 +256,8 @@ struct cldm_rbnode *cldm_rbtree_remove(struct cldm_rbtree *restrict tree, struct
         return 0;
     }
 
-    struct cldm_rbnode *gparent = &(struct cldm_rbnode){ .left = &tree->sentinel };
-    struct cldm_rbnode *parent = &tree->sentinel;
+    struct cldm_rbnode *gp = &(struct cldm_rbnode){ .left = &tree->sentinel };
+    struct cldm_rbnode *p = &tree->sentinel;
     struct cldm_rbnode *n = cldm_rbroot(tree);
 
     struct cldm_rbnode *found = 0;
@@ -286,7 +269,7 @@ struct cldm_rbnode *cldm_rbtree_remove(struct cldm_rbtree *restrict tree, struct
 
     int relation;
 
-    while(!cldm_rbnode_is_thread(parent, dir)) {
+    while(!cldm_rbnode_is_thread(p, dir)) {
         relation = compare(n, node);
 
         if(!relation) {
@@ -297,11 +280,11 @@ struct cldm_rbnode *cldm_rbtree_remove(struct cldm_rbtree *restrict tree, struct
 
         /* Balance while descending */
         if(!cldm_rbnode_is_red(n) && !cldm_rbnode_is_red_safe(n, dir)) {
-            cldm_rbtree_balance_removal(n, &parent, &gparent, dir);
+            cldm_rbtree_balance_removal(n, &p, &gp, dir);
         }
 
-        gparent = parent;
-        parent = n;
+        gp = p;
+        p = n;
         n = link(n, dir);
     }
 
@@ -309,19 +292,19 @@ struct cldm_rbnode *cldm_rbtree_remove(struct cldm_rbtree *restrict tree, struct
         fparent = cldm_rbtree_find_parent_of(tree, found, compare);
 
         fdir = (enum cldm_rbdir) (fparent->right == found);
-        gpdir = (enum cldm_rbdir) (gparent->right == parent);
+        gpdir = (enum cldm_rbdir) (gp->right == p);
 
-        /* Make gparent adopt parent's thread flag in direction gpdir */
-        cldm_rbnode_assign_thread_from(gparent, parent, gpdir);
+        /* Make gp adopt p's thread flag in direction gpdir */
+        cldm_rbnode_assign_thread_from(gp, p, gpdir);
 
-        /* Replace found with parent */
-        parent->left  = (struct cldm_rbnode *)((size_t)found->left  * (found->left != parent)  + (size_t)&tree->sentinel * (found->left == parent));
-        parent->right = (struct cldm_rbnode *)((size_t)found->right * (found->right != parent) + (size_t)&tree->sentinel * (found->right == parent));
-        parent->color = found->color;
-        parent->flags = found->flags;
+        /* Replace found with p */
+        p->left  = (struct cldm_rbnode *)((size_t)found->left  * (found->left != p)  + (size_t)&tree->sentinel * (found->left == p));
+        p->right = (struct cldm_rbnode *)((size_t)found->right * (found->right != p) + (size_t)&tree->sentinel * (found->right == p));
+        p->color = found->color;
+        p->flags = found->flags;
 
-        link(fparent, fdir) = parent;
-        link(gparent, gpdir) = link(parent, dir);
+        link(fparent, fdir) = p;
+        link(gp, gpdir) = link(p, dir);
 
         *found = (struct cldm_rbnode){ 0 };
 
