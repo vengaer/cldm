@@ -6,7 +6,7 @@
 
 struct cldm_dfa {
     struct cldm_dfa_state *states;
-    struct cldm_dfa_edge  *edges;
+    struct cldm_dfa_edge *edges;
     unsigned nstates;
     unsigned state_idx;
     unsigned nedges;
