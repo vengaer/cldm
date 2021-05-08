@@ -81,7 +81,7 @@ def test_argp_short_fail_fast():
     runcmd = gen_runcmd('-- -x')
     run(ContainsNotMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
-def test_argp_short_no_capture():
+def test_argp_short_capture_none():
     cgen = CGen('tests.c')
     cgen.append_include('cldm.h', system_header=False)  \
         .append_include('stdio.h')
@@ -103,6 +103,69 @@ def test_argp_short_no_capture():
 
     runcmd = gen_runcmd('-- -s')
     run(ContainsNotMatcher(r'Running\s*bar.*pass.*text'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+def test_argp_short_capture_with_none():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)  \
+        .append_include('stdio.h')
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('puts("text");')               \
+            .append_line('fputs("stderr\\n", stderr);') \
+            .append_line('ASSERT_EQ(1, 0);')
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('-c none')
+    run(ContainsMatcher(r'Running\s*bar.*text.*fail'), ContainsMatcher('stderr'), RvDiffMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-cnone')
+    run(ContainsMatcher(r'Running\s*bar.*text.*fail'), ContainsMatcher('stderr'), RvDiffMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-- -cnone')
+    run(ContainsNotMatcher(r'Running\s*bar.*text.*fail'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+def test_argp_short_capture_with_stdout():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)  \
+        .append_include('stdio.h')
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('puts("text");')               \
+            .append_line('fputs("stderr\\n", stderr);') \
+            .append_line('ASSERT_EQ(1, 0);')
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('-c stdout')
+    run(ContainsMatcher(r'Running\s*bar.*fail.*text'), ContainsMatcher('stderr'), RvDiffMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-cstdout')
+    run(ContainsMatcher(r'Running\s*bar.*fail.*text'), ContainsMatcher('stderr'), RvDiffMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-- -cstdout')
+    run(ContainsNotMatcher(r'Running\s*bar.*fail.*text'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+def test_argp_short_capture_with_all():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)  \
+        .append_include('stdio.h')
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('puts("text");')               \
+            .append_line('fputs("stderr\\n", stderr);') \
+            .append_line('ASSERT_EQ(1, 0);')
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('-c all')
+    run(ContainsMatcher(r'Running\s*bar.*fail.*text'), ContainsMatcher('stderr'), RvDiffMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-call')
+    run(ContainsMatcher(r'Running\s*bar.*fail.*text'), ContainsMatcher('stderr'), RvDiffMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-- -call')
+    run(ContainsNotMatcher(r'Running\s*bar.*fail.*text'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
 def test_argp_long_help():
     cgen = CGen('tests.c')
@@ -164,7 +227,7 @@ def test_argp_long_fail_fast():
     runcmd = gen_runcmd('-- --fail-fast')
     run(ContainsNotMatcher(r'Running\s*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
-def test_argp_long_no_capture():
+def test_argp_long_capture_none():
     cgen = CGen('tests.c')
     cgen.append_include('cldm.h', system_header=False)  \
         .append_include('stdio.h')
@@ -186,6 +249,61 @@ def test_argp_long_no_capture():
 
     runcmd = gen_runcmd('-- --capture-none')
     run(ContainsNotMatcher(r'Running\s*bar.*pass.*text'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+def test_argp_long_capture_with_none():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)  \
+        .append_include('stdio.h')
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('puts("text");')               \
+            .append_line('fputs("stderr\\n", stderr);') \
+            .append_line('ASSERT_EQ(1, 0);')
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('--capture=none')
+    run(ContainsMatcher(r'Running\s*bar.*text.*fail'), ContainsMatcher('stderr'), RvDiffMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-- --capture=none')
+    run(ContainsNotMatcher(r'Running\s*bar.*text.*fail'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+def test_argp_long_capture_with_stdout():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)  \
+        .append_include('stdio.h')
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('puts("text");')               \
+            .append_line('fputs("stderr\\n", stderr);') \
+            .append_line('ASSERT_EQ(1, 0);')
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('--capture=stdout')
+    run(ContainsMatcher(r'Running\s*bar.*fail.*text'), ContainsMatcher('stderr'), RvDiffMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-- --capture=stdout')
+    run(ContainsNotMatcher(r'Running\s*bar.*fail.*text'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+def test_argp_long_capture_with_all():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)  \
+        .append_include('stdio.h')
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('puts("text");')               \
+            .append_line('fputs("stderr\\n", stderr);') \
+            .append_line('ASSERT_EQ(1, 0);')
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('--capture=all')
+    run(ContainsMatcher(r'Running\s*bar.*fail.*text'), ContainsMatcher('stderr'), RvDiffMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-- --capture=all')
+    run(ContainsNotMatcher(r'Running\s*bar.*fail.*text'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
 
 def test_argp_positional_param_invocation():
     cgen = CGen('bar_test.c')
