@@ -21,7 +21,7 @@ static int fuzznodecmp(struct cldm_rbnode const *restrict l, struct cldm_rbnode 
 }
 
 static int qcmp(void const *l, void const *r) {
-    return fuzznodecmp(l, r);
+    return fuzznodeval(r) - fuzznodeval(l);
 }
 
 static void dump_tree(struct cldm_rbtree const *tree) {
@@ -88,7 +88,7 @@ int rbtree_fuzz(uint8_t const *data, size_t size) {
     }
 
     memcpy(unique, nodes, size * sizeof(*nodes));
-    qsort(unique, size, sizeof(*nodes), qcmp);
+    qsort(unique, size, sizeof(*unique), qcmp);
     nunique = cldm_uniq(unique, unique, sizeof(*unique), size, qcmp);
 
     for(unsigned i = 0; i < nunique; i++) {
