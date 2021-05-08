@@ -33,7 +33,7 @@ def test_runinfo_setup():
     cgen.write()
     gen_makefile()
 
-    run(ContainsMatcher(r'Unbound setup.*Test'.format(_BINARY)), rvmatcher=RvEqMatcher(0))
+    run(ContainsMatcher(r'Unbound setup.*Test'), rvmatcher=RvEqMatcher(0))
 
 def test_runinfo_teardown():
     cgen = CGen('tests.c')
@@ -49,7 +49,7 @@ def test_runinfo_teardown():
     cgen.write()
     gen_makefile()
 
-    run(ContainsMatcher(r'Test.*Unbound teardown'.format(_BINARY)), rvmatcher=RvEqMatcher(0))
+    run(ContainsMatcher(r'Test.*Unbound teardown'), rvmatcher=RvEqMatcher(0))
 
 def test_runinfo_setup_teardown():
     cgen = CGen('tests.c')
@@ -68,4 +68,4 @@ def test_runinfo_setup_teardown():
     cgen.write()
     gen_makefile()
 
-    run(ContainsMatcher(r'Unbound setup.*Test.*Unbound teardown'.format(_BINARY)), rvmatcher=RvEqMatcher(0))
+    run(ContainsMatcher(r'Unbound setup.*Test.*Unbound teardown'), rvmatcher=RvEqMatcher(0))
