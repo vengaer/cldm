@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define cldm_static_assert(condition, reason)   \
+    ((void)sizeof(unsigned char[!!(condition) + !(condition) * -1]))
+
 #define cldm_rtassert_trigger(condition, ...)       \
     do {                                            \
         if(!(condition)) {                          \
