@@ -176,7 +176,6 @@ bool cldm_rbtree_insert(struct cldm_rbtree *restrict tree, struct cldm_rbnode *r
         cldm_rbnode_unset_thread(&tree->sentinel, cldm_rbdir_left);
         tree->sentinel.right = &tree->sentinel;
         tree->size = 1u;
-        cldm_rbnode_make_black(node);
         return true;
     }
 
