@@ -135,7 +135,7 @@ static void cldm_test_summary(size_t ntests) {
 }
 
 static int cldm_test_prologue(struct cldm_elfmap const *restrict map, size_t ntests, cldm_setup_handle *restrict lcl_setup, cldm_teardown_handle *restrict lcl_teardown) {
-    void (*glob_setup)(void);
+    cldm_setup_handle glob_setup;
 
     cldm_log("Collected %zu tests", ntests);
 
@@ -156,7 +156,7 @@ static int cldm_test_prologue(struct cldm_elfmap const *restrict map, size_t nte
 }
 
 static int cldm_test_epilogue(struct cldm_elfmap const *restrict map, size_t ntests) {
-    void (*glob_teardown)(void);
+    cldm_teardown_handle glob_teardown;
 
     glob_teardown = cldm_test_global_teardown(map);
 
@@ -228,8 +228,8 @@ int cldm_test_invoke_each(struct cldm_rbtree const *restrict tests, struct cldm_
     struct cldm_rbnode *iter;
     size_t testidx;
 
-    void (*lcl_setup)(void);
-    void (*lcl_teardown)(void);
+    cldm_setup_handle lcl_setup;
+    cldm_teardown_handle lcl_teardown;
 
     if(!cldm_rbtree_size(tests)) {
         return 0;
@@ -260,8 +260,8 @@ int cldm_test_invoke_specified(struct cldm_ht *restrict lookup_table, struct cld
     size_t testidx;
     char **iter;
 
-    void (*lcl_setup)(void);
-    void (*lcl_teardown)(void);
+    cldm_setup_handle lcl_setup;
+    cldm_teardown_handle lcl_teardown;
 
     if(!cldm_ht_size(lookup_table)) {
         return 0;
