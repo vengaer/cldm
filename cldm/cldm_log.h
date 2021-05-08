@@ -6,6 +6,8 @@
 
 #include <stdio.h>
 
+#ifndef CLDM_SUPPRESS_LOGGING
+
 #define cldm_print_guard_raw(stream, fallback, fmt, ...)    \
     fprintf(stream ? stream : fallback, fmt, __VA_ARGS__)
 
@@ -38,5 +40,15 @@
 
 #define cldm_log_raw(...)   \
     cldm_print_guard_raw(cldm_stdout, stdout, __VA_ARGS__)
+
+#else
+static inline void cldm_swallow(void *p, ...) { (void)p; }
+
+#define cldm_err(...) cldm_swallow(0, __VA_ARGS__)
+#define cldm_warn(...) cldm_swallow(0, __VA_ARGS__)
+#define cldm_log(...) cldm_swallow(0, __VA_ARGS__)
+#define cldm_log_stream(...) cldm_swallow(0, __VA_ARGS__)
+#define cldm_log_raw(...) cldm_swallow(0, __VA_ARGS__)
+#endif
 
 #endif /* CLDM_LOG_H */
