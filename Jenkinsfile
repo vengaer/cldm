@@ -2,7 +2,7 @@ class config {
     public static final int NFUZZRUNS = 30
 }
 
-fuzztargets = ['avx2_strscpy', 'rbtree', 'argp']
+fuzztargets = ['avx2_strscpy', 'rbtree', 'argp', 'hash']
 ccs = ['gcc', 'clang']
 
 pipeline {
@@ -32,7 +32,7 @@ pipeline {
             steps {
                 script {
                     ccs.each { cc ->
-                        echo "-- Starting Build with ${cc} --"
+                        echo "-- Starting ${cc} Build --"
                         sh "CC=${cc} make -B -j\$(nproc)"
                     }
                 }
@@ -51,7 +51,7 @@ pipeline {
             steps {
                 script {
                     ccs.each { cc ->
-                        echo "-- Running Tests with ${cc} --"
+                        echo "-- Running ${cc} Tests --"
                         sh "CC=${cc} make -B vgcheck"
                     }
                 }
