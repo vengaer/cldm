@@ -155,6 +155,9 @@ struct cldm_ht_entry *cldm_ht_remove(struct cldm_ht *restrict ht, struct cldm_ht
     struct cldm_ht_entry *ret;
 
     slot = cldm_ht_probe(ht, entry, false);
+    if(cldm_ht_slot_vacant(slot)) {
+        return 0;
+    }
     ret = slot->ent;
     /* Mark slot as previously occupied */
     slot->status = CLDM_HASH_VACANT;
