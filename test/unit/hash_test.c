@@ -190,3 +190,13 @@ TEST(cldm_ht_capacity_is_prime) {
 
     cldm_ht_free(&ht);
 }
+
+TEST(cldm_ht_repeated_removal) {
+    struct cldm_ht ht = cldm_ht_init();
+    struct cldm_ht_entry entry;
+    entry = cldm_ht_mkentry_str("foo");
+    ASSERT_TRUE(cldm_ht_insert(&ht, &entry));
+    ASSERT_TRUE(cldm_ht_remove(&ht, &entry));
+    ASSERT_FALSE(cldm_ht_remove(&ht, &entry));
+    cldm_ht_free(&ht);
+}
