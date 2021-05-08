@@ -102,14 +102,14 @@ static void cldm_rbtree_balance_insertion(struct cldm_rbnode *restrict n, struct
     }
 }
 
-static void cldm_rbtree_balance_removal(struct cldm_rbnode *restrict n, struct cldm_rbnode **restrict p, struct cldm_rbnode **restrict gp, enum cldm_rbdir dir) {
+static void cldm_rbtree_balance_removal(struct cldm_rbnode *restrict n, struct cldm_rbnode **restrict p, struct cldm_rbnode *restrict gp, enum cldm_rbdir dir) {
     enum cldm_rbdir pdir;
     enum cldm_rbdir gpdir;
 
     struct cldm_rbnode *sibling;
 
     pdir = (enum cldm_rbdir) ((*p)->right == n);
-    gpdir = (enum cldm_rbdir) ((*gp)->right == *p);
+    gpdir = (enum cldm_rbdir) (gp->right == *p);
 
     if(cldm_rbnode_is_red_safe(n, !dir)) {
         link(*p, pdir) = cldm_rbtree_rotate_single(n, dir);
@@ -119,16 +119,16 @@ static void cldm_rbtree_balance_removal(struct cldm_rbnode *restrict n, struct c
         sibling = link(*p, !pdir);
         if(cldm_rbnode_is_red_safe(sibling, cldm_rbdir_left) || cldm_rbnode_is_red_safe(sibling, cldm_rbdir_right)) {
             if(cldm_rbnode_is_red_safe(sibling, pdir)) {
-                link(*gp, gpdir) = cldm_rbtree_rotate_double(*p, pdir);
+                link(gp, gpdir) = cldm_rbtree_rotate_double(*p, pdir);
             }
             else if(cldm_rbnode_is_red_safe(sibling, !pdir)) {
-                link(*gp, gpdir) = cldm_rbtree_rotate_single(*p, pdir);
+                link(gp, gpdir) = cldm_rbtree_rotate_single(*p, pdir);
             }
 
             cldm_rbnode_make_red(n);
-            cldm_rbnode_make_red(link(*gp, gpdir));
-            cldm_rbnode_make_black(link(*gp, gpdir)->left);
-            cldm_rbnode_make_black(link(*gp, gpdir)->right);
+            cldm_rbnode_make_red(link(gp, gpdir));
+            cldm_rbnode_make_black(link(gp, gpdir)->left);
+            cldm_rbnode_make_black(link(gp, gpdir)->right);
         }
         else {
             cldm_rbnode_make_red(n);
@@ -277,7 +277,7 @@ struct cldm_rbnode *cldm_rbtree_remove(struct cldm_rbtree *restrict tree, struct
 
         /* Balance while descending */
         if(!cldm_rbnode_is_red(n) && !cldm_rbnode_is_red_safe(n, dir)) {
-            cldm_rbtree_balance_removal(n, &p, &gp, dir);
+            cldm_rbtree_balance_removal(n, &p, gp, dir);
         }
 
         gp = p;
