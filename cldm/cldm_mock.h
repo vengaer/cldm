@@ -364,11 +364,13 @@ enum cldm_opmode {
     cldm_generate_mock_ctx(utype, rettype, name, void)
 #endif
 
-#define CLDM_MOCK_FUNCTION(rettype, ...)                                                                            \
-    cldm_cat_expand(cldm_mock_function, cldm_count(__VA_ARGS__))(rettype cldm_cat_expand(cldm_rv_, __LINE__),       \
-                                                                    cldm_cat_expand(cldm_rv_, __LINE__) =,          \
-                                                                    return cldm_cat_expand(cldm_rv_, __LINE__),     \
-                                                                    rettype, rettype, __VA_ARGS__)
+#define CLDM_MOCK_FUNCTION(rettype, ...)                                                                                \
+    cldm_cat_expand(cldm_mock_function, cldm_count(__VA_ARGS__))(rettype cldm_cat_expand(cldm_rv_,__LINE__);            \
+                                                                 memset(&cldm_cat_expand(cldm_rv_,__LINE__), 0,         \
+                                                                        sizeof(cldm_cat_expand(cldm_rv_,__LINE__))),    \
+                                                                 cldm_cat_expand(cldm_rv_, __LINE__) =,                 \
+                                                                 return cldm_cat_expand(cldm_rv_, __LINE__),            \
+                                                                 rettype, rettype, __VA_ARGS__)
 
 #define CLDM_MOCK_FUNCTION0(rettype, ...)   \
     cldm_cat_expand(cldm_mock_function0_, cldm_count(__VA_ARGS__))(rettype, __VA_ARGS__)
