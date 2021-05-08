@@ -52,11 +52,7 @@ pipeline {
                 script {
                     ccs.each { cc ->
                         echo "-- Running Tests with ${cc} --"
-                        sh """
-                            CC=${cc} make -B -j\$(nproc) cldmtest
-                            LD_LIBRARY_PATH=. valgrind ./cldmtest
-                            make functional
-                        """
+                        sh "CC=${cc} make -B vgcheck"
                     }
                 }
             }

@@ -142,7 +142,11 @@ functional:
 
 .PHONY: unit
 unit: $(cldmtest)
-	$(QUIET)LD_LIBRARY_PATH=$(root) ./$<
+	$(QUIET)LD_LIBRARY_PATH=$(root) $(UNITPREFIX) ./$<
+
+.PHONY: vgunit
+vgunit: UNITPREFIX := valgrind
+vgunit: unit
 
 .PHONY: fuzz
 fuzz: $(cldmfuzz)
@@ -152,6 +156,9 @@ test: unit functional
 
 .PHONY: check
 check: test
+
+.PHONY: vgcheck
+vgcheck: vgunit functional
 
 .PHONY: fuzzrun
 fuzzrun: $(call require-fuzztarget,fuzzrun)
