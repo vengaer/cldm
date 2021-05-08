@@ -177,7 +177,7 @@ static bool cldm_argp_partition(struct cldm_argp_ctx *restrict ctx, unsigned cha
     }
 
     memcpy(&argv[1], tmp, lidx * sizeof(*tmp));
-    memcpy(&argv[lidx + 1], &tmp[argc], hidx * sizeof(*tmp));
+    memcpy(&argv[lidx + 1], &tmp[argc], (hidx - argc) * sizeof(*tmp));
     ctx->args->posidx = lidx + 1;
 
     free(tmp);
