@@ -198,3 +198,49 @@ int cldm_io_remove_captured_stderr(void) {
     }
     return res;
 }
+
+bool cldm_io_capture_stream(enum cldm_capture capture) {
+    if((capture & cldm_capture_stdout) && cldm_io_capture_stdout()) {
+        cldm_err("Error redirecting stdout");
+        false;
+    }
+
+    if((capture & cldm_capture_stderr) && cldm_io_capture_stderr()) {
+        cldm_err("Error redirecting stderr");
+        false;
+    }
+
+    return true;
+
+}
+
+void cldm_io_capture_dump(enum cldm_capture capture) {
+    if((capture & cldm_capture_stdout) && cldm_io_dump_captured_stdout()) {
+        cldm_warn("Could not read captured stdout");
+    }
+
+    if((capture & cldm_capture_stderr) && cldm_io_dump_captured_stderr()) {
+        cldm_warn("Could not read captured stderr");
+    }
+
+}
+
+void cldm_io_capture_restore(enum cldm_capture capture) {
+
+    if(capture & cldm_capture_stdout) {
+        cldm_io_remove_captured_stdout();
+        if(cldm_stdout) {
+            if(cldm_io_restore_stdout()) {
+                cldm_warn("Failed to restore stdout");
+            }
+        }
+    }
+    if(capture & cldm_capture_stderr) {
+        cldm_io_remove_captured_stderr();
+        if(cldm_stderr) {
+            if(cldm_io_restore_stderr()) {
+                cldm_warn("Failed to restore stderr");
+            }
+        }
+    }
+}

@@ -3,6 +3,7 @@
 
 #include "cldm_macro.h"
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -31,6 +32,10 @@ int cldm_io_restore_stderr(void);
 
 int cldm_io_remove_captured_stdout(void);
 int cldm_io_remove_captured_stderr(void);
+
+bool cldm_io_capture_stream(enum cldm_capture capture);
+void cldm_io_capture_dump(enum cldm_capture capture);
+void cldm_io_capture_restore(enum cldm_capture capture);
 
 #define cldm_io_redirect(...)   \
     cldm_overload(cldm_io_redirect, __VA_ARGS__)

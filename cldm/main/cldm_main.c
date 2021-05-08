@@ -13,46 +13,6 @@
 
 #include <sys/types.h>
 
-static bool cldm_capture(void) {
-    if(cldm_io_capture_stdout()) {
-        cldm_err("Error redirecting stdout");
-        false;
-    }
-
-    if(cldm_io_capture_stderr()) {
-        cldm_err("Error redirecting stderr");
-        false;
-    }
-
-    return true;
-}
-
-static void cldm_dump_capture(void) {
-    if(cldm_io_dump_captured_stdout()) {
-        cldm_warn("Could not read captured stdout");
-    }
-
-    if(cldm_io_dump_captured_stderr()) {
-        cldm_warn("Could not read captured stderr");
-    }
-}
-
-static void cldm_restore_captures(void) {
-    cldm_io_remove_captured_stdout();
-    cldm_io_remove_captured_stderr();
-
-    if(cldm_stdout) {
-        if(cldm_io_restore_stdout()) {
-            cldm_warn("Failed to restore stdout");
-        }
-    }
-    if(cldm_stderr) {
-        if(cldm_io_restore_stderr()) {
-            cldm_warn("Failed to restore stderr");
-        }
-    }
-}
-
 int main(int argc, char **argv) {
     int status;
     struct cldm_elfmap map;
@@ -86,20 +46,17 @@ int main(int argc, char **argv) {
         goto epilogue;
     }
 
-    if(args.capture && !cldm_capture()) {
+    if(!cldm_io_capture_stream(args.capture)) {
         goto epilogue;
     }
 
     status = cldm_collect_and_run(&map, args.fail_fast, &argv[args.posidx], (unsigned)argc - args.posidx);
 
-    if(args.capture) {
-        /* Print captured output */
-        cldm_dump_capture();
-    }
+    cldm_io_capture_dump(args.capture);
 
 epilogue:
     cldm_unmap_elf(&map);
-    cldm_restore_captures();
+    cldm_io_capture_restore(args.capture);
 
     return status;
 }
