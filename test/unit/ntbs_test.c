@@ -24,29 +24,6 @@ TEST(cldm_strscpy) {
     ASSERT_EQ(dst[strlen(src)], 0);
 }
 
-TEST(cldm_for_each_word) {
-    char const *str = "a string with spaces";
-    char const *words[] = {
-        "a",
-        "string",
-        "with",
-        "spaces"
-    };
-    char *iter;
-    unsigned idx = 0;
-
-    cldm_for_each_word(iter, str) {
-        ASSERT_EQ(strcmp(words[idx++], iter), 0);
-    }
-    ASSERT_EQ(idx, 4);
-    str = "a;string;with;spaces";
-    idx = 0;
-    cldm_for_each_word(iter, str, ';') {
-        ASSERT_EQ(strcmp(words[idx++], iter), 0);
-    }
-    ASSERT_EQ(idx, 4);
-}
-
 TEST(cldm_basename) {
     ASSERT_EQ(strcmp("foo", cldm_basename("bar/foo")), 0);
     ASSERT_EQ(strcmp("foo", cldm_basename("foo")), 0);

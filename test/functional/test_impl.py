@@ -11,34 +11,6 @@ from util import *
 
 __TARGET = 'makegen_test'
 
-def test_for_each_word():
-    string = 'a list of words to test'
-
-    cgen = CGen('main.c')
-    cgen.append_include('cldm_ntbs.h', system_header=False)                     \
-        .append_include('stdio.h')                                              \
-        .append_include('string.h')
-    with cgen.open_function('int', 'main'):
-        cgen.append_line('char *iter;')
-        with cgen.open_scope('cldm_for_each_word(iter, "{}")'.format(string)):
-            cgen.append_line('printf("%s\\n", iter);')
-    cgen.write()
-
-    mgen = Makegen(__TARGET, src='main.c')
-    mgen.adjust('CFLAGS', '-fPIC', Mod.REMOVE)
-    mgen.adjust('LDFLAGS', '-shared', Mod.REMOVE)
-    mgen.adjust('LDFLAGS', '-L{}'.format(project_root), Mod.APPEND)
-    mgen.adjust('LDLIBS', '-lcldm')
-    mgen.export('LD_LIBRARY_PATH', project_root)
-    mgen.generate()
-
-    assert exec_bash('make -C {}'.format(working_dir))[0] == 0
-    retval, output, _ = exec_bash('make -sC {} run'.format(working_dir))
-    assert retval == 0
-    output = output.decode('utf-8').split('\n')
-    output = output[:len(output) - 1]
-    assert string.split(' ') == output
-
 def test_alignof():
     typelist = ['char', 'short', 'int', 'long', 'long long', 'void *']
     expected = '1 ' * len(typelist)
