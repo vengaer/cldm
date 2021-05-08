@@ -258,6 +258,11 @@ bool cldm_argp_parse(struct cldm_args *restrict args, int argc, char **restrict 
         .capture = cldm_capture_all
     };
 
+    if(argc > CLDM_ARGP_MAX_PARAMS) {
+        cldm_err("At most %d command line parameters are supported", CLDM_ARGP_MAX_PARAMS);
+        return false;
+    }
+
     ctx = (struct cldm_argp_ctx) {
         .args = args,
         .index = 1,
