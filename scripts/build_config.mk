@@ -11,4 +11,12 @@ $(if $(findstring $(MAKECMDGOALS),test check),
       $(if $(findstring $(MAKECMDGOALS),functional),
           $(eval build_config := functional),
         $(eval build_config := libcldm)))))
+$(call set-build-config-flags)
+endef
+
+# $(call set-build-config-flags)
+define set-build-config-flags
+$(if $(findstring fuzz,$(build_config)),
+    $(eval CPPFLAGS += -DCLDM_SUPPRESS_LOGGING))
+
 endef
