@@ -14,12 +14,23 @@ struct cldm_fuzzentry {
     int(*entry)(uint8_t const *, size_t);
 };
 
+static struct cldm_fuzzentry const entrypoints[] = {
+    { "avx2_strscpy", avx2_strscpy_fuzz },
+    { "rbtree",       rbtree_fuzz       },
+    { "argp",         argp_fuzz         }
+};
+
+void usage(void) {
+    struct cldm_fuzzentry const *iter;
+    puts("cldm -- fuzzing\n");
+    puts("The fuzzing target is read from the CLDM_FUZZTARGET environment variable\nValid options are:");
+    cldm_for_each(iter, entrypoints) {
+        printf("  %s\n", iter->env);
+    }
+    puts("");
+}
+
 int LLVMFuzzerTestOneInput(uint8_t const *data, size_t size) {
-    struct cldm_fuzzentry const entrypoints[] = {
-        { "avx2_strscpy", avx2_strscpy_fuzz },
-        { "rbtree",       rbtree_fuzz       },
-        { "argp",         argp_fuzz         }
-    };
     char *target;
     struct cldm_fuzzentry const *iter;
     int(*entry)(uint8_t const *, size_t);
@@ -28,6 +39,7 @@ int LLVMFuzzerTestOneInput(uint8_t const *data, size_t size) {
 
     if(!target) {
         fputs("CLDM_FUZZTARGET not set\n", stderr);
+        usage();
         abort();
     }
 
