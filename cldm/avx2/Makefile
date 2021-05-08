@@ -1,5 +1,5 @@
 trivial_module := y
-required_by    := lcldm
+required_by    := lcldm cldmfuzz
 module_lang    := asm
 
 ifndef module_name

@@ -1,5 +1,5 @@
 trivial_module := y
-required_by    := lcldm
+required_by    := lcldm cldmfuzz
 
 $(call include-module,main)
 $(call include-module,configure)

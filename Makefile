@@ -61,7 +61,6 @@ testldlibs  := $(patsubst lib%,-l%,$(libstem)) $(patsubst lib%.a,-l%,$(lcldm_mai
 
 fuzzcflags  := $(fuzzinstr) $(CFLAGS)
 fuzzldflags := -L$(root) $(fuzzinstr)
-fuzzldlibs  := $(patsubst lib%,-l%,$(libstem))
 
 ARFLAGS     := -rcs
 LNFLAGS     := -sf
@@ -99,13 +98,13 @@ $(lcldm): $(lcldm_obj)
 	$(info [LD]  $@)
 	$(QUIET)$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 
-$(cldmtest): $(cldmtest_obj) $(link) $(lcldm_main)
+$(cldmtest): $($(cldmtest)_obj) $(link) $(lcldm_main)
 	$(info [LD]  $@)
 	$(QUIET)$(CC) -o $@ $(cldmtest_obj) $(testldflags) $(testldlibs)
 
-$(cldmfuzz): $(cldmfuzz_obj) $(link)
+$(cldmfuzz): $($(cldmfuzz)_obj) $(link)
 	$(info [LD]  $@)
-	$(QUIET)$(FUZZCC) -o $@ $(cldmfuzz_obj) $(fuzzldflags) $(fuzzldlibs)
+	$(QUIET)$(FUZZCC) -o $@ $(cldmfuzz_obj) $(fuzzldflags)
 
 $(lcldm_main): $(lcldm_main_obj)
 	$(info [AR]  $@)
