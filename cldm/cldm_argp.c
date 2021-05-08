@@ -11,7 +11,6 @@
 #include <string.h>
 
 enum { CLDM_ARGP_SWITCH_MAX_SIZE = 64 };
-enum { CLDM_ARGP_MAX_PARAMS = 128 };
 
 enum { CLDM_ARGP_LONG_SWITCH_INDENT = 13 };
 enum { CLDM_ARGP_DOC_INDENT = 48 };

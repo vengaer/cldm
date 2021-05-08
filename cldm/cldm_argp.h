@@ -6,6 +6,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+enum { CLDM_ARGP_MAX_PARAMS = 128 };
+
 struct cldm_args {
     char const *redirect;
     size_t posidx;

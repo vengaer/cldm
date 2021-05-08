@@ -1,3 +1,4 @@
+#include "argp_fuzz.h"
 #include "avx2_strscpy_fuzz.h"
 #include "rbtree_fuzz.h"
 
@@ -16,7 +17,8 @@ struct cldm_fuzzentry {
 int LLVMFuzzerTestOneInput(uint8_t const *data, size_t size) {
     struct cldm_fuzzentry const entrypoints[] = {
         { "avx2_strscpy", avx2_strscpy_fuzz },
-        { "rbtree",       rbtree_fuzz }
+        { "rbtree",       rbtree_fuzz       },
+        { "argp",         argp_fuzz         }
     };
     char *target;
     struct cldm_fuzzentry const *iter;
