@@ -3,6 +3,7 @@ class config {
 }
 
 fuzztargets = ['avx2_strscpy', 'rbtree']
+ccs = ['gcc', 'clang']
 
 pipeline {
     agent none
@@ -29,8 +30,12 @@ pipeline {
                 docker { image "${DOCKER_IMAGE}" }
             }
             steps {
-                echo '-- Starting Build --'
-                sh 'make -j$(nproc)'
+                script {
+                    ccs.each { cc ->
+                        echo "-- Starting Build with ${cc} --"
+                        sh "CC=${cc} make -B -j\$(nproc)"
+                    }
+                }
             }
         }
         stage('Test') {
@@ -44,12 +49,16 @@ pipeline {
                 docker { image "${DOCKER_IMAGE}" }
             }
             steps {
-                echo '-- Running Tests --'
-                sh '''
-                    make -j$(nproc) cldmtest
-                    LD_LIBRARY_PATH=. valgrind ./cldmtest
-                    make functional
-                '''
+                script {
+                    ccs.each { cc ->
+                        echo "-- Running Tests with ${cc} --"
+                        sh """
+                            CC=${cc} make -B -j\$(nproc) cldmtest
+                            LD_LIBRARY_PATH=. valgrind ./cldmtest
+                            make functional
+                        """
+                    }
+                }
             }
         }
         stage('Fetch Corpora') {
