@@ -6,6 +6,13 @@
 #include <stdio.h>
 #include <unistd.h>
 
+enum cldm_capture {
+    cldm_capture_none,
+    cldm_capture_stdout,
+    cldm_capture_stderr,
+    cldm_capture_all
+};
+
 extern FILE *cldm_stdout;
 extern FILE *cldm_stderr;
 

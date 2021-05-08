@@ -1,498 +1,359 @@
-#include "cldm_algo.h"
 #include "cldm_argp.h"
+#include "cldm_dfa.h"
 #include "cldm_log.h"
-#include "cldm_ntbs.h"
 #include "cldm_macro.h"
+#include "cldm_ntbs.h"
 #include "cldm_rtassert.h"
 
+#include <limits.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <sys/types.h>
+enum { CLDM_ARGP_SWITCH_MAX_SIZE = 64 };
+enum { CLDM_ARGP_MAX_PARAMS = 128 };
 
-enum { CLDM_ARGP_OPTINDENT = 2 };
-enum { CLDM_ARGP_ADJ = 40 };
+enum { CLDM_ARGP_LONG_SWITCH_INDENT = 13 };
+enum { CLDM_ARGP_DOC_INDENT = 48 };
+enum { CLDM_ARGP_BUFSIZE = 256 };
 
-static char cldm_argp_short[] = { 'h', 'V', 'x', 's' };
-static char const *cldm_argp_long[] = { "help", "version", "fail-fast", "no-capture" };
-static char const *cldm_argp_posarg = "[FILE]...";
-static char const *cldm_argp_swdesc[] = {
-    "Print this help message and exit.",
-    "Print version and exit.",
-    "Exit after first failed test, if any.",
-    "Do not capture stdout and stderr. This will cause potential output to be mixed with test logs"
-};
-static char const *cldm_argp_posdesc = "Run only tests specified in the space-separated file list FILE..., all files provided must have been compiled into the binary.\n"
-                                       "The files are identified by their respective basenames rather than full paths.";
-static struct cldm_nfa_state2 **cldm_argp_states;
-
-enum cldm_nfa_action {
-    cldm_nfa_reject,
-    cldm_nfa_accept,
-    cldm_nfa_pending
+enum cldm_argp_paramtype {
+    cldm_argp_positional,
+    cldm_argp_switch_short,
+    cldm_argp_switch_long
 };
 
-enum cldm_nfa_metachar {
-    cldm_nfa_epsilon = 128,
-    cldm_nfa_end,
-    cldm_nfa_any
+struct cldm_argp_ctx;
+
+typedef bool(*cldm_argp_handle)(struct cldm_argp_ctx *restrict , char const *restrict );
+
+struct cldm_argp_ctx {
+    cldm_argp_handle assign_pending;
+    struct cldm_args *args;
+    int index;
+    bool treat_as_posparam;
+    bool pending_arg;
 };
 
-struct cldm_nfa_edge {
-    unsigned char c;
-    enum cldm_nfa_action *end;
+struct cldm_argp_param {
+    char p_short;
+    char const *p_long;
+    char const *p_argument;
+    cldm_argp_handle handle;
 };
 
-enum cldm_nfa_argtype {
-    cldm_argtype_none,
-    cldm_argtype_short,
-    cldm_argtype_long,
-    cldm_argtype_posparam,
-    cldm_argtype_divider
+static bool cldm_argp_set_verbose(struct cldm_argp_ctx *restrict, char const *restrict);
+static bool cldm_argp_set_version(struct cldm_argp_ctx *restrict, char const *restrict);
+static bool cldm_argp_set_help(struct cldm_argp_ctx *restrict, char const *restrict);
+static bool cldm_argp_set_fail_fast(struct cldm_argp_ctx *restrict, char const *restrict);
+static bool cldm_argp_set_capture(struct cldm_argp_ctx *restrict, char const *restrict);
+static bool cldm_argp_set_capture_none(struct cldm_argp_ctx *restrict, char const *restrict);
+static bool cldm_argp_set_posidx(struct cldm_argp_ctx *restrict, char const *restrict);
+
+static struct cldm_argp_param cldm_argp_params[] = {
+    { 'v', "--verbose",      0,        cldm_argp_set_verbose      },
+    { 'V', "--version",      0,        cldm_argp_set_version      },
+    { 'h', "--help",         0,        cldm_argp_set_help         },
+    {  0,  "--usage",        0,        cldm_argp_set_help         },
+    { 'x', "--fail-fast",    0,        cldm_argp_set_fail_fast    },
+    { 'c', "--capture",      "STREAM", cldm_argp_set_capture      },
+    { 's', "--capture-none", 0,        cldm_argp_set_capture_none },
+    {  0,  "--",             0,        cldm_argp_set_posidx       }
 };
 
-enum {
-    CLDM_SHOPT_NONE = 0,
+static char const *cldm_argp_params_doc[] = {
+    "Enable verbose output",
+    "Print version and exit",
+    "Print this help message and exit",
+    "Same as --help",
+    "Exit as soon as a test fails",
+    "Capture output from STREAM and print it once all tests have finished. Valid options are 'none', 'stdout', 'stderr' and 'all'",
+    "Same as --capture=none",
 };
 
-/* Emulate flexible array member in static context */
-#define cldm_nfa_genstate(size)                     \
-    struct cldm_cat_expand(cldm_nfa_state, size) {  \
-        enum cldm_nfa_action action;                \
-        enum cldm_nfa_argtype argtype;              \
-        unsigned char shopt;                        \
-        struct cldm_nfa_edge edges[size / 2];       \
-    }
+static char const *cldm_argp_positional_doc = "If a [FILE]... list is specified, cldm will run only tests contained in the files specified.\n"
+                                              "The parameters are expected to contain only basenames, full paths are not supported.";
 
-/* Define structs */
-cldm_nfa_genstate(2);
-cldm_nfa_genstate(4);
-cldm_nfa_genstate(6);
-cldm_nfa_genstate(8);
-cldm_nfa_genstate(10);
-cldm_nfa_genstate(12);
-cldm_nfa_genstate(14);
-cldm_nfa_genstate(16);
+static char const *cldm_argp_bug_address = "vilhelm.engstrom@tuta.io";
 
-#define cldm_nfa_state(size)    \
-    static struct cldm_cat_expand(cldm_nfa_state, size)
+static char const *cldm_argp_valid_captures[] = {
+    "none",
+    "stdout",
+    "stderr",
+    "all"
+};
 
-#define cldm_nfa_transition(ch, state)  \
-    { .c = (ch), .end = &(cldm_cat_expand(cldm_nfa_state_,state)).action }
+static bool cldm_argp_set_verbose(struct cldm_argp_ctx *restrict ctx, char const *restrict optarg) {
+    ctx->args->verbose = true;
+    return optarg;
+}
 
-#define cldm_nfa_defstate(name, act, atype, opt, ...)                                   \
-    cldm_nfa_state(cldm_count(__VA_ARGS__,,)) cldm_cat_expand(cldm_nfa_state_,name) = { \
-        .action = act,                                                                  \
-        .argtype = atype,                                                               \
-        .shopt = opt,                                                                   \
-        .edges = {                                                                      \
-            __VA_ARGS__,                                                                \
-            cldm_nfa_transition(cldm_nfa_any, reject)                                   \
-        }                                                                               \
-    }
+static bool cldm_argp_set_version(struct cldm_argp_ctx *restrict ctx, char const *restrict optarg) {
+    ctx->args->version = true;
+    return optarg;
+}
 
-cldm_nfa_state(14) cldm_nfa_state_sh_help;
-cldm_nfa_state(14) cldm_nfa_state_sh_version;
-cldm_nfa_state(14) cldm_nfa_state_sh_fail_fast;
-cldm_nfa_state(14) cldm_nfa_state_sh_no_capture;
+static bool cldm_argp_set_help(struct cldm_argp_ctx *restrict ctx, char const *restrict optarg) {
+    ctx->args->help = true;
+    return optarg;
+}
 
-cldm_nfa_defstate(reject,        cldm_nfa_reject, cldm_argtype_none, CLDM_SHOPT_NONE, cldm_nfa_transition(cldm_nfa_any, reject));
-cldm_nfa_defstate(accept,        cldm_nfa_accept, cldm_argtype_none, CLDM_SHOPT_NONE, cldm_nfa_transition(cldm_nfa_any, accept));
+static bool cldm_argp_set_fail_fast(struct cldm_argp_ctx *restrict ctx, char const *restrict optarg) {
+    ctx->args->fail_fast = true;
+    return optarg;
+}
 
-/* state -s */
-cldm_nfa_defstate(sh_no_capture, cldm_nfa_accept,  cldm_argtype_short, 's',
-    cldm_nfa_transition('s',          sh_no_capture),
-    cldm_nfa_transition('V',          sh_version),
-    cldm_nfa_transition('x',          sh_fail_fast),
-    cldm_nfa_transition('h',          sh_help),
-    cldm_nfa_transition(cldm_nfa_end, accept),
-    cldm_nfa_transition(cldm_nfa_any, reject)
-);
+static bool cldm_argp_set_capture(struct cldm_argp_ctx *restrict ctx, char const *restrict optarg) {
+    bool success;
+    char const **iter;
 
-/* state -h */
-cldm_nfa_defstate(sh_help,       cldm_nfa_accept,  cldm_argtype_short, 'h',
-    cldm_nfa_transition('s',          sh_no_capture),
-    cldm_nfa_transition('V',          sh_version),
-    cldm_nfa_transition('x',          sh_fail_fast),
-    cldm_nfa_transition('h',          sh_help),
-    cldm_nfa_transition(cldm_nfa_end, accept),
-    cldm_nfa_transition(cldm_nfa_any, reject)
-);
-
-/* state -V */
-cldm_nfa_defstate(sh_version,    cldm_nfa_accept,  cldm_argtype_short, 'V',
-    cldm_nfa_transition('s',          sh_no_capture),
-    cldm_nfa_transition('V',          sh_version),
-    cldm_nfa_transition('x',          sh_fail_fast),
-    cldm_nfa_transition('h',          sh_help),
-    cldm_nfa_transition(cldm_nfa_end, accept),
-    cldm_nfa_transition(cldm_nfa_any, reject)
-);
-
-/* state -x */
-cldm_nfa_defstate(sh_fail_fast,  cldm_nfa_accept,  cldm_argtype_short, 'x',
-    cldm_nfa_transition('s',          sh_no_capture),
-    cldm_nfa_transition('V',          sh_version),
-    cldm_nfa_transition('x',          sh_fail_fast),
-    cldm_nfa_transition('h',          sh_help),
-    cldm_nfa_transition(cldm_nfa_end, accept),
-    cldm_nfa_transition(cldm_nfa_any, reject)
-);
-
-/* Positional parameter */
-cldm_nfa_defstate(posparam,      cldm_nfa_pending, cldm_argtype_posparam, CLDM_SHOPT_NONE,
-    cldm_nfa_transition(cldm_nfa_end, accept),
-    cldm_nfa_transition(cldm_nfa_any, posparam)
-);
-
-/* state --help */
-cldm_nfa_defstate(lo_help,       cldm_nfa_pending, cldm_argtype_long, 'h',
-    cldm_nfa_transition(cldm_nfa_end, accept)
-);
-
-/* state --hel */
-cldm_nfa_defstate(lo_hel,        cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('p',          lo_help)
-);
-
-/* state --he */
-cldm_nfa_defstate(lo_he,         cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('l',          lo_hel)
-);
-
-/* state --h */
-cldm_nfa_defstate(lo_h,          cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('e',          lo_he)
-);
-
-/* state --fail-fast */
-cldm_nfa_defstate(lo_fail_fast, cldm_nfa_pending, cldm_argtype_long, 'x',
-    cldm_nfa_transition(cldm_nfa_end, accept)
-);
-
-/* state --fail-fas */
-cldm_nfa_defstate(lo_fail_fas,   cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('t',          lo_fail_fast)
-);
-
-/* state --fail-fa */
-cldm_nfa_defstate(lo_fail_fa,    cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('s',          lo_fail_fas)
-);
-
-/* state --fail-f */
-cldm_nfa_defstate(lo_fail_f,     cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('a',          lo_fail_fa)
-);
-
-/* state --fail- */
-cldm_nfa_defstate(lo_fail_,      cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('f',          lo_fail_f)
-);
-
-/* state --fail */
-cldm_nfa_defstate(lo_fail,       cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('-',          lo_fail_)
-);
-
-/* state --fai */
-cldm_nfa_defstate(lo_fai,        cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('l',          lo_fail)
-);
-
-/* state --fa */
-cldm_nfa_defstate(lo_fa,         cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('i',          lo_fai)
-);
-
-/* state --f */
-cldm_nfa_defstate(lo_f,          cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('a',          lo_fa)
-);
-
-/* state --version */
-cldm_nfa_defstate(lo_version,    cldm_nfa_pending, cldm_argtype_long, 'V',
-    cldm_nfa_transition(cldm_nfa_end, accept)
-);
-
-/* state --versio */
-cldm_nfa_defstate(lo_versio,     cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('n',          lo_version)
-);
-
-/* state --versi */
-cldm_nfa_defstate(lo_versi,      cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('o',          lo_versio)
-);
-
-/* state --vers */
-cldm_nfa_defstate(lo_vers,       cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('i',          lo_versi)
-);
-
-/* state --ver */
-cldm_nfa_defstate(lo_ver,        cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('s',          lo_vers)
-);
-
-/* state --ve */
-cldm_nfa_defstate(lo_ve,         cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('r',          lo_ver)
-);
-
-/* state --v */
-cldm_nfa_defstate(lo_v,          cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('e',          lo_ve)
-);
-
-/* state --no-capture */
-cldm_nfa_defstate(lo_no_capture, cldm_nfa_pending, cldm_argtype_long, 's',
-    cldm_nfa_transition(cldm_nfa_end, accept)
-);
-
-/* state --no-captur */
-cldm_nfa_defstate(lo_no_captur,  cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('e',          lo_no_capture)
-);
-
-/* state --no-captu */
-cldm_nfa_defstate(lo_no_captu,   cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('r',          lo_no_captur)
-);
-
-/* state --no-capt */
-cldm_nfa_defstate(lo_no_capt,    cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('u',          lo_no_captu)
-);
-
-/* state --no-cap */
-cldm_nfa_defstate(lo_no_cap,     cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('t',          lo_no_capt)
-);
-
-/* state --no-ca */
-cldm_nfa_defstate(lo_no_ca,      cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('p',          lo_no_cap)
-);
-
-/* state --no-c */
-cldm_nfa_defstate(lo_no_c,       cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('a',          lo_no_ca)
-);
-
-/* state --no- */
-cldm_nfa_defstate(lo_no_,        cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('c',          lo_no_c)
-);
-
-/* state --no */
-cldm_nfa_defstate(lo_no,         cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('-',          lo_no_)
-);
-
-/* state --n */
-cldm_nfa_defstate(lo_n,          cldm_nfa_pending, cldm_argtype_long, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('o',          lo_no)
-);
-
-/* state -- */
-cldm_nfa_defstate(double_dash,   cldm_nfa_pending, cldm_argtype_divider, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('n',          lo_n),
-    cldm_nfa_transition('h',          lo_h),
-    cldm_nfa_transition('f',          lo_f),
-    cldm_nfa_transition('v',          lo_v),
-    cldm_nfa_transition(cldm_nfa_end, accept)
-);
-
-/* state - */
-cldm_nfa_defstate(single_dash,   cldm_nfa_pending, cldm_argtype_short, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('s',          sh_no_capture),
-    cldm_nfa_transition('V',          sh_version),
-    cldm_nfa_transition('x',          sh_fail_fast),
-    cldm_nfa_transition('h',          sh_help),
-    cldm_nfa_transition('-',          double_dash),
-    cldm_nfa_transition(cldm_nfa_end, reject),
-    cldm_nfa_transition(cldm_nfa_any, reject)
-);
-
-cldm_nfa_defstate(start,         cldm_nfa_pending, cldm_argtype_none, CLDM_SHOPT_NONE,
-    cldm_nfa_transition('-',              single_dash),
-    cldm_nfa_transition(cldm_nfa_epsilon, posparam)
-);
-
-static bool cldm_nfa_edge_match(char const **restrict p, struct cldm_nfa_edge const *restrict edge) {
-    switch(edge->c) {
-        case cldm_nfa_any:
-            ++(*p);
-            return true;
-        case cldm_nfa_end:
-            return !(**p);
-        case cldm_nfa_epsilon:
-            return true;
-        default:
-            break;
-    }
-
-    if(**p == (char)edge->c) {
-        ++(*p);
+    if(!*optarg) {
+        ctx->pending_arg = true;
+        ctx->assign_pending = cldm_argp_set_capture;
         return true;
     }
 
-    return false;
-}
-
-static void cldm_argp_setarg(int opt, struct cldm_args *args) {
-    switch(opt) {
-        case 'h':
-            args->help = true;
-            break;
-        case 'V':
-            args->version = true;
-            break;
-        case 's':
-            args->no_capture = true;
-            break;
-        case 'x':
-            args->fail_fast = true;
-            break;
-        default:
-            cldm_rtassert(false, "Invalid argument index %d", opt);
-    }
-}
-
-static inline bool cldm_nfa_accept_shopt(struct cldm_nfa_state2 const *state) {
-    return state->action == cldm_nfa_accept && state->argtype == cldm_argtype_short;
-}
-
-static inline bool cldm_nfa_valid_state(struct cldm_nfa_state2 const *state) {
-    return state->action == cldm_nfa_pending || cldm_nfa_accept_shopt(state);
-}
-
-static struct cldm_nfa_state2 *cldm_nfa_simulate(struct cldm_args *restrict args, char **restrict input) {
-    /* (Ab)use the fact that a struct may alias with its first member */
-    union {
-        enum cldm_nfa_action *action;
-        struct cldm_nfa_state2 *state;
-    } s_un;
-    static bool treat_as_posparam = false;
-
-    struct cldm_nfa_state2 *state;
-    char const *p;
-
-    state = 0;
-    s_un.action = treat_as_posparam ? &cldm_nfa_state_posparam.action : &cldm_nfa_state_start.action;
-    p = input[0];
-
-    while(cldm_nfa_valid_state(s_un.state)) {
-        /* Try each edge */
-        for(unsigned i = 0;; i++) {
-            if(cldm_nfa_edge_match(&p, &s_un.state->edges[i])) {
-                state = s_un.state;
-                s_un.action = s_un.state->edges[i].end;
-                break;
-            }
-        }
-        /* Accept if valid short option */
-        if(cldm_nfa_accept_shopt(s_un.state)) {
-            cldm_argp_setarg(s_un.state->shopt, args);
-        }
-    }
-
-    if(!*s_un.action) {
-        if(state->argtype == cldm_argtype_short) {
-            cldm_err("Invalid option -- '%c'", *(p - 1));
-        }
-        else {
-            cldm_err("Invalid option '%s'", input[0]);
-        }
-
-        return 0;
-    }
-
-    /* Arg is '--', remaining args are positional parameters */
-    if(state->argtype == cldm_argtype_divider) {
-        treat_as_posparam = true;
-    }
-    /* Valid switch */
-    else if(state->argtype != cldm_argtype_posparam) {
-        cldm_argp_setarg(state->shopt, args);
-    }
-
-    return state;
-}
-
-/* Predicate for cldm_stable_partition */
-static bool cldm_argp_is_posparam(void const *param) {
-    (void)param;
-    static unsigned i = 0;
-    return cldm_argp_states[i++]->argtype != cldm_argtype_posparam;
-}
-
-void cldm_argp_usage(char const *argv0) {
-    char const *basename = cldm_basename(argv0);
-    char *it0;
-    char const **it1;
-    int const swindent = sizeof("- , --");
-
-    cldm_log_raw("%s", basename);
-    cldm_for_each_zip(it0, it1, cldm_argp_short, cldm_argp_long) {
-        cldm_log_raw(" [-%c|--%s]", *it0, *it1);
-    }
-
-    cldm_log(" %s\n", cldm_argp_posarg);
-
-    for(unsigned i = 0; i < cldm_arrsize(cldm_argp_short); i++) {
-        cldm_log("%-*s-%c, --%-*s %s", CLDM_ARGP_OPTINDENT, "", cldm_argp_short[i], CLDM_ARGP_ADJ, cldm_argp_long[i], cldm_argp_swdesc[i]);
-    }
-    cldm_log_raw("%-*s%-*s", CLDM_ARGP_OPTINDENT, "", CLDM_ARGP_ADJ + swindent, cldm_argp_posarg);
-
-    cldm_for_each_word(it0, cldm_argp_posdesc, '\n') {
-        cldm_log_raw("%s\n%-*s", it0, CLDM_ARGP_OPTINDENT + CLDM_ARGP_ADJ + swindent, "");
-    }
-    cldm_log_raw("%s", "\r");
-}
-
-void cldm_argp_version(void) {
-    cldm_log("cldm version " cldm_str_expand(CLDM_VERSION));
-    cldm_log("Report bugs to vilhelm.engstrom@tuta.io");
-}
-
-bool cldm_argp_parse(struct cldm_args *restrict args, int argc, char **restrict argv) {
-    bool success;
-    ssize_t posind;
-
     success = false;
-    *args = (struct cldm_args){ 0 };
+    cldm_for_each(iter, cldm_argp_valid_captures) {
+        if(strcmp(*iter, optarg) == 0) {
+            ctx->args->capture = iter - cldm_argp_valid_captures;
+            success = true;
+            break;
+        }
+    }
 
-    /* For telling positional parameters and switches apart when partitioning */
-    cldm_argp_states = malloc((argc - 1) * sizeof(*cldm_argp_states));
+    if(!success) {
+        cldm_err("Invalid argument '%s' for --capture", optarg);
+    }
 
-    if(!cldm_argp_states) {
-        cldm_err("Could not allocate memory for positional parameters");
+    return success;
+}
+
+static bool cldm_argp_set_capture_none(struct cldm_argp_ctx *restrict ctx, char const *restrict optarg) {
+    ctx->args->capture = cldm_capture_none;
+    return optarg;
+}
+
+static bool cldm_argp_set_posidx(struct cldm_argp_ctx *restrict ctx, char const *restrict optarg) {
+    ctx->treat_as_posparam = true;
+    return optarg;
+}
+
+static bool cldm_argp_partition(struct cldm_argp_ctx *restrict ctx, unsigned char const *restrict posflags, int argc, char **restrict argv) {
+    unsigned lidx;
+    unsigned hidx;
+    char **tmp;
+
+    tmp = malloc(2 * argc * sizeof(*tmp));
+    if(!tmp) {
+        cldm_err("Could not malloc %zu bytes for partitioning", 2 * argc * sizeof(*tmp));
         return false;
     }
 
-    for(int i = 0; i < argc - 1; i++) {
-        cldm_argp_states[i] = cldm_nfa_simulate(args, &argv[i + 1]);
-        if(!cldm_argp_states[i]) {
+    lidx = 0;
+    hidx = argc;
+
+    for(int i = 1; i < argc; i++) {
+        if(posflags[i / CHAR_BIT] & (1 << ((i % CHAR_BIT) - 1))) {
+            tmp[hidx++] = argv[i];
+        }
+        else {
+            tmp[lidx++] = argv[i];
+        }
+    }
+
+    memcpy(&argv[1], tmp, lidx * sizeof(*tmp));
+    memcpy(&argv[lidx + 1], &tmp[argc], hidx * sizeof(*tmp));
+    ctx->args->posidx = lidx + 1;
+
+    free(tmp);
+    return true;
+}
+
+static inline enum cldm_argp_paramtype cldm_argp_paramtype(char const *arg) {
+    return (arg[0] == '-') + (arg[0] == '-' && arg[1] == '-');
+}
+
+static inline bool cldm_argp_valid_simulation_result(char const *res) {
+    return !*res || *res == '=';
+}
+
+static bool cldm_argp_parse_short_switch(struct cldm_argp_ctx *restrict ctx, char const *restrict sw) {
+    struct cldm_argp_param *param;
+    for(++sw; *sw; ++sw) {
+        cldm_for_each(param, cldm_argp_params) {
+            if(param->p_short == *sw) {
+                if(!param->handle(ctx, sw + 1)) {
+                    return false;
+                }
+
+                if(param->p_argument) {
+                    return true;
+                }
+                break;
+            }
+        }
+        if(!param) {
+            cldm_err("Invalid option -- '%c'", *sw);
+            return false;
+        }
+    }
+    return true;
+}
+
+static bool cldm_argp_parse_long_switch(struct cldm_argp_ctx *restrict ctx, struct cldm_dfa const *restrict dfa, char const *restrict sw) {
+    struct cldm_argp_param *param;
+    char const *end;
+
+    end = cldm_dfa_simulate(dfa, sw);
+    if(!cldm_argp_valid_simulation_result(end)) {
+        cldm_err("Unrecognized option: '%s'", sw);
+        return false;
+    }
+
+    cldm_for_each(param, cldm_argp_params) {
+        if(strncmp(param->p_long, sw, end - sw + !*end) == 0) {
+            if(param->p_argument) {
+                if(*end != '=') {
+                    cldm_err("Option %s requires an argument", param->p_long);
+                    return false;
+                }
+                ++end;
+            }
+            if(!param->handle(ctx, end)) {
+                return false;
+            }
+            break;
+        }
+    }
+    cldm_rtassert(param);
+    return true;
+}
+
+bool cldm_argp_parse(struct cldm_args *restrict args, int argc, char **restrict argv) {
+    unsigned char posflags[CLDM_ARGP_MAX_PARAMS / CHAR_BIT] = { 0 };
+    struct cldm_argp_param *param;
+    struct cldm_argp_ctx ctx;
+    struct cldm_dfa dfa;
+    bool success;
+
+    success = false;
+
+    *args = (struct cldm_args) {
+        .posidx = argc,
+        .capture = cldm_capture_all
+    };
+
+    ctx = (struct cldm_argp_ctx) {
+        .args = args,
+        .index = 1,
+        .treat_as_posparam = false
+    };
+
+    if(!cldm_dfa_init(&dfa)) {
+        return false;
+    }
+
+    cldm_for_each(param, cldm_argp_params) {
+        if(param->p_long && !cldm_dfa_add_argument(&dfa, param->p_long)) {
+            cldm_err("Error while adding parameter %s to dfa", param->p_long);
             goto epilogue;
         }
     }
 
-    /* Partition s.t. positional parameters are at the end of argv */
-    posind = cldm_stable_partition(&argv[1], sizeof(*argv), argc - 1, cldm_argp_is_posparam);
+    for(int i = 1; i < argc; i++) {
+        if(ctx.pending_arg) {
+            if(!ctx.assign_pending(&ctx, argv[i])) {
+                goto epilogue;
+            }
+            continue;
+        }
+        switch(!ctx.treat_as_posparam * cldm_argp_paramtype(argv[i])) {
+            case cldm_argp_positional:
+                posflags[i / CHAR_BIT] |= (1 << ((i % CHAR_BIT) - 1));
+                break;
+            case cldm_argp_switch_short:
+                if(!cldm_argp_parse_short_switch(&ctx, argv[i])) {
+                    goto epilogue;
+                }
+                break;
+            case cldm_argp_switch_long:
+                if(!cldm_argp_parse_long_switch(&ctx, &dfa, argv[i])) {
+                    goto epilogue;
+                }
+                break;
+            default:
+                cldm_rtassert(0, "Invalid parameter type");
+        }
+    }
 
-    /* Partition failure */
-    if(posind < 0) {
+    if(!cldm_argp_partition(&ctx, posflags, argc, argv)) {
         goto epilogue;
     }
 
-    /* Account for argv[0] */
-    args->posind = (size_t)posind + 1;
-
     success = true;
 epilogue:
-    free(cldm_argp_states);
+    cldm_dfa_free(&dfa);
 
+    if(!success) {
+        cldm_argp_usage(argv[0]);
+    }
     return success;
+}
+
+void cldm_argp_usage(char const *argv0) {
+    char buffer[CLDM_ARGP_BUFSIZE];
+    char tmp[CLDM_ARGP_BUFSIZE];
+    struct cldm_argp_param *param;
+    char const *basename;
+    char const **doc;
+    size_t tmppos;
+    size_t bufpos;
+
+    cldm_static_assert(cldm_arrsize(cldm_argp_params) - 1 == cldm_arrsize(cldm_argp_params_doc), "Size mismatch between parameters and doc strings");
+
+    basename = strrchr(argv0, '/');
+    basename = basename ? basename + 1 : argv0;
+
+    cldm_log("cldm -- unit test and mocking framework\n");
+    cldm_log("Usage:\n %s [OPTION]... [FILE]...\n", basename);
+    cldm_log("Options:");
+
+    cldm_for_each_zip(doc, param, cldm_argp_params_doc, cldm_argp_params) {
+        tmp[0] = '\0';
+        if(param->p_short) {
+            tmppos = (size_t)snprintf(tmp, sizeof(tmp), "  -%c", param->p_short);
+            cldm_rtassert(tmppos < sizeof(tmp), "Overflow while formatting usage");
+            if(param->p_argument) {
+                tmppos += (size_t)snprintf(tmp + tmppos, sizeof(tmp) - tmppos, " %s", param->p_argument);
+                cldm_rtassert(tmppos < sizeof(tmp), "Overflow while formatting usage");
+            }
+
+            cldm_rtassert(tmppos + 1 < sizeof(tmp), "Overflow while formatting usage");
+            tmp[tmppos++] = ',';
+            tmp[tmppos] = '\0';
+        }
+
+        bufpos = (size_t)snprintf(buffer, sizeof(buffer), "%-*s", CLDM_ARGP_LONG_SWITCH_INDENT, tmp);
+        cldm_rtassert(bufpos < sizeof(buffer), "Overflow while formatting usage");
+
+        if(param->p_long) {
+            tmppos = (size_t)snprintf(tmp, sizeof(tmp), "%s", param->p_long);
+            cldm_rtassert(tmppos < sizeof(tmp), "Overflow while formatting usage");
+            if(param->p_argument) {
+                tmppos += (size_t)snprintf(tmp + tmppos, sizeof(tmp) - tmppos, "=%s", param->p_argument);
+                cldm_rtassert(tmppos < sizeof(tmp), "Overflow while formatting usage");
+            }
+        }
+        bufpos = (size_t)snprintf(buffer + bufpos, sizeof(buffer) - bufpos, "%s", tmp);
+
+        cldm_log("%-*s%s", CLDM_ARGP_DOC_INDENT, buffer, *doc);
+    }
+
+    cldm_log("\n%s", cldm_argp_positional_doc);
+
+}
+void cldm_argp_version(void) {
+    cldm_log("cldm -- version " cldm_str_expand(CLDM_VERSION));
+    cldm_log("Report bugs to %s", cldm_argp_bug_address);
 }

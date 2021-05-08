@@ -86,13 +86,13 @@ int main(int argc, char **argv) {
         goto epilogue;
     }
 
-    if(!args.no_capture && !cldm_capture()) {
+    if(args.capture && !cldm_capture()) {
         goto epilogue;
     }
 
-    status = cldm_collect_and_run(&map, args.fail_fast, &argv[args.posind], (unsigned)argc - args.posind);
+    status = cldm_collect_and_run(&map, args.fail_fast, &argv[args.posidx], (unsigned)argc - args.posidx);
 
-    if(!args.no_capture) {
+    if(args.capture) {
         /* Print captured output */
         cldm_dump_capture();
     }

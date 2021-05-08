@@ -6,6 +6,8 @@ from runner import *
 from util import *
 
 _BINARY='argp_test'
+_HELP_STR = 'cldm -- unit test and mocking framework'
+_VER_STR = r'cldm -- version\s*[0-9.]+'
 
 def gen_runcmd(flags):
     return 'LD_LIBRARY_PATH={} {}/{} {}'.format(project_root, working_dir, _BINARY, flags)
@@ -26,16 +28,16 @@ def test_argp_short_help():
     gen_makefile()
 
     runcmd = gen_runcmd('-h')
-    run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsMatcher(_HELP_STR), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-xh')
-    run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsMatcher(_HELP_STR), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-xh -- --help')
-    run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsMatcher(_HELP_STR), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-- -h')
-    run(ContainsNotMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher(_HELP_STR), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
 def test_argp_short_version():
     cgen = CGen('tests.c')
@@ -44,16 +46,16 @@ def test_argp_short_version():
     gen_makefile()
 
     runcmd = gen_runcmd('-V')
-    run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsMatcher(_VER_STR), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-xV')
-    run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsMatcher(_VER_STR), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-xV -- --help')
-    run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsMatcher(_VER_STR), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-- -V')
-    run(ContainsNotMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher(_VER_STR), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
 def test_argp_short_fail_fast():
     cgen = CGen('tests.c')
@@ -109,16 +111,16 @@ def test_argp_long_help():
     gen_makefile()
 
     runcmd = gen_runcmd('--help')
-    run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsMatcher(_HELP_STR), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-x --fail-fast --help')
-    run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsMatcher(_HELP_STR), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-x --help --')
-    run(ContainsMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsMatcher(_HELP_STR), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-x -- --help')
-    run(ContainsNotMatcher(r'{}\s*(\[-.\|--.*\]\s*)+.*\[FILE\]\.\.\.'.format(_BINARY)), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher(_HELP_STR), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
 def test_argp_long_version():
     cgen = CGen('tests.c')
@@ -127,16 +129,16 @@ def test_argp_long_version():
     gen_makefile()
 
     runcmd = gen_runcmd('--version')
-    run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsMatcher(_VER_STR), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-x --version')
-    run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsMatcher(_VER_STR), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-x --version --')
-    run(ContainsMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsMatcher(_VER_STR), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-- --version')
-    run(ContainsNotMatcher(r'cldm\s*version\s*[0-9.]+'.format(_BINARY)), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher(_VER_STR), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
 def test_argp_long_fail_fast():
     cgen = CGen('tests.c')
@@ -176,13 +178,13 @@ def test_argp_long_no_capture():
     runcmd = gen_runcmd('')
     run(ContainsMatcher(r'Running\s*bar.*pass.*text'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
-    runcmd = gen_runcmd('--no-capture')
+    runcmd = gen_runcmd('--capture-none')
     run(ContainsMatcher(r'Running\s*bar.*text.*pass'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
-    runcmd = gen_runcmd('--no-capture --')
+    runcmd = gen_runcmd('--capture-none --')
     run(ContainsMatcher(r'Running\s*bar.*text.*pass'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
-    runcmd = gen_runcmd('-- --no-capture')
+    runcmd = gen_runcmd('-- --capture-none')
     run(ContainsNotMatcher(r'Running\s*bar.*pass.*text'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
 def test_argp_positional_param_invocation():
