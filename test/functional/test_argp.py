@@ -185,6 +185,24 @@ def test_argp_long_help():
     runcmd = gen_runcmd('-x -- --help')
     run(ContainsNotMatcher(_HELP_STR), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
+def test_argp_long_usage():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('--usage')
+    run(ContainsMatcher(_HELP_STR), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-x --fail-fast --usage')
+    run(ContainsMatcher(_HELP_STR), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-x --usage --')
+    run(ContainsMatcher(_HELP_STR), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('-x -- --usage')
+    run(ContainsNotMatcher(_HELP_STR), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
 def test_argp_long_version():
     cgen = CGen('tests.c')
     cgen.append_include('cldm.h', system_header=False)
