@@ -77,7 +77,7 @@ _start:
     mov     rdx, 0664o                      ; Mode
     syscall
 
-    cmp     rax, 0                          ; Check for syscall failure
+    cmp     eax, 0                          ; Check for syscall failure
     jl      .open_failure
 
     mov     rsi, r8                         ; String to write
@@ -86,7 +86,7 @@ _start:
     mov     eax, SC_WRITE                   ; Write syscall
     syscall
 
-    cmp     rax, 0                          ; Check syscall failure
+    cmp     eax, 0                          ; Check syscall failure
     jl      .write_failure
 
     mov     eax, SC_CLOSE                   ; Close syscall
