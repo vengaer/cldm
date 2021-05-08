@@ -92,7 +92,7 @@ static inline void cldm_test_set(char const *name) {
 
 static int cldm_test_init(void) {
     cldm_test_log.capacity = CLDM_LOG_INITIAL_CAP;
-    cldm_test_log.l_un.addr = realloc(0, CLDM_LOG_INITIAL_CAP * sizeof(*cldm_test_log.l_un.data));
+    cldm_test_log.l_un.addr = malloc(CLDM_LOG_INITIAL_CAP * sizeof(*cldm_test_log.l_un.data));
     if(!cldm_test_log.l_un.data) {
         cldm_err("Could not allocate chunk of %d bytes", CLDM_LOG_INITIAL_CAP);
         return -1;
