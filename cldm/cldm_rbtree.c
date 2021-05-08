@@ -179,8 +179,8 @@ bool cldm_rbtree_insert(struct cldm_rbtree *restrict tree, struct cldm_rbnode *r
         return true;
     }
 
-    ggp = &tree->sentinel;
-    gp = &tree->sentinel;
+    gp = &(struct cldm_rbnode) { .left = &tree->sentinel };
+    ggp = &(struct cldm_rbnode) { .left = gp };
     p = &tree->sentinel;
     n = cldm_rbroot(tree);
 
