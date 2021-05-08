@@ -41,7 +41,7 @@ epilogue:
     return status;
 }
 
-static int cldm_io_dump_capture(FILE *restrict redirected, char const *restrict capture, FILE *restrict dumpstream, char const *restrict name) {
+static int cldm_io_dump_to_stream(FILE *restrict redirected, char const *restrict capture, FILE *restrict dumpstream, char const *restrict name) {
     char buffer[CLDM_PGSIZE];
     FILE *fp;
     size_t linelen;
@@ -154,12 +154,12 @@ int cldm_io_capture_stderr(void) {
     return cldm_io_capture_standard(stderr, CLDM_CAPTURE_STDERR, &cldm_stderr, &cldm_stderrfd);
 }
 
-int cldm_io_dump_captured_stdout(void) {
-    return cldm_io_dump_capture(stdout, CLDM_CAPTURE_STDOUT, cldm_stdout, "stdout");
+int cldm_io_dump_captured_stdout(FILE *fp) {
+    return cldm_io_dump_to_stream(stdout, CLDM_CAPTURE_STDOUT, fp, "stdout");
 }
 
-int cldm_io_dump_captured_stderr(void) {
-    return cldm_io_dump_capture(stderr, CLDM_CAPTURE_STDERR, cldm_stderr, "stderr");
+int cldm_io_dump_captured_stderr(FILE *fp) {
+    return cldm_io_dump_to_stream(stderr, CLDM_CAPTURE_STDERR, fp, "stderr");
 }
 
 int cldm_io_restore_stdout(void) {
@@ -214,15 +214,31 @@ bool cldm_io_capture_stream(enum cldm_capture capture) {
 
 }
 
-void cldm_io_capture_dump(enum cldm_capture capture) {
-    if((capture & cldm_capture_stdout) && cldm_io_dump_captured_stdout()) {
+bool cldm_io_capture_dump(enum cldm_capture capture, char const *file) {
+    FILE *fp;
+    bool success;
+
+    success = true;
+    fp = 0;
+    if(file) {
+        fp = fopen(file, "w");
+        if(!fp) {
+            cldm_err("Could not open %s for reading: %s", file, strerror(errno));
+            return false;
+        }
+    }
+
+    if((capture & cldm_capture_stdout) && cldm_io_dump_captured_stdout(fp ? fp : cldm_stdout)) {
         cldm_warn("Could not read captured stdout");
+        success = false;
     }
 
-    if((capture & cldm_capture_stderr) && cldm_io_dump_captured_stderr()) {
+    if((capture & cldm_capture_stderr) && cldm_io_dump_captured_stderr(fp ? fp : cldm_stderr)) {
         cldm_warn("Could not read captured stderr");
+        success = false;
     }
 
+    return success;
 }
 
 void cldm_io_capture_restore(enum cldm_capture capture) {

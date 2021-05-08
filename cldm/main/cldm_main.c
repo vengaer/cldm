@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
 
     status = cldm_collect_and_run(&map, args.fail_fast, &argv[args.posidx], (unsigned)argc - args.posidx);
 
-    cldm_io_capture_dump(args.capture);
+    cldm_io_capture_dump(args.capture, args.redirect);
 
 epilogue:
     cldm_unmap_elf(&map);

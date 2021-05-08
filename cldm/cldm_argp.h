@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 struct cldm_args {
+    char const *redirect;
     size_t posidx;
     enum cldm_capture capture;
     bool fail_fast;

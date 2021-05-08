@@ -48,17 +48,19 @@ static bool cldm_argp_set_help(struct cldm_argp_ctx *restrict, char const *restr
 static bool cldm_argp_set_fail_fast(struct cldm_argp_ctx *restrict, char const *restrict);
 static bool cldm_argp_set_capture(struct cldm_argp_ctx *restrict, char const *restrict);
 static bool cldm_argp_set_capture_none(struct cldm_argp_ctx *restrict, char const *restrict);
+static bool cldm_argp_set_redirect(struct cldm_argp_ctx *restrict, char const *restrict);
 static bool cldm_argp_set_posidx(struct cldm_argp_ctx *restrict, char const *restrict);
 
 static struct cldm_argp_param cldm_argp_params[] = {
-    { 'v', "--verbose",      0,        cldm_argp_set_verbose      },
-    { 'V', "--version",      0,        cldm_argp_set_version      },
-    { 'h', "--help",         0,        cldm_argp_set_help         },
-    {  0,  "--usage",        0,        cldm_argp_set_help         },
-    { 'x', "--fail-fast",    0,        cldm_argp_set_fail_fast    },
-    { 'c', "--capture",      "STREAM", cldm_argp_set_capture      },
-    { 's', "--capture-none", 0,        cldm_argp_set_capture_none },
-    {  0,  "--",             0,        cldm_argp_set_posidx       }
+    { 'v', "--verbose",           0,        cldm_argp_set_verbose      },
+    { 'V', "--version",           0,        cldm_argp_set_version      },
+    { 'h', "--help",              0,        cldm_argp_set_help         },
+    {  0,  "--usage",             0,        cldm_argp_set_help         },
+    { 'x', "--fail-fast",         0,        cldm_argp_set_fail_fast    },
+    { 'c', "--capture",           "STREAM", cldm_argp_set_capture      },
+    { 's', "--capture-none",      0,        cldm_argp_set_capture_none },
+    { 'd', "--redirect-captures", "FILE",   cldm_argp_set_redirect     },
+    {  0,  "--",                  0,        cldm_argp_set_posidx       }
 };
 
 static char const *cldm_argp_params_doc[] = {
@@ -69,6 +71,7 @@ static char const *cldm_argp_params_doc[] = {
     "Exit as soon as a test fails",
     "Capture output from STREAM and print it once all tests have finished. Valid options are 'none', 'stdout', 'stderr' and 'all'",
     "Same as --capture=none",
+    "Redirect captures to FILE instead of printing to console"
 };
 
 static char const *cldm_argp_positional_doc = "If a [FILE]... list is specified, cldm will run only tests contained in the files specified.\n"
@@ -132,6 +135,17 @@ static bool cldm_argp_set_capture(struct cldm_argp_ctx *restrict ctx, char const
 static bool cldm_argp_set_capture_none(struct cldm_argp_ctx *restrict ctx, char const *restrict optarg) {
     ctx->args->capture = cldm_capture_none;
     return optarg;
+}
+
+static bool cldm_argp_set_redirect(struct cldm_argp_ctx *restrict ctx, char const *restrict optarg) {
+    if(!*optarg) {
+        ctx->pending_arg = true;
+        ctx->assign_pending = cldm_argp_set_redirect;
+        return true;
+    }
+
+    ctx->args->redirect = optarg;
+    return true;
 }
 
 static bool cldm_argp_set_posidx(struct cldm_argp_ctx *restrict ctx, char const *restrict optarg) {
