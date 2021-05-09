@@ -4,7 +4,7 @@
 
     %define E2BIG 7
 
-    %macro writebyte 3
+    %macro writebyte 4
         mov     byte [rdi + rax], r8b       ; Write
 
         %if %2 != 0
@@ -19,11 +19,7 @@
         %endif
 
         %if %1 != 0
-            %ifdef SHR32
-                shr     r8d, %1             ; Shift byte into position
-            %else
-                shr     r8, %1              ; Shift byte into position
-            %endif
+            shr         %4, %1              ; Shift byte into position
         %endif
     %endmacro
 
@@ -89,45 +85,41 @@ cldm_avx2_strscpy:
     lea     rcx, [.align_table]             ; Load jump table
     alignjmp  0                             ; Jump to branch
 
-%define SHR32                               ; Shift only low 32 bits of r8 in writebyte
-
 .rdbyte:                                    ; Source aligned to 1 byte boundary
     movzx   r8d, byte [rsi]                 ; First source byte
 
-    writebyte 0, 1, 1                       ; Single byte
+    writebyte 0, 1, 1, r8d                  ; Single byte
     alignjmp  1                             ; Jump to branch
 
 .rdword:                                    ; Source aligned to 2 byte boundary
     movzx   r8d, word [rsi]                 ; Read word from source
 
-    writebyte 8, 1, 1                       ; First byte
-    writebyte 0, 1, 1                       ; Second byte
+    writebyte 8, 1, 1, r8d                  ; First byte
+    writebyte 0, 1, 1, r8d                  ; Second byte
 
     alignjmp  2                             ; Jump to branch
 
 .rddword:                                   ; Source aligned to 4 byte boundary
     mov     r8d, dword [rsi]                ; Read dword from source
 
-    writebyte 8, 1, 1                       ; First byte
-    writebyte 8, 1, 1                       ; Second byte
-    writebyte 8, 1, 1                       ; Third byte
-    writebyte 0, 1, 1                       ; Fourth byte
+    writebyte 8, 1, 1, r8d                  ; First byte
+    writebyte 8, 1, 1, r8d                  ; Second byte
+    writebyte 8, 1, 1, r8d                  ; Third byte
+    writebyte 0, 1, 1, r8d                  ; Fourth byte
 
     alignjmp  4                             ; Jump to branch
-
-%undef SHR32
 
 .rdqword:                                   ; Source aligned to 8 byte boundary
     mov     r8, qword [rsi]                 ; Read qword
 
-    writebyte 8, 1, 1                       ; First byte
-    writebyte 8, 1, 1                       ; Second byte
-    writebyte 8, 1, 1                       ; Third byte
-    writebyte 8, 1, 1                       ; Fourth byte
-    writebyte 8, 1, 1                       ; Fifth byte
-    writebyte 8, 1, 1                       ; Sixth byte
-    writebyte 8, 1, 1                       ; Seventh byte
-    writebyte 0, 1, 1                       ; Eight byte
+    writebyte 8, 1, 1, r8                   ; First byte
+    writebyte 8, 1, 1, r8                   ; Second byte
+    writebyte 8, 1, 1, r8                   ; Third byte
+    writebyte 8, 1, 1, r8                   ; Fourth byte
+    writebyte 8, 1, 1, r8                   ; Fifth byte
+    writebyte 8, 1, 1, r8                   ; Sixth byte
+    writebyte 8, 1, 1, r8                   ; Seventh byte
+    writebyte 0, 1, 1, r8                   ; Eight byte
 
     alignjmp  8                             ; Jump to branch
 
@@ -167,7 +159,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .xmmword_null_wrlow:
-    writebyte 8, 0, 1                       ; Write lsb
+    writebyte 8, 0, 1, r8                   ; Write lsb
 
     sub     ecx, 1                          ; Decrement counter
     jnz     .xmmword_null_wrlow
@@ -179,7 +171,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .xmmword_null_wrhigh:
-    writebyte 8, 0, 1                       ; Write lsb
+    writebyte 8, 0, 1, r8                   ; Write lsb
 
     sub     r9d, 1                          ; Decrement counter
     jnz     .xmmword_null_wrhigh
@@ -197,7 +189,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0
 
 .xmmword_ovf_wrlow:
-    writebyte 8, 0, 0                       ; Write lsb
+    writebyte 8, 0, 0, r8                   ; Write lsb
 
     sub     ecx, 1                          ; Decrement counter
     jnz     .xmmword_ovf_wrlow
@@ -209,7 +201,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .xmmword_ovf_wrhigh:
-    writebyte 8, 0, 0                       ; Write lsb
+    writebyte 8, 0, 0, r8                   ; Write lsb
 
     sub     r9d, 1                          ; Decrement counter
     jnz     .xmmword_ovf_wrhigh
@@ -264,7 +256,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .ymmword_null_lxmmwd_wrlow:
-    writebyte 8, 0, 1                       ; Write lsb
+    writebyte 8, 0, 1, r8                   ; Write lsb
 
     sub     ecx, 1                          ; Decrement counter
     jnz     .ymmword_null_lxmmwd_wrlow
@@ -276,7 +268,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .ymmword_null_lxmmwd_wrhigh:
-    writebyte 8, 0, 1                       ; Write lsb
+    writebyte 8, 0, 1, r8                   ; Write lsb
 
     sub     r9d, 1                          ; Decrement counter
     jnz     .ymmword_null_lxmmwd_wrhigh
@@ -314,7 +306,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .ymmword_ovf_xmmwd_wrlow:
-    writebyte 8, 0, 0                       ; Write lsb
+    writebyte 8, 0, 0, r8                   ; Write lsb
 
     sub     ecx, 1                          ; Decrement counter
     jnz     .ymmword_ovf_xmmwd_wrlow
@@ -326,7 +318,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .ymmword_ovf_xmmwd_wrhigh:
-    writebyte 8, 0, 0                       ; Write lsb
+    writebyte 8, 0, 0, r8                   ; Write lsb
 
     sub     r9d, 1                          ; Decrement counter
     jnz     .ymmword_ovf_xmmwd_wrhigh
