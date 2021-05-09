@@ -100,11 +100,11 @@ $(lcldm): $(lcldm_obj)
 
 $(cldmtest): $($(cldmtest)_obj) $(link) $(lcldm_main)
 	$(info [LD]  $@)
-	$(QUIET)$(CC) -o $@ $(cldmtest_obj) $(testldflags) $(testldlibs)
+	$(QUIET)$(CC) -o $@ $($(cldmtest)_obj) $(testldflags) $(testldlibs)
 
 $(cldmfuzz): $($(cldmfuzz)_obj) $(link)
 	$(info [LD]  $@)
-	$(QUIET)$(FUZZCC) -o $@ $(cldmfuzz_obj) $(fuzzldflags)
+	$(QUIET)$(FUZZCC) -o $@ $($(cldmfuzz)_obj) $(fuzzldflags)
 
 $(lcldm_main): $(lcldm_main_obj)
 	$(info [AR]  $@)
