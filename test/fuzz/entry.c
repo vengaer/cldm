@@ -22,7 +22,7 @@ static struct cldm_fuzzentry const entrypoints[] = {
     { "hash",         hash_fuzz         }
 };
 
-void usage(void) {
+static void usage(void) {
     struct cldm_fuzzentry const *iter;
     puts("cldm -- fuzzing\n");
     puts("The fuzzing target is read from the CLDM_FUZZTARGET environment variable\nValid options are:");
