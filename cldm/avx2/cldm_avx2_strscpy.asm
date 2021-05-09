@@ -4,7 +4,7 @@
 
     %define E2BIG 7
 
-    %macro writebyte 2
+    %macro writebyte 3
         mov     byte [rdi + rax], r8b       ; Write
 
         %if %2 != 0
@@ -13,7 +13,7 @@
         %endif
 
         add     rax, 1                      ; Increment size
-        %ifndef NO_OVFCHECK
+        %if %3 != 0
             cmp     rax, rdx                ; Check for end of destination
             jnb     .epi_ovf
         %endif
@@ -94,24 +94,24 @@ cldm_avx2_strscpy:
 .rdbyte:                                    ; Source aligned to 1 byte boundary
     movzx   r8d, byte [rsi]                 ; First source byte
 
-    writebyte 0, 1                          ; Single byte
+    writebyte 0, 1, 1                       ; Single byte
     alignjmp  1                             ; Jump to branch
 
 .rdword:                                    ; Source aligned to 2 byte boundary
     movzx   r8d, word [rsi]                 ; Read word from source
 
-    writebyte 8, 1                          ; First byte
-    writebyte 0, 1                          ; Second byte
+    writebyte 8, 1, 1                       ; First byte
+    writebyte 0, 1, 1                       ; Second byte
 
     alignjmp  2                             ; Jump to branch
 
 .rddword:                                   ; Source aligned to 4 byte boundary
     mov     r8d, dword [rsi]                ; Read dword from source
 
-    writebyte 8, 1                          ; First byte
-    writebyte 8, 1                          ; Second byte
-    writebyte 8, 1                          ; Third byte
-    writebyte 0, 1                          ; Fourth byte
+    writebyte 8, 1, 1                       ; First byte
+    writebyte 8, 1, 1                       ; Second byte
+    writebyte 8, 1, 1                       ; Third byte
+    writebyte 0, 1, 1                       ; Fourth byte
 
     alignjmp  4                             ; Jump to branch
 
@@ -120,14 +120,14 @@ cldm_avx2_strscpy:
 .rdqword:                                   ; Source aligned to 8 byte boundary
     mov     r8, qword [rsi]                 ; Read qword
 
-    writebyte 8, 1                          ; First byte
-    writebyte 8, 1                          ; Second byte
-    writebyte 8, 1                          ; Third byte
-    writebyte 8, 1                          ; Fourth byte
-    writebyte 8, 1                          ; Fifth byte
-    writebyte 8, 1                          ; Sixth byte
-    writebyte 8, 1                          ; Seventh byte
-    writebyte 0, 1                          ; Eight byte
+    writebyte 8, 1, 1                       ; First byte
+    writebyte 8, 1, 1                       ; Second byte
+    writebyte 8, 1, 1                       ; Third byte
+    writebyte 8, 1, 1                       ; Fourth byte
+    writebyte 8, 1, 1                       ; Fifth byte
+    writebyte 8, 1, 1                       ; Sixth byte
+    writebyte 8, 1, 1                       ; Seventh byte
+    writebyte 0, 1, 1                       ; Eight byte
 
     alignjmp  8                             ; Jump to branch
 
@@ -167,7 +167,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .xmmword_null_wrlow:
-    writebyte 8, 0                          ; Write lsb
+    writebyte 8, 0, 1                       ; Write lsb
 
     sub     ecx, 1                          ; Decrement counter
     jnz     .xmmword_null_wrlow
@@ -179,7 +179,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .xmmword_null_wrhigh:
-    writebyte 8, 0                          ; Write lsb
+    writebyte 8, 0, 1                       ; Write lsb
 
     sub     r9d, 1                          ; Decrement counter
     jnz     .xmmword_null_wrhigh
@@ -187,9 +187,6 @@ cldm_avx2_strscpy:
     jmp     .epi_term
 
 .xmmword_ovf:                               ; Destination cannot hold entire xmmword, all bytes non-null
-
-%define NO_OVFCHECK                         ; Already know how many bytes to write
-
     mov     ecx, r9d                        ; Number of remaining bytes
     mov     r10d, 8                         ; Size of qword
     cmp     ecx, r10d
@@ -200,7 +197,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0
 
 .xmmword_ovf_wrlow:
-    writebyte 8, 0                          ; Write lsb
+    writebyte 8, 0, 0                       ; Write lsb
 
     sub     ecx, 1                          ; Decrement counter
     jnz     .xmmword_ovf_wrlow
@@ -212,14 +209,12 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .xmmword_ovf_wrhigh:
-    writebyte 8, 0                          ; Write lsb
+    writebyte 8, 0, 0                       ; Write lsb
 
     sub     r9d, 1                          ; Decrement counter
     jnz     .xmmword_ovf_wrhigh
 
     jmp     .epi_ovf
-
-%undef NO_OVFCHECK
 
 .rdymmword:                                 ; Source aligned to 32 byte boundary
     vmovdqa ymm0, [rsi]                     ; Read ymmword
@@ -269,7 +264,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .ymmword_null_lxmmwd_wrlow:
-    writebyte 8, 0                          ; Write lsb
+    writebyte 8, 0, 1                       ; Write lsb
 
     sub     ecx, 1                          ; Decrement counter
     jnz     .ymmword_null_lxmmwd_wrlow
@@ -281,7 +276,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .ymmword_null_lxmmwd_wrhigh:
-    writebyte 8, 0                          ; Write lsb
+    writebyte 8, 0, 1                       ; Write lsb
 
     sub     r9d, 1                          ; Decrement counter
     jnz     .ymmword_null_lxmmwd_wrhigh
@@ -306,9 +301,6 @@ cldm_avx2_strscpy:
     vextracti128    xmm0, ymm0, 1           ; Replace low xmmword with high
 
 .ymmword_ovf_xmmwd:                         ; Destination cannot hold low xmmword
-
-%define NO_OVFCHECK                         ; Already know how many bytes to write
-
     test    r9d, r9d                        ; Check for end
     jz      .epi_ovf
 
@@ -322,7 +314,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .ymmword_ovf_xmmwd_wrlow:
-    writebyte 8, 0                          ; Write lsb
+    writebyte 8, 0, 0                       ; Write lsb
 
     sub     ecx, 1                          ; Decrement counter
     jnz     .ymmword_ovf_xmmwd_wrlow
@@ -334,14 +326,13 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .ymmword_ovf_xmmwd_wrhigh:
-    writebyte 8, 0                          ; Write lsb
+    writebyte 8, 0, 0                       ; Write lsb
 
     sub     r9d, 1                          ; Decrement counter
     jnz     .ymmword_ovf_xmmwd_wrhigh
 
     jmp     .epi_ovf
 
-%undef NO_OVFCHECK
 
 .epi_term:
     mov     byte [rdi + rax], 0             ; Null terminate
