@@ -4,10 +4,10 @@
 
     %define E2BIG 7
 
-    %macro writebyte 1
+    %macro writebyte 2
         mov     byte [rdi + rax], r8b       ; Write
 
-        %ifdef ZEROCHECK
+        %if %2 != 0
             test    r8d, 0xff               ; Test for null
             jz      .epilogue
         %endif
@@ -89,30 +89,29 @@ cldm_avx2_strscpy:
     lea     rcx, [.align_table]             ; Load jump table
     alignjmp  0                             ; Jump to branch
 
-%define ZEROCHECK                           ; Enable null check for read byte
 %define SHR32                               ; Shift only low 32 bits of r8 in writebyte
 
 .rdbyte:                                    ; Source aligned to 1 byte boundary
     movzx   r8d, byte [rsi]                 ; First source byte
 
-    writebyte 0                             ; Single byte
+    writebyte 0, 1                          ; Single byte
     alignjmp  1                             ; Jump to branch
 
 .rdword:                                    ; Source aligned to 2 byte boundary
     movzx   r8d, word [rsi]                 ; Read word from source
 
-    writebyte 8                             ; First byte
-    writebyte 0                             ; Second byte
+    writebyte 8, 1                          ; First byte
+    writebyte 0, 1                          ; Second byte
 
     alignjmp  2                             ; Jump to branch
 
 .rddword:                                   ; Source aligned to 4 byte boundary
     mov     r8d, dword [rsi]                ; Read dword from source
 
-    writebyte 8                             ; First byte
-    writebyte 8                             ; Second byte
-    writebyte 8                             ; Third byte
-    writebyte 0                             ; Fourth byte
+    writebyte 8, 1                          ; First byte
+    writebyte 8, 1                          ; Second byte
+    writebyte 8, 1                          ; Third byte
+    writebyte 0, 1                          ; Fourth byte
 
     alignjmp  4                             ; Jump to branch
 
@@ -121,18 +120,16 @@ cldm_avx2_strscpy:
 .rdqword:                                   ; Source aligned to 8 byte boundary
     mov     r8, qword [rsi]                 ; Read qword
 
-    writebyte 8                             ; First byte
-    writebyte 8                             ; Second byte
-    writebyte 8                             ; Third byte
-    writebyte 8                             ; Fourth byte
-    writebyte 8                             ; Fifth byte
-    writebyte 8                             ; Sixth byte
-    writebyte 8                             ; Seventh byte
-    writebyte 0                             ; Eight byte
+    writebyte 8, 1                          ; First byte
+    writebyte 8, 1                          ; Second byte
+    writebyte 8, 1                          ; Third byte
+    writebyte 8, 1                          ; Fourth byte
+    writebyte 8, 1                          ; Fifth byte
+    writebyte 8, 1                          ; Sixth byte
+    writebyte 8, 1                          ; Seventh byte
+    writebyte 0, 1                          ; Eight byte
 
     alignjmp  8                             ; Jump to branch
-
-%undef ZEROCHECK
 
 .rdxmmword:                                 ; Source aligned to 16 byte boundary
     vmovdqa xmm0, [rsi]                     ; Read xmmword
@@ -170,7 +167,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .xmmword_null_wrlow:
-    writebyte 8                             ; Write lsb
+    writebyte 8, 0                          ; Write lsb
 
     sub     ecx, 1                          ; Decrement counter
     jnz     .xmmword_null_wrlow
@@ -182,7 +179,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .xmmword_null_wrhigh:
-    writebyte 8                             ; Write lsb
+    writebyte 8, 0                          ; Write lsb
 
     sub     r9d, 1                          ; Decrement counter
     jnz     .xmmword_null_wrhigh
@@ -203,7 +200,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0
 
 .xmmword_ovf_wrlow:
-    writebyte 8                             ; Write lsb
+    writebyte 8, 0                          ; Write lsb
 
     sub     ecx, 1                          ; Decrement counter
     jnz     .xmmword_ovf_wrlow
@@ -215,7 +212,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .xmmword_ovf_wrhigh:
-    writebyte 8                             ; Write lsb
+    writebyte 8, 0                          ; Write lsb
 
     sub     r9d, 1                          ; Decrement counter
     jnz     .xmmword_ovf_wrhigh
@@ -272,7 +269,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .ymmword_null_lxmmwd_wrlow:
-    writebyte 8                             ; Write lsb
+    writebyte 8, 0                          ; Write lsb
 
     sub     ecx, 1                          ; Decrement counter
     jnz     .ymmword_null_lxmmwd_wrlow
@@ -284,7 +281,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .ymmword_null_lxmmwd_wrhigh:
-    writebyte 8                             ; Write lsb
+    writebyte 8, 0                          ; Write lsb
 
     sub     r9d, 1                          ; Decrement counter
     jnz     .ymmword_null_lxmmwd_wrhigh
@@ -325,7 +322,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .ymmword_ovf_xmmwd_wrlow:
-    writebyte 8                             ; Write lsb
+    writebyte 8, 0                          ; Write lsb
 
     sub     ecx, 1                          ; Decrement counter
     jnz     .ymmword_ovf_xmmwd_wrlow
@@ -337,7 +334,7 @@ cldm_avx2_strscpy:
     vmovq   r8, xmm0                        ; Low qword to r8
 
 .ymmword_ovf_xmmwd_wrhigh:
-    writebyte 8                             ; Write lsb
+    writebyte 8, 0                          ; Write lsb
 
     sub     r9d, 1                          ; Decrement counter
     jnz     .ymmword_ovf_xmmwd_wrhigh
