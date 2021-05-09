@@ -119,7 +119,7 @@ cldm_avx2_strscpy:
     writebyte 8, 1, 1, r8                   ; Fifth byte
     writebyte 8, 1, 1, r8                   ; Sixth byte
     writebyte 8, 1, 1, r8                   ; Seventh byte
-    writebyte 0, 1, 1, r8                   ; Eight byte
+    writebyte 0, 1, 1, r8                   ; Eighth byte
 
     alignjmp  8                             ; Jump to branch
 
