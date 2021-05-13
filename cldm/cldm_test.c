@@ -202,27 +202,6 @@ static inline char const *cldm_test_expandsuffix(char const *str) {
     return strlen(str) > CLDM_MAX_EXPAND_SIZE ? "..." : "";
 }
 
-ssize_t cldm_test_collect(struct cldm_rbtree *restrict tree, struct cldm_elfmap const *restrict map) {
-    struct cldm_testrec *record;
-
-    /* Look up tests in strtab section */
-    for(size_t i = 0; i < map->strtab.size; i += strlen(map->strtab.addr + i) + 1) {
-        /* Identify by test prefix */
-        if(strncmp(cldm_str_expand(cldm_testrec_prefix), map->strtab.addr + i, sizeof(cldm_str_expand(cldm_testrec_prefix)) - 1) == 0) {
-            /* Compute address of test record and store in tree */
-            record = cldm_elf_testrec(map, map->strtab.addr + i);
-            if(!record) {
-                cldm_err("Could not map test record for %s", map->strtab.addr + i + sizeof(cldm_str_expand(cldm_testrec_prefix)) - 1);
-                return -1;
-            }
-
-            cldm_rbtree_insert(tree, &record->rbnode, cldm_testrec_compare);
-        }
-    }
-
-    return (ssize_t)cldm_rbtree_size(tree);
-}
-
 int cldm_test_invoke_each(struct cldm_rbtree const *restrict tests, struct cldm_elfmap const *restrict map, bool fail_fast) {
     struct cldm_testrec const *record;
     struct cldm_rbnode *iter;

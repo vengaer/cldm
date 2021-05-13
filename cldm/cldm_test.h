@@ -22,7 +22,6 @@ struct cldm_rbht_node {
     struct cldm_ht_entry entry;
 };
 
-ssize_t cldm_test_collect(struct cldm_rbtree *restrict tree, struct cldm_elfmap const *restrict map);
 int cldm_test_invoke_each(struct cldm_rbtree const *restrict tests, struct cldm_elfmap const *restrict map, bool fail_fast);
 int cldm_test_invoke_specified(struct cldm_ht *restrict lookup_table, struct cldm_elfmap const *restrict map, bool fail_fast, size_t ntests, char **restrict files, size_t nfiles);
 
