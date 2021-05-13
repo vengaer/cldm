@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
     cldm_mock_force_disable = true;
 
     if(!cldm_argp_parse(&args, argc, argv)) {
-        return -1;
+        return 1;
     }
 
     if(args.help) {
@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    status = -1;
+    status = 1;
 
     if(!cldm_is_elf64(&map) || !cldm_elf_is_executable(&map)) {
         cldm_err("%s is not a 64-bit ELF executable", argv[0]);
