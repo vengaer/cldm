@@ -340,6 +340,6 @@ cldm_avx2_strscpy:
 
 .dstsize0:                                  ; Destination size is 0
     test    byte [rsi], 0xff                ; Check for null
-    setnz   al                              ; Set if source is non-empty
-    imul    rax, -E2BIG                     ; Return -E2BIG if length of source is > 0, otherwise 0
+    mov     rdx, -E2BIG
+    cmovnz  rax, rdx                        ; Return -E2BIG if length of source is > 0, otherwise 0
     ret
