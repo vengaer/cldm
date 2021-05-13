@@ -276,22 +276,23 @@ cldm_avx2_strscpy:
     jmp     .ymmword_ovf_xmmwd
 
 .ymmword_ovf:                               ; Destination cannot hold entire ymmword, all bytes non-null
-    mov     r9, rdx
-    sub     r9, rax
-    cmp     r9d, 0x10                       ; Compare number of remaining bytes against size of xmmword
-    jb      .ymmword_ovf_xmmwd
+    lea     r10, [rax + 0x10]               ; Check room for 16 bytes
+    cmp     r10, rdx
+    jnb      .ymmword_ovf_xmmwd
 
     vmovdqu [rdi + rax], xmm0               ; Write low xmmword
     add     rax, 0x10                       ; Increment size
-    sub     r9d, 0x10                       ; Subtract 16 from number of remaining bytes
-
-    jz      .epi_ovf                        ; Done if no bytes remain
+    cmp     rax, rdx
+    jnb     .epi_ovf
 
     vextracti128    xmm0, ymm0, 1           ; Replace low xmmword with high
 
 .ymmword_ovf_xmmwd:                         ; Destination cannot hold low xmmword
-    test    r9d, r9d                        ; Check for end
-    jz      .epi_ovf
+    cmp     rax, rdx
+    jnb     .epi_ovf
+
+    mov     r9, rdx                         ; Compute number of remaining bytes in destination
+    sub     r9, rax
 
     mov     ecx, r9d                        ; Number of remaining bytes
     mov     r10d, 8                         ; Size of qword
