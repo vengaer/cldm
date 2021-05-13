@@ -223,7 +223,7 @@ static bool cldm_argp_parse_long_switch(struct cldm_argp_ctx *restrict ctx, stru
     cldm_for_each(param, cldm_argp_params) {
         if(strncmp(param->p_long, sw, len + !sw[len]) == 0) {
             if(param->p_argument) {
-                if(sw[len] != '=') {
+                if(sw[len] != '=' || (sw[len] && !sw[len + 1])) {
                     cldm_err("Option %s requires an argument", param->p_long);
                     return false;
                 }
