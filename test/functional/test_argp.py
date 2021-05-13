@@ -322,6 +322,23 @@ def test_argp_long_capture_with_all():
     runcmd = gen_runcmd('-- --capture=all')
     run(ContainsNotMatcher(r'Running\s*bar.*fail.*text'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
+def test_argp_long_switch_without_value():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)  \
+        .append_include('stdio.h')
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('puts("text");')               \
+            .append_line('fputs("stderr\\n", stderr);') \
+            .append_line('ASSERT_EQ(1, 0);')
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('--capture= all')
+    run(stderr_matcher=ContainsMatcher(r'--capture requires an argument'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+    runcmd = gen_runcmd('--capture=')
+    run(stderr_matcher=ContainsNotMatcher(r'--capture requires and argument'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
 def test_argp_positional_param_invocation():
     cgen = CGen('bar_test.c')

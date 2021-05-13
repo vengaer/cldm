@@ -54,7 +54,7 @@ class RvDiffMatcher(RvMatcher):
     def run(self, rv):
         assert rv != self.ref
 
-def run(stdout_matcher, stderr_matcher=DummyMatcher(), rvmatcher=RvEqMatcher(0), runcmd='make -sC {} run'.format(working_dir)):
+def run(stdout_matcher=DummyMatcher(), stderr_matcher=DummyMatcher(), rvmatcher=RvEqMatcher(0), runcmd='make -sC {} run'.format(working_dir)):
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
     retval, output, error = exec_bash(runcmd)
     rvmatcher.run(retval)
