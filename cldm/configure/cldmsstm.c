@@ -10,10 +10,47 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+enum arch {
+    arch_32,
+    arch_64
+};
+
+enum abi {
+    abi_sysv,
+    abi_hpux,
+    abi_netbsd,
+    abi_linux,
+    abi_solaris,
+    abi_irix,
+    abi_freebsd,
+    abi_tru64,
+    abi_arm,
+    abi_embedded
+};
+
 struct makecfg {
+    char has_atomics;
     char has_generic;
-    char const *arch;
-    char const *abi;
+    enum arch arch;
+    enum abi abi;
+};
+
+static char const *arch_strings[] = {
+    "32-bit",
+    "64-bit"
+};
+
+static char const *abi_strings[] = {
+    "SYSV",
+    "HPUX",
+    "NETBSD",
+    "LINUX",
+    "SOLARIS",
+    "IRIX",
+    "FREEBSD",
+    "TRU64",
+    "ARM",
+    "EMBEDDED"
 };
 
 static struct makecfg makecfg;
@@ -52,12 +89,12 @@ static bool write_config(char const *out) {
         return false;
     }
 
+    fprintf(fp, "has_atomics := %c\n", makecfg.abi == abi_sysv && makecfg.arch == arch_64 ? 'y' : 'n');
     fprintf(fp, "has_generic := %c\n", makecfg.has_generic);
-    fprintf(fp, "arch        := %s\n", makecfg.arch);
-    fprintf(fp, "abi         := %s\n", makecfg.abi);
+    fprintf(fp, "arch        := %s\n", arch_strings[makecfg.arch]);
+    fprintf(fp, "abi         := %s\n", abi_strings[makecfg.abi]);
 
-    fclose(fp);
-    return true;
+    fclose(fp); return true;
 }
 
 static void detect_generic(void) {
@@ -103,10 +140,10 @@ static bool read_elf(char const *argv0) {
 
     switch(ehdr.e_ident[EI_CLASS]) {
         case ELFCLASS32:
-            makecfg.arch = "32-bit";
+            makecfg.arch = arch_32;
             break;
         case ELFCLASS64:
-            makecfg.arch = "64-bit";
+            makecfg.arch = arch_64;
             break;
         default:
             fputs("Invalid ELF class\n", stderr);
@@ -115,34 +152,34 @@ static bool read_elf(char const *argv0) {
 
     switch(ehdr.e_ident[EI_OSABI]) {
         case ELFOSABI_SYSV:
-            makecfg.abi = "SYSV";
+            makecfg.abi = abi_sysv;
             break;
         case ELFOSABI_HPUX:
-            makecfg.abi = "HPUX";
+            makecfg.abi = abi_hpux;
             break;
         case ELFOSABI_NETBSD:
-            makecfg.abi = "NETBSD";
+            makecfg.abi = abi_netbsd;
             break;
         case ELFOSABI_LINUX:
-            makecfg.abi = "LINUX";
+            makecfg.abi = abi_linux;
             break;
         case ELFOSABI_SOLARIS:
-            makecfg.abi = "SOLARIS";
+            makecfg.abi = abi_solaris;
             break;
         case ELFOSABI_IRIX:
-            makecfg.abi = "IRIX";
+            makecfg.abi = abi_irix;
             break;
         case ELFOSABI_FREEBSD:
-            makecfg.abi = "FREEBSD";
+            makecfg.abi = abi_freebsd;
             break;
         case ELFOSABI_TRU64:
-            makecfg.abi = "TRU64";
+            makecfg.abi = abi_tru64;
             break;
         case ELFOSABI_ARM:
-            makecfg.abi = "ARM";
+            makecfg.abi = abi_arm;
             break;
         case ELFOSABI_STANDALONE:
-            makecfg.abi = "EMBEDDED";
+            makecfg.abi = abi_embedded;
             break;
         default:
             fputs("Invalid ABI\n", stderr);

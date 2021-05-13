@@ -1,10 +1,6 @@
 trivial_module := y
 required_by    := lcldm cldmfuzz
-
-$(call include-module,main)
-$(call include-module,configure)
-$(call conditional-include-module,avx2,avx2_support)
-$(call conditional-include-module,atomic,has_atomics)
+module_lang    := asm
 
 ifndef module_name
 target := $(if $(MAKECMDGOALS),$(MAKECMDGOALS),recurse)
