@@ -1,5 +1,5 @@
 #include "cldm_argp.h"
-#include "cldm_dfa.h"
+#include "cldm_nfa.h"
 #include "cldm_log.h"
 #include "cldm_macro.h"
 #include "cldm_ntbs.h"
@@ -210,11 +210,11 @@ static bool cldm_argp_parse_short_switch(struct cldm_argp_ctx *restrict ctx, cha
     return true;
 }
 
-static bool cldm_argp_parse_long_switch(struct cldm_argp_ctx *restrict ctx, struct cldm_dfa const *restrict dfa, char const *restrict sw) {
+static bool cldm_argp_parse_long_switch(struct cldm_argp_ctx *restrict ctx, struct cldm_nfa const *restrict nfa, char const *restrict sw) {
     struct cldm_argp_param *param;
     int len;
 
-    len = cldm_dfa_simulate(dfa, sw);
+    len = cldm_nfa_simulate(nfa, sw);
     if(len == -1) {
         cldm_err("Unrecognized option: '%s'", sw);
         return false;
@@ -243,7 +243,7 @@ bool cldm_argp_parse(struct cldm_args *restrict args, int argc, char **restrict 
     unsigned char posflags[CLDM_ARGP_MAX_PARAMS / CHAR_BIT] = { 0 };
     struct cldm_argp_param *param;
     struct cldm_argp_ctx ctx;
-    struct cldm_dfa dfa;
+    struct cldm_nfa nfa;
     bool success;
 
     success = false;
@@ -264,13 +264,13 @@ bool cldm_argp_parse(struct cldm_args *restrict args, int argc, char **restrict 
         .treat_as_posparam = false
     };
 
-    if(!cldm_dfa_init(&dfa)) {
+    if(!cldm_nfa_init(&nfa)) {
         return false;
     }
 
     cldm_for_each(param, cldm_argp_params) {
-        if(param->p_long && !cldm_dfa_add_argument(&dfa, param->p_long)) {
-            cldm_err("Error while adding parameter %s to dfa", param->p_long);
+        if(param->p_long && !cldm_nfa_add_argument(&nfa, param->p_long)) {
+            cldm_err("Error while adding parameter %s to nfa", param->p_long);
             goto epilogue;
         }
     }
@@ -292,7 +292,7 @@ bool cldm_argp_parse(struct cldm_args *restrict args, int argc, char **restrict 
                 }
                 break;
             case cldm_argp_switch_long:
-                if(!cldm_argp_parse_long_switch(&ctx, &dfa, argv[i])) {
+                if(!cldm_argp_parse_long_switch(&ctx, &nfa, argv[i])) {
                     goto epilogue;
                 }
                 break;
@@ -307,7 +307,7 @@ bool cldm_argp_parse(struct cldm_args *restrict args, int argc, char **restrict 
 
     success = true;
 epilogue:
-    cldm_dfa_free(&dfa);
+    cldm_nfa_free(&nfa);
 
     if(!success) {
         cldm_argp_usage(argv[0]);
