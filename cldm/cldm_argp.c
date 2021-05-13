@@ -187,10 +187,6 @@ static inline enum cldm_argp_paramtype cldm_argp_paramtype(char const *arg) {
     return (arg[0] == '-') + (arg[0] == '-' && arg[1] == '-');
 }
 
-static inline bool cldm_argp_valid_simulation_result(char const *res) {
-    return !*res || *res == '=';
-}
-
 static bool cldm_argp_parse_short_switch(struct cldm_argp_ctx *restrict ctx, char const *restrict sw) {
     struct cldm_argp_param *param;
     for(++sw; *sw; ++sw) {
@@ -216,24 +212,24 @@ static bool cldm_argp_parse_short_switch(struct cldm_argp_ctx *restrict ctx, cha
 
 static bool cldm_argp_parse_long_switch(struct cldm_argp_ctx *restrict ctx, struct cldm_dfa const *restrict dfa, char const *restrict sw) {
     struct cldm_argp_param *param;
-    char const *end;
+    int len;
 
-    end = cldm_dfa_simulate(dfa, sw);
-    if(!cldm_argp_valid_simulation_result(end)) {
+    len = cldm_dfa_simulate(dfa, sw);
+    if(len == -1) {
         cldm_err("Unrecognized option: '%s'", sw);
         return false;
     }
 
     cldm_for_each(param, cldm_argp_params) {
-        if(strncmp(param->p_long, sw, end - sw + !*end) == 0) {
+        if(strncmp(param->p_long, sw, len + !sw[len]) == 0) {
             if(param->p_argument) {
-                if(*end != '=') {
+                if(sw[len] != '=') {
                     cldm_err("Option %s requires an argument", param->p_long);
                     return false;
                 }
-                ++end;
+                ++len;
             }
-            if(!param->handle(ctx, end)) {
+            if(!param->handle(ctx, &sw[len])) {
                 return false;
             }
             break;

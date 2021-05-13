@@ -15,7 +15,7 @@ struct cldm_dfa {
 };
 
 bool cldm_dfa_add_argument(struct cldm_dfa *restrict dfa, char const *restrict arg);
-char const *cldm_dfa_simulate(struct cldm_dfa const *restrict dfa, char const *restrict input);
+int cldm_dfa_simulate(struct cldm_dfa const *restrict dfa, char const *restrict input);
 
 bool cldm_dfa_init(struct cldm_dfa *dfa);
 inline void cldm_dfa_free(struct cldm_dfa *dfa) {

@@ -14,6 +14,10 @@ enum cldm_dfa_op {
     cldm_dfa_op_valid
 };
 
+enum cldm_dfa_metachar {
+    cldm_dfa_epsilon = CHAR_MAX + 1
+};
+
 struct cldm_dfa_state {
     enum cldm_dfa_op op;
     int edges;
@@ -29,7 +33,7 @@ void cldm_dfa_free(struct cldm_dfa *dfa);
 
 static bool cldm_dfa_ensure_state_capacity(struct cldm_dfa *dfa, unsigned nrequested) {
     struct cldm_dfa_state *states;
-    if(dfa->state_idx  + nrequested < dfa->nstates) {
+    if(dfa->state_idx + nrequested < dfa->nstates) {
         return true;
     }
     states = realloc(dfa->states, (dfa->nstates + CLDM_NFA_STATE_DELTA) * sizeof(*states));
@@ -73,41 +77,41 @@ static inline int cldm_dfa_state_pop(struct cldm_dfa *dfa) {
     return dfa->state_idx++;
 }
 
-static struct cldm_dfa_state *cldm_dfa_append(struct cldm_dfa *restrict dfa, struct cldm_dfa_state *restrict current, int ch, enum cldm_dfa_op op) {
+static int cldm_dfa_append(struct cldm_dfa *dfa, int state, int ch, enum cldm_dfa_op op) {
     int edge;
 
     edge = cldm_dfa_edge_pop(dfa);
     if(edge == -1) {
-        return 0;
+        return -1;
     }
     dfa->edges[edge] = (struct cldm_dfa_edge) {
         .ch = ch,
-        .next = current->edges,
+        .next = dfa->states[state].edges,
         .end = cldm_dfa_state_pop(dfa)
     };
 
     if(dfa->edges[edge].end == -1) {
-        return 0;
+        return -1;
     }
 
-    current->edges = edge;
+    dfa->states[state].edges = edge;
 
-    current = &dfa->states[dfa->edges[edge].end];
-    *current = (struct cldm_dfa_state) {
+    state = dfa->edges[edge].end;
+    dfa->states[dfa->edges[edge].end] = (struct cldm_dfa_state) {
         .op = op,
         .edges = CLDM_NFA_EDGE_NONE
     };
-    return current;
+    return state;
 }
 
 bool cldm_dfa_add_argument(struct cldm_dfa *restrict dfa, char const *restrict arg) {
-    struct cldm_dfa_state *state = &dfa->states[dfa->start];
+    int state = dfa->start;
     int edge;
     for(; *arg; ++arg) {
         /* Check for existing edge */
-        for(edge = state->edges; edge != CLDM_NFA_EDGE_NONE; edge = dfa->edges[edge].next) {
+        for(edge = dfa->states[state].edges; edge != CLDM_NFA_EDGE_NONE; edge = dfa->edges[edge].next) {
             if(dfa->edges[edge].ch == *arg) {
-                state = &dfa->states[dfa->edges[edge].end];
+                state = dfa->edges[edge].end;
                 break;
             }
         }
@@ -115,23 +119,24 @@ bool cldm_dfa_add_argument(struct cldm_dfa *restrict dfa, char const *restrict a
         /* No edge matched, add one */
         if(edge == CLDM_NFA_EDGE_NONE) {
             state = cldm_dfa_append(dfa, state, *arg, cldm_dfa_op_valid);
-            if(!state) {
+            if(state == -1) {
                 return false;
             }
         }
     }
 
-    return true;
+    return cldm_dfa_append(dfa, state, cldm_dfa_epsilon, cldm_dfa_op_accept) != -1;
 }
 
-char const *cldm_dfa_simulate(struct cldm_dfa const *restrict dfa, char const *restrict input) {
+int cldm_dfa_simulate(struct cldm_dfa const *restrict dfa, char const *restrict input) {
     struct cldm_dfa_state *state = &dfa->states[dfa->start];
     int edge;
+    char const *pos = input;
 
-    /* Simulate as far as possible */
-    for(; *input; ++input) {
+    /* Simulate */
+    for(; *pos; ++pos) {
         for(edge = state->edges; edge != CLDM_NFA_EDGE_NONE; edge = dfa->edges[edge].next) {
-            if(dfa->edges[edge].ch == *input) {
+            if(dfa->edges[edge].ch == *pos) {
                 state = &dfa->states[dfa->edges[edge].end];
                 break;
             }
@@ -142,8 +147,19 @@ char const *cldm_dfa_simulate(struct cldm_dfa const *restrict dfa, char const *r
         }
     }
 
-    /* Return pointer to first character not matching an edge */
-    return input;
+    /* Check whether state is an accept state */
+    if(state->op == cldm_dfa_op_accept) {
+        return pos - input;
+    }
+
+    /* Check for accept states reachable via epsilon transition */
+    for(edge = state->edges; edge != CLDM_NFA_EDGE_NONE; edge = dfa->edges[edge].next) {
+        if(dfa->edges[edge].ch == cldm_dfa_epsilon && dfa->states[dfa->edges[edge].end].op == cldm_dfa_op_accept) {
+            return pos - input;
+        }
+    }
+
+    return -1;
 }
 
 bool cldm_dfa_init(struct cldm_dfa *dfa) {
