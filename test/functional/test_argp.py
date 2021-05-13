@@ -5,6 +5,8 @@ from makegen import *
 from runner import *
 from util import *
 
+import re
+
 _BINARY='argp_test'
 _HELP_STR = 'cldm -- unit test and mocking framework'
 _VER_STR = r'cldm -- version\s*[0-9.]+'
@@ -166,6 +168,30 @@ def test_argp_short_capture_with_all():
 
     runcmd = gen_runcmd('-- -call')
     run(ContainsNotMatcher(r'Running\s*bar.*fail.*text'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+def test_argp_short_redirect():
+    idstring = 'redirected output from bar'
+    logfile = '{}/log'.format(working_dir)
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('puts("{}");'.format(idstring))
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('-d{}'.format(logfile))
+    run(ContainsNotMatcher(idstring),runcmd=runcmd)
+
+    with open(logfile, 'r') as fp:
+        assert re.search(idstring, fp.read())
+    os.unlink(logfile)
+
+    runcmd = gen_runcmd('-d {}'.format(logfile))
+    run(ContainsNotMatcher(idstring),runcmd=runcmd)
+    with open(logfile, 'r') as fp:
+        assert re.search(idstring, fp.read())
+    os.unlink(logfile)
 
 def test_argp_long_help():
     cgen = CGen('tests.c')
@@ -339,6 +365,24 @@ def test_argp_long_switch_without_value():
 
     runcmd = gen_runcmd('--capture=')
     run(stderr_matcher=ContainsNotMatcher(r'--capture requires and argument'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+def test_argp_long_redirect():
+    idstring = 'redirected output from bar'
+    logfile = '{}/log'.format(working_dir)
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('puts("{}");'.format(idstring))
+    cgen.write()
+    gen_makefile()
+
+    runcmd = gen_runcmd('--redirect-captures={}'.format(logfile))
+    run(ContainsNotMatcher(idstring),runcmd=runcmd)
+
+    with open(logfile, 'r') as fp:
+        assert re.search(idstring, fp.read())
+    os.unlink(logfile)
 
 def test_argp_positional_param_invocation():
     cgen = CGen('bar_test.c')
