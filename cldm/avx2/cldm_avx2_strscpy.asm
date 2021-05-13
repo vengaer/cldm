@@ -23,11 +23,9 @@
         %endif
     %endmacro
 
-    %macro alignjmp 1
-        %if %1 != 0
-            add rsi, %1                     ; Advance source address
-        %endif
-        tzcnt   r9, rsi                     ; Index of least significant set bit
+    %macro alignjmp 0
+        lea     r10, [rsi + rax]            ; Load address of current byte
+        tzcnt   r9, r10                     ; Index of least significant set bit
         cmp     r9d, 0x4                    ; Check for 32 byte alignment
         cmova   r9d, r11d                   ; Clamp jump address to .rdymmword
 
@@ -83,34 +81,34 @@ cldm_avx2_strscpy:
     vpxor   ymm15, ymm15                    ; Zero for detecting null in x/ymmword
 
     lea     rcx, [.align_table]             ; Load jump table
-    alignjmp  0                             ; Jump to branch
+    alignjmp                                ; Jump to branch
 
 .rdbyte:                                    ; Source aligned to 1 byte boundary
     movzx   r8d, byte [rsi]                 ; First source byte
 
     writebyte 0, 1, 1, r8d                  ; Single byte
-    alignjmp  1                             ; Jump to branch
+    alignjmp                                ; Jump to branch
 
 .rdword:                                    ; Source aligned to 2 byte boundary
-    movzx   r8d, word [rsi]                 ; Read word from source
+    movzx   r8d, word [rsi + rax]           ; Read word from source
 
     writebyte 8, 1, 1, r8d                  ; First byte
     writebyte 0, 1, 1, r8d                  ; Second byte
 
-    alignjmp  2                             ; Jump to branch
+    alignjmp                                ; Jump to branch
 
 .rddword:                                   ; Source aligned to 4 byte boundary
-    mov     r8d, dword [rsi]                ; Read dword from source
+    mov     r8d, dword [rsi + rax]          ; Read dword from source
 
     writebyte 8, 1, 1, r8d                  ; First byte
     writebyte 8, 1, 1, r8d                  ; Second byte
     writebyte 8, 1, 1, r8d                  ; Third byte
     writebyte 0, 1, 1, r8d                  ; Fourth byte
 
-    alignjmp  4                             ; Jump to branch
+    alignjmp                                ; Jump to branch
 
 .rdqword:                                   ; Source aligned to 8 byte boundary
-    mov     r8, qword [rsi]                 ; Read qword
+    mov     r8, qword [rsi + rax]           ; Read qword
 
     writebyte 8, 1, 1, r8                   ; First byte
     writebyte 8, 1, 1, r8                   ; Second byte
@@ -121,10 +119,10 @@ cldm_avx2_strscpy:
     writebyte 8, 1, 1, r8                   ; Seventh byte
     writebyte 0, 1, 1, r8                   ; Eighth byte
 
-    alignjmp  8                             ; Jump to branch
+    alignjmp                                ; Jump to branch
 
 .rdxmmword:                                 ; Source aligned to 16 byte boundary
-    vmovdqa xmm0, [rsi]                     ; Read xmmword
+    vmovdqa xmm0, [rsi + rax]               ; Read xmmword
     vpcmpeqb    xmm1, xmm0, xmm15           ; Compare bytes to null
     vpmovmskb   r8d, xmm1                   ; Extract byte mask
 
@@ -138,7 +136,6 @@ cldm_avx2_strscpy:
 
     vmovdqu [rdi + rax], xmm0               ; Write xmmword
     add     rax, 0x10                       ; Increment size
-    add     rsi, 0x10                       ; Advance source address
 
     cmp     rax, rdx                        ; Compare against remaining bytes in destination
     jnb     .epi_ovf
@@ -209,7 +206,7 @@ cldm_avx2_strscpy:
     jmp     .epi_ovf
 
 .rdymmword:                                 ; Source aligned to 32 byte boundary
-    vmovdqa ymm0, [rsi]                     ; Read ymmword
+    vmovdqa ymm0, [rsi + rax]               ; Read ymmword
     vpcmpeqb    ymm1, ymm0, ymm15           ; Compare bytes to null
     vpmovmskb   r8d, ymm1                   ; Extract byte mask
 
@@ -223,7 +220,6 @@ cldm_avx2_strscpy:
 
     vmovdqu [rdi + rax], ymm0               ; Write ymmword
     add     rax, 0x20                       ; Increment size
-    add     rsi, 0x20                       ; Advance source address
 
     jmp     .rdymmword
 
