@@ -319,18 +319,14 @@ void cldm_argp_usage(char const *argv0) {
     char buffer[CLDM_ARGP_BUFSIZE];
     char tmp[CLDM_ARGP_BUFSIZE];
     struct cldm_argp_param *param;
-    char const *basename;
     char const **doc;
     size_t tmppos;
     size_t bufpos;
 
     cldm_static_assert(cldm_arrsize(cldm_argp_params) - 1 == cldm_arrsize(cldm_argp_params_doc), "Size mismatch between parameters and doc strings");
 
-    basename = strrchr(argv0, '/');
-    basename = basename ? basename + 1 : argv0;
-
     cldm_log("cldm -- unit test and mocking framework\n");
-    cldm_log("Usage:\n %s [OPTION]... [FILE]...\n", basename);
+    cldm_log("Usage:\n %s [OPTION]... [FILE]...\n", cldm_basename(argv0));
     cldm_log("Options:");
 
     cldm_for_each_zip(doc, param, cldm_argp_params_doc, cldm_argp_params) {
