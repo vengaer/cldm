@@ -27,14 +27,12 @@ struct cldm_extended_threadargs {
     struct cldm_args const *args;
 };
 static struct cldm_threadargs cldm_threadargs[CLDM_MAX_THREADS];
-static unsigned long long ntest_per_thread[CLDM_MAX_THREADS];
-static unsigned long long startidx_per_thread[CLDM_MAX_THREADS];
+static unsigned long long thread_ntests[CLDM_MAX_THREADS];
+static unsigned long long thread_startidx[CLDM_MAX_THREADS];
 static struct cldm_auxprocs auxprocs;
 
 static void *cldm_thread_run(void *data) {
     struct cldm_threadargs *thrdargs;
-    unsigned long long startidx;
-    unsigned long long ntests;
     bool init_successful;
     thrdargs = data;
 
@@ -48,11 +46,8 @@ static void *cldm_thread_run(void *data) {
         return 0;
     }
 
-    ntests = ntest_per_thread[thrdargs->id];
-    startidx = startidx_per_thread[thrdargs->id];
-
-    for(unsigned i = 0; i < ntests; i++) {
-        if(!cldm_test_run(thrdargs->id, &(*thrdargs->records)[startidx + i], &auxprocs, thrdargs->fail_fast)) {
+    for(unsigned i = 0; i < thread_ntests[thrdargs->id]; i++) {
+        if(!cldm_test_run(thrdargs->id, &(*thrdargs->records)[thread_startidx[thrdargs->id] + i], &auxprocs, thrdargs->fail_fast)) {
             break;
         }
     }
@@ -99,7 +94,7 @@ static void *cldm_parallel_collect_and_run(void *data) {
         cldm_err("Test collection failed");
         /* Allow all threads to run, but do nothing, to bypass barrier */
         for(unsigned i = 0; i < cldm_arrsize(cldm_threadargs); i++) {
-            ntest_per_thread[i] = 0;
+            thread_ntests[i] = 0;
         }
         goto epilogue;
     }
@@ -120,9 +115,9 @@ static void *cldm_parallel_collect_and_run(void *data) {
     /* Distribute across threads */
     startidx = 0u;
     for(unsigned i = 0; i < ethrdargs->args->jobs; i++) {
-        ntest_per_thread[i] = ntests / ethrdargs->args->jobs + (i < (ntests % ethrdargs->args->jobs));
-        startidx_per_thread[i] = startidx;
-        startidx += ntest_per_thread[i];
+        thread_ntests[i] = ntests / ethrdargs->args->jobs + (i < (ntests % ethrdargs->args->jobs));
+        thread_startidx[i] = startidx;
+        startidx += thread_ntests[i];
     }
 
     /* Collect auxiliary procedures */
@@ -137,6 +132,7 @@ static void *cldm_parallel_collect_and_run(void *data) {
 epilogue:
     return cldm_thread_run(ethrdargs->thrdargs);
 }
+
 
 int cldm_parallel_run(struct cldm_elfmap const *restrict map, struct cldm_args const *restrict args) {
     pthread_barrier_t barrier;
