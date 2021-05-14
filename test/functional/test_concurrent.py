@@ -85,6 +85,51 @@ def test_concurrent_execution():
     duration = datetime.datetime.now() - start
     assert duration.seconds < 20
 
+def test_global_setup():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)          \
+        .append_include('cldm_thread.h', system_header=False)   \
+        .append_include('stdio.h')                              \
+        .append_include('stdlib.h')
+
+    with cgen.open_macro('GLOBAL_SETUP'):
+        cgen.append_line('EXPECT_CALL(atoi).WILL_REPEATEDLY(RETURN(1));')
+
+    for i in range(2):
+        with cgen.open_macro('TEST', 'test{}'.format(i)):
+            cgen.append_line('ASSERT_EQ(atoi("18"), 1);')
+
+    cgen.write()
+    gen_makefile()
+
+    assert exec_bash('make -C {}'.format(working_dir))[0] == 0
+    assert os.system(gen_runcmd('-j2')) == 0
+
+def test_global_teardown():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)          \
+        .append_include('cldm_thread.h', system_header=False)   \
+        .append_include('stdio.h')                              \
+        .append_include('stdlib.h')
+
+    with cgen.open_macro('GLOBAL_SETUP'):
+        cgen.append_line('EXPECT_CALL(atoi).WILL_REPEATEDLY(RETURN(1));')
+
+    with cgen.open_macro('GLOBAL_TEARDOWN'):
+        cgen.append_line('if(atoi("18") != 1) {')    \
+            .append_line('  exit(1);')              \
+            .append_line('}')
+
+    for i in range(2):
+        with cgen.open_macro('TEST', 'test{}'.format(i)):
+            pass
+
+    cgen.write()
+    gen_makefile()
+
+    assert exec_bash('make -C {}'.format(working_dir))[0] == 0
+    assert os.system(gen_runcmd('-j2')) == 0
+
 def test_concurrent_setup_2():
     do_concurrent_setup_test(2)
 
