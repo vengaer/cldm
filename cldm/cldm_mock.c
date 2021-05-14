@@ -4,6 +4,7 @@
 
 cldm_aligned_mockinfo mockinfos[CLDM_MAX_THREADS];
 cldm_aligned_bool cldm_mock_force_disable[CLDM_MAX_THREADS];
+bool cldm_mock_global_context;
 
 bool cldm_mock_disabled(void);
 bool cldm_mock_enabled(void);

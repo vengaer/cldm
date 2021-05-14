@@ -129,9 +129,10 @@ static void *cldm_parallel_collect_and_run(void *data) {
     cldm_collect_auxprocs(&auxprocs, ethrdargs->map);
 
     /* Issue global setup while other threads are blocked */
-    /* TODO: mock all threads */
-    cldm_mock_enable() {
-        auxprocs.global_setup();
+    cldm_mock_global() {
+        cldm_mock_enable() {
+            auxprocs.global_setup();
+        }
     }
 epilogue:
     return cldm_thread_run(ethrdargs->thrdargs);
@@ -196,9 +197,10 @@ int cldm_parallel_run(struct cldm_elfmap const *restrict map, struct cldm_args c
             cldm_err("Could not join thread %u: %s", i + 1, strerror(err));
         }
     }
-    /* TODO: mock all threads */
-    cldm_mock_enable() {
-        auxprocs.global_teardown();
+    cldm_mock_global() {
+        cldm_mock_enable() {
+            auxprocs.global_teardown();
+        }
     }
 
     err = cldm_test_summary();

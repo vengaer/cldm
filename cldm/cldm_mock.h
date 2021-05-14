@@ -22,6 +22,7 @@ typedef cldm_cachealign(bool) cldm_aligned_bool;
 
 extern cldm_aligned_mockinfo mockinfos[CLDM_MAX_THREADS];
 extern cldm_aligned_bool cldm_mock_force_disable[CLDM_MAX_THREADS];
+extern bool cldm_mock_global_context;
 
 /* Must be called in a sequential context */
 void cldm_mock_enable_all(void);
@@ -57,6 +58,14 @@ inline bool cldm_mock_enabled(void) {
         cldm_cat_expand(cldm_mockdble_cur,__LINE__) =                                                       \
             (cldm_mock_force_disable[cldm_cat_expand(cldm_mockdble_tid,__LINE__)].data =                    \
                 cldm_cat_expand(cldm_mockdble_sav,__LINE__), false))
+
+/* May only be used in a sequential context */
+#define cldm_mock_global()  \
+    for(unsigned cldm_cat_expand(cldm_mock_gbl_sav,__LINE__) = cldm_mock_global_context,                    \
+                 cldm_cat_expand(cldm_mock_gbl_cur,__LINE__) = (cldm_mock_global_context = true);           \
+        cldm_cat_expand(cldm_mock_gbl_cur,__LINE__);                                                        \
+        cldm_cat_expand(cldm_mock_gbl_cur,__LINE__) =                                                       \
+            (cldm_mock_global_context = cldm_cat_expand(cldm_mock_gbl_sav,__LINE__), false))
 
 #define cldm_mock_function2(...)   cldm_mock_function(__VA_ARGS__)
 #define cldm_mock_function3(...)   cldm_mock_function(__VA_ARGS__)
@@ -192,18 +201,19 @@ inline bool cldm_mock_enabled(void) {
 #define cldm_mock_function_void0_1(name) CLDM_MOCK_FUNCTION_VOID(name)
 #define cldm_mock_function_void0_2(name, _) CLDM_MOCK_FUNCTION_VOID(name)
 
-#define cldm_will(invocations, ...)                                                                                                     \
-        __VA_ARGS__;                                                                                                                    \
-        *(int *)((unsigned char *)mockinfos[cldm_cat_expand(cldm_exp_tid,__LINE__)].data->addr +                                        \
-                                  mockinfos[cldm_cat_expand(cldm_exp_tid,__LINE__)].data->invocations_offset) = invocations;            \
-        cldm_rtassert((*(int *)((unsigned char *)mockinfos[cldm_cat_expand(cldm_exp_tid,__LINE__)].data->addr +                         \
-                                                 mockinfos[cldm_cat_expand(cldm_exp_tid,__LINE__)].data->invocations_offset)) > -2);    \
+#define cldm_will(invocations, ...)                                                                                                         \
+            __VA_ARGS__;                                                                                                                    \
+            *(int *)((unsigned char *)mockinfos[cldm_cat_expand(cldm_exp_tid,__LINE__)].data->addr +                                        \
+                                    mockinfos[cldm_cat_expand(cldm_exp_tid,__LINE__)].data->invocations_offset) = invocations;              \
+            cldm_rtassert((*(int *)((unsigned char *)mockinfos[cldm_cat_expand(cldm_exp_tid,__LINE__)].data->addr +                         \
+                                                    mockinfos[cldm_cat_expand(cldm_exp_tid,__LINE__)].data->invocations_offset)) > -2);     \
+        }                                                                                                                                   \
     } while (0)
 
-#define cldm_set_opmode(mode)                                                                   \
-    enum cldm_opmode *cldm_cat_expand(cldm_opdata, __LINE__) =                                  \
-        (enum cldm_opmode *)((unsigned char*)mockinfos[cldm_thread_id()].data->addr +           \
-                                             mockinfos[cldm_thread_id()].data->opmode_offset);  \
+#define cldm_set_opmode(mode)                                                                                           \
+    enum cldm_opmode *cldm_cat_expand(cldm_opdata, __LINE__) =                                                          \
+        (enum cldm_opmode *)((unsigned char*)mockinfos[cldm_cat_expand(cldm_exp_tid,__LINE__)].data->addr +             \
+                                             mockinfos[cldm_cat_expand(cldm_exp_tid,__LINE__)].data->opmode_offset);    \
     *cldm_cat_expand(cldm_opdata, __LINE__) = mode
 
 #define cldm_setop(field, value, mode)      \
@@ -444,13 +454,19 @@ enum cldm_opmode {
 #define CLDM_MOCK_FUNCTION_VOID0(...)   \
     cldm_cat_expand(cldm_mock_function_void0_, cldm_count(__VA_ARGS__))(__VA_ARGS__)
 
-#define CLDM_EXPECT_CALL(name)                                                          \
-    do {                                                                                \
-        extern cldm_aligned_mock_ ## name ## _ctx cldm_mock_ ## name[CLDM_MAX_THREADS]; \
-        unsigned cldm_cat_expand(cldm_exp_tid,__LINE__) = cldm_thread_id();             \
-        mockinfos[cldm_cat_expand(cldm_exp_tid,__LINE__)].data =                        \
-            &cldm_mock_ ## name[cldm_cat_expand(cldm_exp_tid,__LINE__)].data.info;      \
-        cldm_mock_ ## name[cldm_cat_expand(cldm_exp_tid,__LINE__)].data
+#define CLDM_EXPECT_CALL(name)                                                                                                              \
+    do {                                                                                                                                    \
+        extern cldm_aligned_mock_ ## name ## _ctx cldm_mock_ ## name[CLDM_MAX_THREADS];                                                     \
+        unsigned cldm_cat_expand(cldm_exp_ttid,__LINE__) = cldm_thread_id();                                                                \
+        for(unsigned cldm_cat_expand(cldm_exp_tid,__LINE__) =                                                                               \
+                cldm_cat_expand(cldm_exp_ttid,__LINE__) * !cldm_mock_global_context,                                                        \
+                cldm_cat_expand(cldm_exp_tidmax,__LINE__) = !cldm_mock_global_context * (cldm_cat_expand(cldm_exp_ttid,__LINE__) + 1) +     \
+                                                             cldm_mock_global_context * cldm_jobs;                                          \
+            cldm_cat_expand(cldm_exp_tid,__LINE__) < cldm_cat_expand(cldm_exp_tidmax,__LINE__);                                             \
+            ++cldm_cat_expand(cldm_exp_tid,__LINE__)) {                                                                                     \
+            mockinfos[cldm_cat_expand(cldm_exp_tid,__LINE__)].data =                        \
+                &cldm_mock_ ## name[cldm_cat_expand(cldm_exp_tid,__LINE__)].data.info;      \
+            cldm_mock_ ## name[cldm_cat_expand(cldm_exp_tid,__LINE__)].data
 
 #define CLDM_WILL_ONCE(...) cldm_will(1, __VA_ARGS__)
 #define CLDM_WILL_REPEATEDLY(...) cldm_will(-1, __VA_ARGS__)
