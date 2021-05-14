@@ -14,13 +14,8 @@ enum { STRINGSIZE = 8192 };
 
 extern long long cldm_avx2_strscpy(char *restrict dst, char const *restrict src, unsigned long long dstsize);
 
-static size_t compute_alignment(void const *adstr) {
-    size_t boundary = 1ull << (sizeof(size_t) * CHAR_BIT - 1);
-    while(((size_t)adstr % boundary)) {
-        boundary >>= 1u;
-    }
-
-    return boundary;
+static inline size_t compute_alignment(void const *adstr) {
+    return (size_t)adstr & -(size_t)adstr;
 }
 
 static char ascii_cvt(uint8_t src) {
