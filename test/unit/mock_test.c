@@ -54,3 +54,28 @@ TEST(cldm_mock_enable) {
 
     ASSERT_FALSE(cldm_mock_disabled());
 }
+
+TEST(cldm_mock_global) {
+    ASSERT_FALSE(cldm_mock_global_context);
+
+    cldm_mock_global() {
+        ASSERT_TRUE(cldm_mock_global_context);
+    }
+
+    ASSERT_FALSE(cldm_mock_global_context);
+
+    cldm_mock_global_context = true;
+
+    cldm_mock_global() {
+        ASSERT_TRUE(cldm_mock_global_context);
+    }
+    ASSERT_TRUE(cldm_mock_global_context);
+
+    cldm_mock_global_context = false;
+
+    cldm_mock_global() {
+        ASSERT_TRUE(cldm_mock_global_context);
+    }
+
+    ASSERT_FALSE(cldm_mock_global_context);
+}
