@@ -28,7 +28,7 @@ def do_concurrent_setup_test(nthreads):
         .append_include('cldm_thread.h', system_header=False)
 
     cgen.append_line('static int vals[{}];'.format(nthreads))
-    with cgen.open_macro('TEST_SETUP'):
+    with cgen.open_macro('LOCAL_SETUP'):
         cgen.append_line('vals[cldm_thread_id()] = 1;')
     for i in range(nthreads):
         with cgen.open_macro('TEST', 'test{}'.format(i)):
@@ -47,7 +47,7 @@ def do_concurrent_teardown_test(nthreads):
         .append_include('stdlib.h')
 
     cgen.append_line('static int vals[{}];'.format(nthreads))
-    with cgen.open_macro('TEST_TEARDOWN'):
+    with cgen.open_macro('LOCAL_TEARDOWN'):
         cgen.append_line('vals[cldm_thread_id()] = 0;')
     with cgen.open_macro('GLOBAL_TEARDOWN'):
         with cgen.open_for('int', 'i', 0, str(nthreads)):

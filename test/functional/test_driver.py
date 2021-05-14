@@ -39,7 +39,7 @@ def test_setup_detection():
     cgen.append_include('cldm.h', system_header=False)  \
         .append_include('stdio.h')
 
-    with cgen.open_macro('TEST_SETUP'):
+    with cgen.open_macro('LOCAL_SETUP'):
         cgen.append_line('puts("Local setup");')
     with cgen.open_macro('TEST', 'baz'):
         pass
@@ -54,7 +54,7 @@ def test_teardown_detection():
     cgen.append_include('cldm.h', system_header=False)  \
         .append_include('stdio.h')
 
-    with cgen.open_macro('TEST_TEARDOWN'):
+    with cgen.open_macro('LOCAL_TEARDOWN'):
         cgen.append_line('puts("Local teardown");')
     with cgen.open_macro('TEST', 'baz'):
         pass
@@ -114,7 +114,7 @@ def test_setup_invoked_before_tests():
     cgen.append_include('cldm.h', system_header=False)  \
         .append_include('stdio.h')
 
-    with cgen.open_macro('TEST_SETUP'):
+    with cgen.open_macro('LOCAL_SETUP'):
         cgen.append_line('puts(__func__);')
     with cgen.open_macro('TEST', 'foo'):
         cgen.append_line('puts(__func__);')
@@ -131,7 +131,7 @@ def test_teardown_invoked_after_tests():
     cgen.append_include('cldm.h', system_header=False)  \
         .append_include('stdio.h')
 
-    with cgen.open_macro('TEST_TEARDOWN'):
+    with cgen.open_macro('LOCAL_TEARDOWN'):
         cgen.append_line('puts(__func__);')
     with cgen.open_macro('TEST', 'foo'):
         cgen.append_line('puts(__func__);')
@@ -186,9 +186,9 @@ def test_setup_teardown():
         cgen.append_line('puts(__func__);')
     with cgen.open_macro('GLOBAL_TEARDOWN'):
         cgen.append_line('puts(__func__);')
-    with cgen.open_macro('TEST_SETUP'):
+    with cgen.open_macro('LOCAL_SETUP'):
         cgen.append_line('puts(__func__);')
-    with cgen.open_macro('TEST_TEARDOWN'):
+    with cgen.open_macro('LOCAL_TEARDOWN'):
         cgen.append_line('puts(__func__);')
     with cgen.open_macro('TEST', 'foo'):
         cgen.append_line('puts(__func__);')

@@ -20,10 +20,10 @@ struct cldm_auxprocs {
 #define cldm_global_teardown_ident      \
     cldm_global_teardown
 
-#define CLDM_TEST_SETUP()               \
+#define CLDM_LOCAL_SETUP()              \
     void cldm_expand(cldm_local_setup_ident)(void)
 
-#define CLDM_TEST_TEARDOWN()            \
+#define CLDM_LOCAL_TEARDOWN()           \
     void cldm_expand(cldm_local_teardown_ident)(void)
 
 #define CLDM_GLOBAL_SETUP()             \
@@ -39,8 +39,8 @@ struct cldm_auxprocs {
     void name(void)
 
 #ifndef CLDM_PREFIX_ONLY
-#define TEST_SETUP()          CLDM_TEST_SETUP()
-#define TEST_TEARDOWN()       CLDM_TEST_TEARDOWN()
+#define LOCAL_SETUP()         CLDM_LOCAL_SETUP()
+#define LOCAL_TEARDOWN()      CLDM_LOCAL_TEARDOWN()
 
 #define GLOBAL_SETUP()        CLDM_GLOBAL_SETUP()
 #define GLOBAL_TEARDOWN()     CLDM_GLOBAL_TEARDOWN()
