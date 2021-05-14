@@ -244,146 +244,178 @@ enum cldm_opmode {
     cldm_op_assignarg
 };
 
-#define cldm_generate_mock_ctx(utype, rettype, name, ...)   \
-    struct cldm_mock_ ## name ## _ctx {                     \
-        struct cldm_mockinfo info;                          \
-        int invocations;                                    \
-        struct cldm_mock_ ## name ## _opdata{               \
-            enum cldm_opmode mode;                          \
-            union {                                         \
-                rettype(*invoke)(__VA_ARGS__);              \
-                utype retval;                               \
-                utype counter;                              \
-                unsigned argindex;                          \
-                struct cldm_assign_ctx assign_ctx;          \
-                struct cldm_assignarg_ctx assignarg_ctx;    \
-            } act;                                          \
-        } opdata;                                           \
+#define cldm_generate_mock_ctx(utype, rettype, name, ...)                                           \
+    struct cldm_mock_ ## name ## _ctx {                                                             \
+        struct cldm_mockinfo info;                                                                  \
+        int invocations;                                                                            \
+        struct cldm_mock_ ## name ## _opdata{                                                       \
+            enum cldm_opmode mode;                                                                  \
+            union {                                                                                 \
+                rettype(*invoke)(__VA_ARGS__);                                                      \
+                utype retval;                                                                       \
+                utype counter;                                                                      \
+                unsigned argindex;                                                                  \
+                struct cldm_assign_ctx assign_ctx;                                                  \
+                struct cldm_assignarg_ctx assignarg_ctx;                                            \
+            } act;                                                                                  \
+        } opdata;                                                                                   \
+    };                                                                                              \
+    typedef cldm_cachealign(struct cldm_mock_ ## name ## _ctx) cldm_aligned_mock_ ## name ## _ctx
+
+#define cldm_populate_mockctx_single(idx, name)                                                     \
+    {                                                                                               \
+        .info = {                                                                                   \
+            .addr = &cldm_mock_ ## name[idx].data,                                                  \
+            .invocations_offset = cldm_offset(struct cldm_mock_ ## name ## _ctx, invocations),      \
+            .opmode_offset = cldm_offset(struct cldm_mock_ ## name ## _ctx, opdata) +               \
+                             cldm_offset(struct cldm_mock_ ## name ## _opdata, mode)                \
+        },                                                                                          \
+        .invocations = 0,                                                                           \
+        .opdata = {                                                                                 \
+            .mode = cldm_op_invoke,                                                                 \
+            .act.invoke = 0                                                                         \
+        }                                                                                           \
     }
 
+#define cldm_populate_mockctx(name)                     \
+    [0].data  = cldm_populate_mockctx_single(0, name),  \
+    [1].data  = cldm_populate_mockctx_single(1, name),  \
+    [2].data  = cldm_populate_mockctx_single(2, name),  \
+    [3].data  = cldm_populate_mockctx_single(3, name),  \
+    [4].data  = cldm_populate_mockctx_single(4, name),  \
+    [5].data  = cldm_populate_mockctx_single(5, name),  \
+    [6].data  = cldm_populate_mockctx_single(6, name),  \
+    [7].data  = cldm_populate_mockctx_single(7, name),  \
+    [8].data  = cldm_populate_mockctx_single(8, name),  \
+    [9].data  = cldm_populate_mockctx_single(9, name),  \
+    [10].data = cldm_populate_mockctx_single(10, name), \
+    [11].data = cldm_populate_mockctx_single(11, name), \
+    [12].data = cldm_populate_mockctx_single(12, name), \
+    [13].data = cldm_populate_mockctx_single(13, name), \
+    [14].data = cldm_populate_mockctx_single(14, name), \
+    [15].data = cldm_populate_mockctx_single(15, name), \
+    [16].data = cldm_populate_mockctx_single(16, name), \
+    [17].data = cldm_populate_mockctx_single(17, name), \
+    [18].data = cldm_populate_mockctx_single(18, name), \
+    [19].data = cldm_populate_mockctx_single(19, name), \
+    [20].data = cldm_populate_mockctx_single(20, name), \
+    [21].data = cldm_populate_mockctx_single(21, name), \
+    [22].data = cldm_populate_mockctx_single(22, name), \
+    [23].data = cldm_populate_mockctx_single(23, name), \
+    [24].data = cldm_populate_mockctx_single(24, name), \
+    [25].data = cldm_populate_mockctx_single(25, name), \
+    [26].data = cldm_populate_mockctx_single(26, name), \
+    [27].data = cldm_populate_mockctx_single(27, name), \
+    [28].data = cldm_populate_mockctx_single(28, name), \
+    [29].data = cldm_populate_mockctx_single(29, name), \
+    [30].data = cldm_populate_mockctx_single(30, name), \
+    [31].data = cldm_populate_mockctx_single(31, name)
+
 #ifdef CLDM_GENERATE_SYMBOLS
-#define cldm_mock_function(rvinit, call_prefix, retstatement, utype, rettype, name, ...)                            \
-    cldm_generate_mock_ctx(utype, rettype, name, __VA_ARGS__);                                                      \
-    struct cldm_mock_ ## name ## _ctx cldm_mock_ ## name = {                                                        \
-        .info = {                                                                                                   \
-            .addr = &cldm_mock_ ## name,                                                                            \
-            .invocations_offset = cldm_offset(struct cldm_mock_ ## name ## _ctx, invocations),                      \
-            .opmode_offset = cldm_offset(struct cldm_mock_ ## name ## _ctx, opdata) +                               \
-                             cldm_offset(struct cldm_mock_ ## name ## _opdata, mode)                                \
-        },                                                                                                          \
-        .invocations = 0,                                                                                           \
-        .opdata = {                                                                                                 \
-            .mode = cldm_op_invoke,                                                                                 \
-            .act.invoke = 0                                                                                         \
-        }                                                                                                           \
-    };                                                                                                              \
-    rettype name(cldm_genparams(__VA_ARGS__)) {                                                                     \
-        rvinit;                                                                                                     \
-        void const *argaddrs[cldm_count(__VA_ARGS__)];                                                              \
-        cldm_argframe_populate(argaddrs, __VA_ARGS__);                                                              \
-        if(cldm_mock_enabled() && cldm_mock_ ## name.invocations) {                                                 \
-            if(cldm_mock_ ## name.invocations != -1) {                                                              \
-                --cldm_mock_ ## name.invocations;                                                                   \
-            }                                                                                                       \
-            switch(cldm_mock_ ## name.opdata.mode) {                                                                \
-                case cldm_op_invoke:                                                                                \
-                    call_prefix cldm_mock_ ## name.opdata.act.invoke(cldm_arglist(cldm_count(__VA_ARGS__)));        \
-                    break;                                                                                          \
-                case cldm_op_return:                                                                                \
-                    call_prefix cldm_mock_ ## name.opdata.act.retval;                                               \
-                    break;                                                                                          \
-                case cldm_op_increment:                                                                             \
-                    call_prefix ++cldm_mock_ ## name.opdata.act.counter;                                            \
-                    break;                                                                                          \
-                case cldm_op_retarg:                                                                                \
-                    cldm_rtassert(cldm_mock_ ## name.opdata.act.argindex < cldm_arrsize(argaddrs),                  \
-                                 "Attempt to access parameter %u in function taking only %zu",                      \
-                                 cldm_mock_ ## name.opdata.act.argindex + 1, cldm_arrsize(argaddrs));               \
-                    call_prefix *(utype *)argaddrs[cldm_mock_ ## name.opdata.act.argindex];                         \
-                    break;                                                                                          \
-                case cldm_op_retpointee:                                                                            \
-                    cldm_rtassert(cldm_mock_ ## name.opdata.act.argindex < cldm_arrsize(argaddrs),                  \
-                                 "Attempt to access parameter %u in function taking only %zu",                      \
-                                 cldm_mock_ ## name.opdata.act.argindex + 1, cldm_arrsize(argaddrs));               \
-                    call_prefix **(utype **)argaddrs[cldm_mock_ ## name.opdata.act.argindex];                       \
-                    break;                                                                                          \
-                case cldm_op_assign:                                                                                \
-                    memcpy(cldm_mock_ ## name.opdata.act.assign_ctx.lhs,                                            \
-                           cldm_mock_ ## name.opdata.act.assign_ctx.rhs,                                            \
-                           cldm_mock_ ## name.opdata.act.assign_ctx.argsize);                                       \
-                    break;                                                                                          \
-                case cldm_op_assignarg:                                                                             \
-                    cldm_rtassert(cldm_mock_ ## name.opdata.act.assignarg_ctx.argidx < cldm_arrsize(argaddrs),      \
-                                 "Attempt to access parameter %u in function taking only %zu",                      \
-                                 cldm_mock_ ## name.opdata.act.assignarg_ctx.argidx + 1, cldm_arrsize(argaddrs));   \
-                    memcpy(cldm_mock_ ## name.opdata.act.assignarg_ctx.addr,                                        \
-                           argaddrs[cldm_mock_ ## name.opdata.act.assignarg_ctx.argidx],                            \
-                           cldm_mock_ ## name.opdata.act.assignarg_ctx.argsize);                                    \
-                    break;                                                                                          \
-                default:                                                                                            \
-                    cldm_rtassert(0, "Invalid opmode %d", cldm_mock_ ## name.opdata.mode);                          \
-            }                                                                                                       \
-            retstatement;                                                                                           \
-        }                                                                                                           \
-        rettype(* cldm_handle_ ## name)(__VA_ARGS__);                                                               \
-        cldm_mock_disable() {                                                                                       \
-            *(void **) (& cldm_handle_ ## name) = cldm_dlsym_next(#name);                                           \
-            cldm_rtassert(cldm_handle_ ## name);                                                                    \
-            call_prefix cldm_handle_ ## name(cldm_arglist(cldm_count(__VA_ARGS__)));                                \
-        }                                                                                                           \
-        retstatement;                                                                                               \
-    }                                                                                                               \
+#define cldm_mock_function(rvinit, call_prefix, retstatement, utype, rettype, name, ...)                                            \
+    cldm_generate_mock_ctx(utype, rettype, name, __VA_ARGS__);                                                                      \
+    cldm_aligned_mock_ ## name ## _ctx cldm_mock_ ## name[CLDM_MAX_THREADS] = {                                                     \
+        cldm_populate_mockctx(name)                                                                                                 \
+    };                                                                                                                              \
+    rettype name(cldm_genparams(__VA_ARGS__)) {                                                                                     \
+        rvinit;                                                                                                                     \
+        unsigned thread_id = cldm_thread_id();                                                                                      \
+        void const *argaddrs[cldm_count(__VA_ARGS__)];                                                                              \
+        cldm_argframe_populate(argaddrs, __VA_ARGS__);                                                                              \
+        if(cldm_mock_enabled() && cldm_mock_ ## name[thread_id].data.invocations) {                                                 \
+            if(cldm_mock_ ## name[thread_id].data.invocations != -1) {                                                              \
+                --cldm_mock_ ## name[thread_id].data.invocations;                                                                   \
+            }                                                                                                                       \
+            switch(cldm_mock_ ## name[thread_id].data.opdata.mode) {                                                                \
+                case cldm_op_invoke:                                                                                                \
+                    call_prefix cldm_mock_ ## name[thread_id].data.opdata.act.invoke(cldm_arglist(cldm_count(__VA_ARGS__)));        \
+                    break;                                                                                                          \
+                case cldm_op_return:                                                                                                \
+                    call_prefix cldm_mock_ ## name[thread_id].data.opdata.act.retval;                                               \
+                    break;                                                                                                          \
+                case cldm_op_increment:                                                                                             \
+                    call_prefix ++cldm_mock_ ## name[thread_id].data.opdata.act.counter;                                            \
+                    break;                                                                                                          \
+                case cldm_op_retarg:                                                                                                \
+                    cldm_rtassert(cldm_mock_ ## name[thread_id].data.opdata.act.argindex < cldm_arrsize(argaddrs),                  \
+                                 "Attempt to access parameter %u in function taking only %zu",                                      \
+                                 cldm_mock_ ## name[thread_id].data.opdata.act.argindex + 1, cldm_arrsize(argaddrs));               \
+                    call_prefix *(utype *)argaddrs[cldm_mock_ ## name[thread_id].data.opdata.act.argindex];                         \
+                    break;                                                                                                          \
+                case cldm_op_retpointee:                                                                                            \
+                    cldm_rtassert(cldm_mock_ ## name[thread_id].data.opdata.act.argindex < cldm_arrsize(argaddrs),                  \
+                                 "Attempt to access parameter %u in function taking only %zu",                                      \
+                                 cldm_mock_ ## name[thread_id].data.opdata.act.argindex + 1, cldm_arrsize(argaddrs));               \
+                    call_prefix **(utype **)argaddrs[cldm_mock_ ## name[thread_id].data.opdata.act.argindex];                       \
+                    break;                                                                                                          \
+                case cldm_op_assign:                                                                                                \
+                    memcpy(cldm_mock_ ## name[thread_id].data.opdata.act.assign_ctx.lhs,                                            \
+                           cldm_mock_ ## name[thread_id].data.opdata.act.assign_ctx.rhs,                                            \
+                           cldm_mock_ ## name[thread_id].data.opdata.act.assign_ctx.argsize);                                       \
+                    break;                                                                                                          \
+                case cldm_op_assignarg:                                                                                             \
+                    cldm_rtassert(cldm_mock_ ## name[thread_id].data.opdata.act.assignarg_ctx.argidx < cldm_arrsize(argaddrs),      \
+                                 "Attempt to access parameter %u in function taking only %zu",                                      \
+                                 cldm_mock_ ## name[thread_id].data.opdata.act.assignarg_ctx.argidx + 1, cldm_arrsize(argaddrs));   \
+                    memcpy(cldm_mock_ ## name[thread_id].data.opdata.act.assignarg_ctx.addr,                                        \
+                           argaddrs[cldm_mock_ ## name[thread_id].data.opdata.act.assignarg_ctx.argidx],                            \
+                           cldm_mock_ ## name[thread_id].data.opdata.act.assignarg_ctx.argsize);                                    \
+                    break;                                                                                                          \
+                default:                                                                                                            \
+                    cldm_rtassert(0, "Invalid opmode %d", cldm_mock_ ## name[thread_id].data.opdata.mode);                          \
+            }                                                                                                                       \
+            retstatement;                                                                                                           \
+        }                                                                                                                           \
+        rettype(* cldm_handle_ ## name)(__VA_ARGS__);                                                                               \
+        cldm_mock_disable() {                                                                                                       \
+            *(void **) (& cldm_handle_ ## name) = cldm_dlsym_next(#name);                                                           \
+            cldm_rtassert(cldm_handle_ ## name);                                                                                    \
+            call_prefix cldm_handle_ ## name(cldm_arglist(cldm_count(__VA_ARGS__)));                                                \
+        }                                                                                                                           \
+        retstatement;                                                                                                               \
+    }                                                                                                                               \
     void cldm_trailing_ ## name (void)
 
-#define cldm_mock_function1(rvinit, call_prefix, retstatement, utype, rettype, name)            \
-    cldm_generate_mock_ctx(utype, rettype, name, void);                                         \
-    struct cldm_mock_ ## name ## _ctx cldm_mock_ ## name = {                                    \
-        .info = {                                                                               \
-            .addr = &cldm_mock_ ## name,                                                        \
-            .invocations_offset = cldm_offset(struct cldm_mock_ ## name ## _ctx, invocations),  \
-            .opmode_offset = cldm_offset(struct cldm_mock_ ## name ## _ctx, opdata) +           \
-                             cldm_offset(struct cldm_mock_ ## name ## _opdata, mode)            \
-        },                                                                                      \
-        .invocations = 0,                                                                       \
-        .opdata = {                                                                             \
-            .mode = cldm_op_invoke,                                                             \
-            .act.invoke = 0                                                                     \
-        }                                                                                       \
-    };                                                                                          \
-    rettype name(void) {                                                                        \
-        rvinit;                                                                                 \
-        if(cldm_mock_enabled() && cldm_mock_ ## name.invocations) {                             \
-            if(cldm_mock_ ## name.invocations != -1) {                                          \
-                --cldm_mock_ ## name.invocations;                                               \
-            }                                                                                   \
-            switch(cldm_mock_ ## name.opdata.mode) {                                            \
-                case cldm_op_invoke:                                                            \
-                    call_prefix cldm_mock_ ## name.opdata.act.invoke();                         \
-                    break;                                                                      \
-                case cldm_op_return:                                                            \
-                    call_prefix cldm_mock_ ## name.opdata.act.retval;                           \
-                    break;                                                                      \
-                case cldm_op_increment:                                                         \
-                    call_prefix ++cldm_mock_ ## name.opdata.act.counter;                        \
-                    break;                                                                      \
-                case cldm_op_assign:                                                            \
-                    memcpy(cldm_mock_ ## name.opdata.act.assign_ctx.lhs,                        \
-                           cldm_mock_ ## name.opdata.act.assign_ctx.rhs,                        \
-                           cldm_mock_ ## name.opdata.act.assign_ctx.argsize);                   \
-                    break;                                                                      \
-                default:                                                                        \
-                    cldm_rtassert(0, "Invalid opmode %d", cldm_mock_ ## name.opdata.mode);      \
-            }                                                                                   \
-            retstatement;                                                                       \
-        }                                                                                       \
-        rettype(* cldm_handle_ ## name)(void);                                                  \
-        cldm_mock_disable() {                                                                   \
-            *(void **) (& cldm_handle_ ## name) = cldm_dlsym_next(#name);                       \
-            cldm_rtassert(cldm_handle_ ## name);                                                \
-            call_prefix cldm_handle_ ## name ();                                                \
-        }                                                                                       \
-        retstatement;                                                                           \
-    }                                                                                           \
+#define cldm_mock_function1(rvinit, call_prefix, retstatement, utype, rettype, name)                        \
+    cldm_generate_mock_ctx(utype, rettype, name, void);                                                     \
+    cldm_aligned_mock_ ## name ## _ctx cldm_mock_ ## name[CLDM_MAX_THREADS] = {                             \
+        cldm_populate_mockctx(name)                                                                         \
+    };                                                                                                      \
+    rettype name(void) {                                                                                    \
+        rvinit;                                                                                             \
+        unsigned thread_id = cldm_thread_id();                                                              \
+        if(cldm_mock_enabled() && cldm_mock_ ## name[thread_id].data.invocations) {                         \
+            if(cldm_mock_ ## name[thread_id].data.invocations != -1) {                                      \
+                --cldm_mock_ ## name[thread_id].data.invocations;                                           \
+            }                                                                                               \
+            switch(cldm_mock_ ## name[thread_id].data.opdata.mode) {                                        \
+                    case cldm_op_invoke:                                                                    \
+                    call_prefix cldm_mock_ ## name[thread_id].data.opdata.act.invoke();                     \
+                    break;                                                                                  \
+                case cldm_op_return:                                                                        \
+                    call_prefix cldm_mock_ ## name[thread_id].data.opdata.act.retval;                       \
+                    break;                                                                                  \
+                case cldm_op_increment:                                                                     \
+                    call_prefix ++cldm_mock_ ## name[thread_id].data.opdata.act.counter;                    \
+                    break;                                                                                  \
+                case cldm_op_assign:                                                                        \
+                    memcpy(cldm_mock_ ## name[thread_id].data.opdata.act.assign_ctx.lhs,                    \
+                           cldm_mock_ ## name[thread_id].data.opdata.act.assign_ctx.rhs,                    \
+                           cldm_mock_ ## name[thread_id].data.opdata.act.assign_ctx.argsize);               \
+                    break;                                                                                  \
+                default:                                                                                    \
+                    cldm_rtassert(0, "Invalid opmode %d", cldm_mock_ ## name[thread_id].data.opdata.mode);  \
+            }                                                                                               \
+            retstatement;                                                                                   \
+        }                                                                                                   \
+        rettype(* cldm_handle_ ## name)(void);                                                              \
+        cldm_mock_disable() {                                                                               \
+            *(void **) (& cldm_handle_ ## name) = cldm_dlsym_next(#name);                                   \
+            cldm_rtassert(cldm_handle_ ## name);                                                            \
+            call_prefix cldm_handle_ ## name ();                                                            \
+        }                                                                                                   \
+        retstatement;                                                                                       \
+    }                                                                                                       \
     void cldm_trailing_ ## name (void)
 #else
 
@@ -414,9 +446,9 @@ enum cldm_opmode {
 
 #define CLDM_EXPECT_CALL(name)                                                                              \
     do {                                                                                                    \
-        extern struct cldm_mock_ ## name ## _ctx cldm_mock_ ## name;                                        \
-        mockinfos[cldm_thread_id()].data = &cldm_mock_ ## name.info;                                        \
-        cldm_mock_ ## name
+        extern cldm_aligned_mock_ ## name ## _ctx cldm_mock_ ## name[CLDM_MAX_THREADS];                      \
+        mockinfos[cldm_thread_id()].data = &cldm_mock_ ## name[cldm_thread_id()].data.info;                 \
+        cldm_mock_ ## name[cldm_thread_id()].data
 
 #define CLDM_WILL_ONCE(...) cldm_will(1, __VA_ARGS__)
 #define CLDM_WILL_REPEATEDLY(...) cldm_will(-1, __VA_ARGS__)
