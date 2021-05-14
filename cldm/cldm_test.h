@@ -12,7 +12,7 @@
 #include <stddef.h>
 
 /* Must be called in a sequential context */
-void cldm_test_register_total(size_t ntests);
+void cldm_test_register(size_t ntests, bool verbose);
 int cldm_test_summary(void);
 
 /* Thread safe */

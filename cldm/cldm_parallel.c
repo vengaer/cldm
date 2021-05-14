@@ -104,7 +104,7 @@ static void *cldm_parallel_collect_and_run(void *data) {
         goto epilogue;
     }
 
-    cldm_test_register_total((size_t)ntests);
+    cldm_test_register((size_t)ntests, ethrdargs->args->verbose);
     *ethrdargs->thrdargs->records = malloc(ntests * sizeof(**ethrdargs->thrdargs->records));
 
     if(!*ethrdargs->thrdargs->records) {

@@ -38,7 +38,7 @@ int cldm_sequential_run(struct cldm_elfmap const *restrict map, struct cldm_args
         return 1;
     }
 
-    cldm_test_register_total((size_t)ntests);
+    cldm_test_register((size_t)ntests, args->verbose);
     cldm_collect_auxprocs(&auxprocs, map);
 
     /* TODO: ensure mocking behavior is reflected on all threads */

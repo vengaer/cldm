@@ -17,6 +17,7 @@
 enum { CLDM_TESTBUFFER_SIZE = 16 };
 enum { CLDM_LOG_INITIAL_CAP = 32 };
 enum { CLDM_TEST_PRINT_WIDTH = 64 };
+enum { CLDM_TEST_PRINT_VERBOSE_ADJUST = 32 };
 enum { CLDM_INDEX_PRINT_WIDTH = 10 };
 enum { CLDM_MAX_EXPAND_SIZE = 256 };
 enum { CLDM_ASSERTION_SIZE = 1024 };
@@ -42,6 +43,7 @@ struct cldm_teststats {
 struct cldm_testbuffer {
     struct {
         char const *name;
+        char const *file;
         int namepad;
         bool pass;
     } stats[CLDM_TESTBUFFER_SIZE];
@@ -55,6 +57,7 @@ static cldm_cachealign(struct cldm_testbuffer) buffered_tests[CLDM_MAX_THREADS];
 static pthread_mutex_t io_lock;
 static size_t io_index;
 static size_t io_total;
+static bool io_verbose;
 
 #define record_failed_assertion(thread_id, ...)                                                         \
     do {                                                                                                \
@@ -102,7 +105,7 @@ static bool cldm_test_ensure_capacity(unsigned thread_id) {
     return true;
 }
 
-static void cldm_test_print(struct cldm_testbuffer const *buffer) {
+static void cldm_test_print(unsigned thread_id, struct cldm_testbuffer const *buffer) {
     int l;
     int idxpad;
     cldm_mutex_guard(&io_lock) {
@@ -110,35 +113,49 @@ static void cldm_test_print(struct cldm_testbuffer const *buffer) {
             ++io_index;
             l = cldm_strlitlen("(/)") + cldm_test_ndigits(io_index) + cldm_test_ndigits(io_total);
             idxpad = (l <= CLDM_INDEX_PRINT_WIDTH) * (CLDM_INDEX_PRINT_WIDTH - l);
-            cldm_log("[Running %s]%-*s (%zu/%zu)%-*s  %s",
-                      buffer->stats[i].name, buffer->stats[i].namepad, "",
-                      io_index, io_total, idxpad, "",
-                      buffer->stats[i].pass ? "pass" : "fail");
+            if(io_verbose) {
+                cldm_log("[Thread %u:%-*s running %s::%s]%-*s (%zu/%zu)%-*s  %s",
+                        thread_id, 2 - cldm_test_ndigits(thread_id), "", buffer->stats[i].file, buffer->stats[i].name,
+                        buffer->stats[i].namepad, "",
+                        io_index, io_total, idxpad, "",
+                        buffer->stats[i].pass ? "pass" : "fail");
+            }
+            else {
+                cldm_log("[Running %s]%-*s (%zu/%zu)%-*s  %s",
+                        buffer->stats[i].name, buffer->stats[i].namepad, "",
+                        io_index, io_total, idxpad, "",
+                        buffer->stats[i].pass ? "pass" : "fail");
+            }
         }
     }
 
 }
 
-static void cldm_test_schedule_print(unsigned thread_id) {
+static void cldm_test_schedule_print(unsigned thread_id, char const *file) {
     struct cldm_testbuffer *buffer;
-    int l;
+    int l0;
+    int l1;
 
     buffer = &buffered_tests[thread_id].data;
     if(buffer->size >= cldm_arrsize(buffer->stats)) {
-        cldm_test_print(buffer);
+        cldm_test_print(thread_id, buffer);
         buffer->size = 0;
     }
 
     buffer->stats[buffer->size].name = current_tests[thread_id].data.name;
+    buffer->stats[buffer->size].file = cldm_basename(file);
     buffer->stats[buffer->size].pass = current_tests[thread_id].data.pass;
-    l = strlen(current_tests[thread_id].data.name) + cldm_strlitlen("[Running ]");
-    buffer->stats[buffer->size].namepad = (l <= CLDM_TEST_PRINT_WIDTH) * (CLDM_TEST_PRINT_WIDTH - l);
+    l0 = strlen(current_tests[thread_id].data.name) + cldm_strlitlen("[Running ]") +
+            io_verbose * (strlen(buffer->stats[buffer->size].file) + cldm_strlitlen("Thread :"));
+    l1 = CLDM_TEST_PRINT_WIDTH + io_verbose * CLDM_TEST_PRINT_VERBOSE_ADJUST;
+    buffer->stats[buffer->size].namepad = (l0 <= l1) * (l1 - l0);
     ++buffer->size;
 }
 
-void cldm_test_register_total(size_t n) {
+void cldm_test_register(size_t n, bool verbose) {
     cldm_log("Collected %zu tests", (size_t)n);
     io_total = n;
+    io_verbose = verbose;
 }
 
 int cldm_test_summary(void) {
@@ -217,13 +234,13 @@ bool cldm_test_run(unsigned thread_id, struct cldm_testrec const *restrict recor
         auxprocs->local_teardown();
     }
 
-    cldm_test_schedule_print(thread_id);
+    cldm_test_schedule_print(thread_id, record->file);
 
     return !current_tests[thread_id].data.fatal_error && (!fail_fast || (fail_fast && current_tests[thread_id].data.pass));
 }
 
 void cldm_test_flush(unsigned thread_id) {
-    cldm_test_print(&buffered_tests[thread_id].data);
+    cldm_test_print(thread_id, &buffered_tests[thread_id].data);
 }
 
 void cldm_test_reduce(unsigned thread_id, unsigned offset) {
