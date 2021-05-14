@@ -10,7 +10,9 @@ enum { CLDM_ARGP_MAX_PARAMS = 128 };
 
 struct cldm_args {
     char const *redirect;
-    size_t posidx;
+    char **posparams;
+    unsigned nposparams;
+    unsigned jobs;
     enum cldm_capture capture;
     bool fail_fast;
     bool help;

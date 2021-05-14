@@ -7,8 +7,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define cldm_static_assert(condition, reason)   \
+#define cldm_static_assert2(condition, reason)      \
     ((void)sizeof(unsigned char[!!(condition) + !(condition) * -1]))
+
+#define cldm_static_assert1(condition)              \
+    cldm_static_assert2(condition, "")
+
+#define cldm_static_assert(...)                     \
+    cldm_overload(cldm_static_assert,__VA_ARGS__)
 
 #define cldm_rtassert_trigger(condition, ...)       \
     do {                                            \

@@ -145,6 +145,9 @@ struct cldm_ht_entry *cldm_ht_insert(struct cldm_ht *restrict ht, struct cldm_ht
     }
 
     slot = cldm_ht_probe(ht, entry, true);
+    if(!cldm_ht_slot_vacant(slot)) {
+        return 0;
+    }
     slot->ent = entry;
     ++ht->size;
     return slot->ent;

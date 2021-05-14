@@ -74,7 +74,7 @@ inline struct cldm_rbnode *cldm_rbnode_successor(struct cldm_rbnode *node) {
 }
 
 #define cldm_rbtree_for_each4(iter, tree, begin, end)           \
-    for(iter = begin;                                           \
+    for(iter = (tree)->size ? begin : end;                      \
         iter != end;                                            \
         iter = cldm_rbnode_successor(iter))
 

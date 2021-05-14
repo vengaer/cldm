@@ -29,7 +29,7 @@ def test_triggered_assertion_causes_failure():
     cgen.write()
     gen_makefile(__TESTFILE)
 
-    run(ContainsMatcher(r'foo.*\(\d+/\d+\).*fail'), ContainsMatcher(r'1/1\s*assertions\s*failed\s*across\s*1\s*test'), RvDiffMatcher(0))
+    run(ContainsMatcher(r'foo.*\(\d+/\d+\).*fail'), ContainsMatcher(r'1/1\s*assertions\s*failed\s*across\s*1/3\s*tests'), RvDiffMatcher(0))
 
 def test_violating_assertions_logged():
     cgen = CGen(__TESTFILE)
@@ -80,7 +80,7 @@ def test_number_of_failed_functions_logged():
     gen_makefile(__TESTFILE)
 
     run(ContainsMatcher(r'(foo|bar|baz).*fail.*(foo|bar|baz).*fail.*(foo|bar|baz).*fail'),
-        ContainsMatcher(r'3/3\s*assertions\s*failed\s*across\s*3\s*tests'),
+        ContainsMatcher(r'3/3\s*assertions\s*failed\s*across\s*3/3\s*tests'),
         RvDiffMatcher(0))
 
 def test_fails_only_on_assertion_triggered():
@@ -110,9 +110,7 @@ def test_failure_log_resizing():
     cgen.write()
     gen_makefile(__TESTFILE)
 
-    _, __, error = run(ContainsMatcher(r'foo.*fail'),
-                       ContainsMatcher(r'512/512\s*assertions\s*failed\s*across\s*1\s*test'),
-                       RvDiffMatcher(0))
+    error = run(ContainsMatcher(r'foo.*fail'), ContainsMatcher(r'512/512\s*assertions\s*failed\s*across\s*1/1\s*test'), RvDiffMatcher(0))[2]
 
     assert error.decode('utf-8').count('(1) == (0)') == 512
 

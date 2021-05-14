@@ -1,9 +1,10 @@
 #include "cldm_argp.h"
-#include "cldm_nfa.h"
 #include "cldm_log.h"
 #include "cldm_macro.h"
+#include "cldm_nfa.h"
 #include "cldm_ntbs.h"
 #include "cldm_rtassert.h"
+#include "cldm_thread.h"
 
 #include <limits.h>
 #include <stddef.h>
@@ -49,6 +50,7 @@ static bool cldm_argp_set_capture(struct cldm_argp_ctx *restrict, char const *re
 static bool cldm_argp_set_capture_none(struct cldm_argp_ctx *restrict, char const *restrict);
 static bool cldm_argp_set_redirect(struct cldm_argp_ctx *restrict, char const *restrict);
 static bool cldm_argp_set_posidx(struct cldm_argp_ctx *restrict, char const *restrict);
+static bool cldm_argp_set_jobs(struct cldm_argp_ctx *restrict, char const *restrict);
 
 static struct cldm_argp_param cldm_argp_params[] = {
     { 'v', "--verbose",           0,        cldm_argp_set_verbose      },
@@ -59,6 +61,7 @@ static struct cldm_argp_param cldm_argp_params[] = {
     { 'c', "--capture",           "STREAM", cldm_argp_set_capture      },
     { 's', "--capture-none",      0,        cldm_argp_set_capture_none },
     { 'd', "--redirect-captures", "FILE",   cldm_argp_set_redirect     },
+    { 'j', "--jobs",              "JOBS",   cldm_argp_set_jobs         },
     {  0,  "--",                  0,        cldm_argp_set_posidx       }
 };
 
@@ -70,7 +73,8 @@ static char const *cldm_argp_params_doc[] = {
     "Exit as soon as a test fails",
     "Capture output from STREAM and print it once all tests have finished. Valid options are 'none', 'stdout', 'stderr' and 'all'",
     "Same as --capture=none",
-    "Redirect captures to FILE instead of printing to console"
+    "Redirect captures to FILE instead of printing to console",
+    "Run tests concurrently using JOBS threads, max number is " cldm_str_expand(CLDM_MAX_THREADS)
 };
 
 static char const *cldm_argp_positional_doc = "If a [FILE]... list is specified, cldm will run only tests contained in the files specified.\n"
@@ -152,6 +156,38 @@ static bool cldm_argp_set_posidx(struct cldm_argp_ctx *restrict ctx, char const 
     return optarg;
 }
 
+static bool cldm_argp_set_jobs(struct cldm_argp_ctx *restrict ctx, char const *restrict optarg) {
+    char *end;
+    unsigned long n;
+
+    if(!*optarg) {
+        ctx->pending_arg = true;
+        ctx->assign_pending = cldm_argp_set_jobs;
+        return true;
+    }
+
+    n = strtoul(optarg, &end, 0);
+
+    if(*end) {
+        cldm_err("Invalid argument '%s' for --jobs, expected number", optarg);
+        return false;
+    }
+
+    if(!n) {
+        cldm_err("Invalid argument '%lu' for --jobs, need a non-zero number", n);
+        return false;
+    }
+
+    if(n > CLDM_MAX_THREADS) {
+        cldm_warn("Number of jobs exceeds maximum %d and will be clamped", CLDM_MAX_THREADS);
+        ctx->args->jobs = CLDM_MAX_THREADS;
+        return true;
+    }
+
+    ctx->args->jobs = n;
+    return true;
+}
+
 static bool cldm_argp_partition(struct cldm_argp_ctx *restrict ctx, unsigned char const *restrict posflags, int argc, char **restrict argv) {
     unsigned lidx;
     unsigned hidx;
@@ -177,7 +213,8 @@ static bool cldm_argp_partition(struct cldm_argp_ctx *restrict ctx, unsigned cha
 
     memcpy(&argv[1], tmp, lidx * sizeof(*tmp));
     memcpy(&argv[lidx + 1], &tmp[argc], (hidx - argc) * sizeof(*tmp));
-    ctx->args->posidx = lidx + 1;
+    ctx->args->posparams = &argv[lidx + 1];
+    ctx->args->nposparams = argc - lidx - 1;
 
     free(tmp);
     return true;
@@ -249,7 +286,9 @@ bool cldm_argp_parse(struct cldm_args *restrict args, int argc, char **restrict 
     success = false;
 
     *args = (struct cldm_args) {
-        .posidx = argc,
+        .posparams = &argv[argc],
+        .nposparams = 0u,
+        .jobs = 1u,
         .capture = cldm_capture_all
     };
 

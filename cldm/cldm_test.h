@@ -1,44 +1,38 @@
 #ifndef CLDM_TEST_H
 #define CLDM_TEST_H
 
+#include "cldm_auxprocs.h"
+#include "cldm_collect.h"
 #include "cldm_config.h"
-#include "cldm_elf.h"
-#include "cldm_hash.h"
 #include "cldm_macro.h"
-#include "cldm_rbtree.h"
 #include "cldm_testrec.h"
 #include "cldm_type.h"
 
 #include <stdbool.h>
 #include <stddef.h>
 
-#include <sys/types.h>
+/* Must be called in a sequential context */
+void cldm_test_register_total(size_t ntests);
+int cldm_test_summary(void);
 
-/* For storing tests corresponding to a single file in hash table */
-struct cldm_rbht_node {
-    struct cldm_rbnode *begin;
-    struct cldm_rbnode *end;
-    size_t ntests;
-    struct cldm_ht_entry entry;
-};
+/* Thread safe */
+bool cldm_test_init(unsigned thread_id);
+void cldm_test_free(unsigned thread_id);
+bool cldm_test_run(unsigned thread_id, struct cldm_testrec const *restrict record, struct cldm_auxprocs const *restrict auxprocs, bool fail_fast);
+void cldm_test_flush(unsigned thread_id);
 
-int cldm_test_invoke_each(struct cldm_rbtree const *restrict tests, struct cldm_elfmap const *restrict map, bool fail_fast);
-int cldm_test_invoke_specified(struct cldm_ht *restrict lookup_table, struct cldm_elfmap const *restrict map, bool fail_fast, size_t ntests, char **restrict files, size_t nfiles);
+void cldm_test_reduce_mark_ready(unsigned thread_id);
+void cldm_test_reduce(unsigned thread_id, unsigned offset);
+
+void cldm_assert_true(bool eval, char const *restrict expr, char const *restrict file, char const *restrict line);
+void cldm_assert_streq(char const *restrict l, char const *restrict r, long long n, char const *restrict lname, char const *restrict rname, char const *restrict file, char const *restrict line);
 
 #define cldm_testproc_prefix        \
     cldm_testproc_
-#define cldm_local_setup_ident      \
-    cldm_local_setup
-#define cldm_local_teardown_ident   \
-    cldm_local_teardown
-#define cldm_global_setup_ident     \
-    cldm_global_setup
-#define cldm_global_teardown_ident  \
-    cldm_global_teardown
 #define cldm_testrec_prefix         \
     cldm_testrec_
 
-#define cldm_test_rinfo(testname, ...)                                      \
+#define cldm_gen_test(testname, ...)                                      \
     void cldm_cat_expand(cldm_testproc_prefix,testname)(void);              \
     struct cldm_testrec cldm_cat_expand(cldm_testrec_prefix,testname) = {   \
         .name = #testname,                                                  \
@@ -49,44 +43,17 @@ int cldm_test_invoke_specified(struct cldm_ht *restrict lookup_table, struct cld
     void cldm_cat_expand(cldm_testproc_prefix,testname)(void)
 
 #define cldm_test3(...)             \
-    cldm_test_rinfo(__VA_ARGS__)
+    cldm_gen_test(__VA_ARGS__)
 #define cldm_test2(...)             \
-    cldm_test_rinfo(__VA_ARGS__)
+    cldm_gen_test(__VA_ARGS__)
 #define cldm_test1(testname)        \
-    cldm_test_rinfo(testname, { 0 })
+    cldm_gen_test(testname, { 0 })
 
 #define CLDM_TEST(...)              \
     cldm_overload(cldm_test, __VA_ARGS__)
 
-#define CLDM_TEST_SETUP()           \
-    void cldm_expand(cldm_local_setup_ident)(void)
-
-#define CLDM_TEST_TEARDOWN()        \
-    void cldm_expand(cldm_local_teardown_ident)(void)
-
-#define CLDM_GLOBAL_SETUP()         \
-    void cldm_expand(cldm_global_setup_ident)(void)
-
-#define CLDM_GLOBAL_TEARDOWN()      \
-    void cldm_expand(cldm_global_teardown_ident)(void)
-
-#define CLDM_UNBOUND_SETUP(name)    \
-    void name(void)
-
-#define CLDM_UNBOUND_TEARDOWN(name)    \
-    void name(void)
-
 #ifndef CLDM_PREFIX_ONLY
 #define TEST(...)             CLDM_TEST(__VA_ARGS__)
-
-#define TEST_SETUP()          CLDM_TEST_SETUP()
-#define TEST_TEARDOWN()       CLDM_TEST_TEARDOWN()
-
-#define GLOBAL_SETUP()        CLDM_GLOBAL_SETUP()
-#define GLOBAL_TEARDOWN()     CLDM_GLOBAL_TEARDOWN()
-
-#define UNBOUND_SETUP(...)    CLDM_UNBOUND_SETUP(__VA_ARGS__)
-#define UNBOUND_TEARDOWN(...) CLDM_UNBOUND_TEARDOWN(__VA_ARGS__)
 
 #define ASSERT_TRUE(...)      CLDM_ASSERT_TRUE(__VA_ARGS__)
 #define ASSERT_FALSE(...)     CLDM_ASSERT_FALSE(__VA_ARGS__)
@@ -100,11 +67,8 @@ int cldm_test_invoke_specified(struct cldm_ht *restrict lookup_table, struct cld
 #define ASSERT_STRNEQ(...)    CLDM_ASSERT_STRNEQ(__VA_ARGS__)
 #endif
 
-void cldm_assert_internal(bool eval, char const *restrict expr, char const *restrict file, char const *restrict line);
-void cldm_assert_streq_internal(char const *restrict l, char const *restrict r, long long n, char const *restrict lname, char const *restrict rname, char const *restrict file, char const *restrict line);
-
 #define CLDM_ASSERT_TRUE(expr)      \
-    cldm_assert_internal(expr, #expr, __FILE__, cldm_str_expand(__LINE__))
+    cldm_assert_true(expr, #expr, __FILE__, cldm_str_expand(__LINE__))
 
 #define CLDM_ASSERT_FALSE(expr)     \
     CLDM_ASSERT_TRUE(!(expr))
@@ -200,10 +164,10 @@ cldm_genassert_decls(le, cldm_genassert_typelist)
 #endif /* CLDM_HAS_GENERIC */
 
 #define CLDM_ASSERT_STREQ(l, r)     \
-    cldm_assert_streq_internal(l, r, -1, #l, #r, __FILE__, cldm_str_expand(__LINE__))
+    cldm_assert_streq(l, r, -1, #l, #r, __FILE__, cldm_str_expand(__LINE__))
 
 #define CLDM_ASSERT_STRNEQ(l, r, n) \
-    cldm_assert_streq_internal(l, r, n, #l, #r, __FILE__, cldm_str_expand(__LINE__))
+    cldm_assert_streq(l, r, n, #l, #r, __FILE__, cldm_str_expand(__LINE__))
 
 
 #endif /* CLDM_TEST_H */

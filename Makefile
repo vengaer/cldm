@@ -54,7 +54,7 @@ ASFLAGS     := -felf64 -g -Fdwarf
 CFLAGS      := -std=c99 -Wall -Wextra -Wpedantic -fPIC -c -MD -MP -g
 CPPFLAGS    := -D_GNU_SOURCE -DCLDM_VERSION=$(cldmver) -I$(root)
 LDFLAGS     := -shared -Wl,-soname,$(libstem).$(soext).$(socompat)
-LDLIBS      := -ldl
+LDLIBS      := -ldl -pthread
 
 testldflags := -L$(root)
 testldlibs  := $(patsubst lib%,-l%,$(libstem)) $(patsubst lib%.a,-l%,$(lcldm_main))

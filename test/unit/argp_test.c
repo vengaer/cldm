@@ -235,3 +235,52 @@ TEST(cldm_argp_parse_redirect) {
     ASSERT_TRUE(cldm_argp_parse(&args, 2, opts));
     ASSERT_STREQ(args.redirect, "out.log");
 }
+
+TEST(cldm_argp_parse_positional_parameter) {
+    struct cldm_args args;
+    char progname[64];
+    char opt0[64];
+    char opt1[64];
+
+    char *opts[] = {
+        progname,
+        opt0,
+        opt1,
+        0
+    };
+
+    strcpy(progname, "progname");
+    strcpy(opt0, "-v");
+    strcpy(opt1, "file.c");
+    ASSERT_TRUE(cldm_argp_parse(&args, 3, opts));
+    ASSERT_EQ(args.posparams, &opts[2]);
+    ASSERT_EQ(args.nposparams, 1u);
+}
+
+TEST(cldm_argp_parse_positional_parameter_double_dash) {
+    struct cldm_args args;
+    char progname[64];
+    char opt0[64];
+    char opt1[64];
+    char opt2[64];
+    char opt3[64];
+
+    char *opts[] = {
+        progname,
+        opt0,
+        opt1,
+        opt2,
+        opt3,
+        0
+    };
+
+    strcpy(progname, "progname");
+    strcpy(opt0, "-v");
+    strcpy(opt1, "--");
+    strcpy(opt2, "-h");
+    strcpy(opt3, "--version");
+    ASSERT_TRUE(cldm_argp_parse(&args, 5, opts));
+    ASSERT_EQ(args.posparams, &opts[3]);
+    ASSERT_EQ(args.nposparams, 2);
+    ASSERT_STREQ(*args.posparams, opt2);
+}

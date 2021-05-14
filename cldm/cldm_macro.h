@@ -1,6 +1,8 @@
 #ifndef CLDM_MACRO_H
 #define CLDM_MACRO_H
 
+#include <stddef.h>
+
 #define cldm_cat(a, b) a ## b
 #define cldm_cat_expand(a,b) cldm_cat(a,b)
 
@@ -9,7 +11,15 @@
 
 #define cldm_expand(a) a
 
+#define cldm_bytediff(p0, p1)   \
+    ((unsigned char const *)(p1) - (unsigned char const *)(p0))
+
 #define cldm_arrsize(arr) (sizeof(arr) / sizeof(arr[0]))
+
+#define cldm_arrindex(arr, ptr) \
+    ((size_t)(cldm_bytediff(&(arr)[0], (ptr)) / sizeof(*ptr)))
+
+#define cldm_strlitlen(str) (sizeof(str "") - 1u)
 
 #define cldm_offset(type, member)   \
     (size_t)&(((type *)0)->member)

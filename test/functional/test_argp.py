@@ -95,16 +95,16 @@ def test_argp_short_capture_none():
     gen_makefile()
 
     runcmd = gen_runcmd('')
-    run(ContainsMatcher(r'Running\s*bar.*pass.*text'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsMatcher('Captured stdout:'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-s')
-    run(ContainsMatcher(r'Running\s*bar.*text.*pass'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher('Captured stdout:'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-s -- --help')
-    run(ContainsNotMatcher(r'Running\s*bar.*text.*pass'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher('Captured stdout:'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-- -s')
-    run(ContainsNotMatcher(r'Running\s*bar.*pass.*text'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+    run(stderr_matcher=ContainsMatcher('Positional parameter \'-s\' does not match'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
 def test_argp_short_capture_with_none():
     cgen = CGen('tests.c')
@@ -119,13 +119,13 @@ def test_argp_short_capture_with_none():
     gen_makefile()
 
     runcmd = gen_runcmd('-c none')
-    run(ContainsMatcher(r'Running\s*bar.*text.*fail'), ContainsMatcher('stderr'), RvDiffMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher('Captured stdout:.*text'), ContainsNotMatcher('Captured stderr:.*stderr'), RvDiffMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-cnone')
-    run(ContainsMatcher(r'Running\s*bar.*text.*fail'), ContainsMatcher('stderr'), RvDiffMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher('Captured stdout:.*text'), ContainsNotMatcher('Captured stderr:.*stderr'), RvDiffMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-- -cnone')
-    run(ContainsNotMatcher(r'Running\s*bar.*text.*fail'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+    run(stderr_matcher=ContainsMatcher('Positional parameter \'-cnone\' does not match'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
 def test_argp_short_capture_with_stdout():
     cgen = CGen('tests.c')
@@ -283,16 +283,16 @@ def test_argp_long_capture_none():
     gen_makefile()
 
     runcmd = gen_runcmd('')
-    run(ContainsMatcher(r'Running\s*bar.*pass.*text'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsMatcher('Captured stdout:'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('--capture-none')
-    run(ContainsMatcher(r'Running\s*bar.*text.*pass'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher('Captured stdout:'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('--capture-none --')
-    run(ContainsMatcher(r'Running\s*bar.*text.*pass'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher('Captured stdout:'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-- --capture-none')
-    run(ContainsNotMatcher(r'Running\s*bar.*pass.*text'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+    run(stderr_matcher=ContainsMatcher('Positional parameter \'--capture-none\' does not match'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
 def test_argp_long_capture_with_none():
     cgen = CGen('tests.c')
@@ -307,10 +307,10 @@ def test_argp_long_capture_with_none():
     gen_makefile()
 
     runcmd = gen_runcmd('--capture=none')
-    run(ContainsMatcher(r'Running\s*bar.*text.*fail'), ContainsMatcher('stderr'), RvDiffMatcher(0), runcmd=runcmd)
+    run(ContainsNotMatcher('Captured stdout:'), ContainsNotMatcher('Captured stderr:'), RvDiffMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('-- --capture=none')
-    run(ContainsNotMatcher(r'Running\s*bar.*text.*fail'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+    run(stderr_matcher=ContainsMatcher('Positional parameter \'--capture=none\' does not match'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
 def test_argp_long_capture_with_stdout():
     cgen = CGen('tests.c')
@@ -433,7 +433,7 @@ def test_argp_positional_param_all_tests():
     gen_makefile()
 
     runcmd = gen_runcmd('gen_test.c bar_test.c foo_test.c')
-    run(ContainsMatcher(r'Collected\s*4\s*tests.*Running\s*virginti.*Running\s*bar.*Running\s*baz.*Running\s*foo'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
+    run(ContainsMatcher(r'Collected\s*4\s*tests.*Running\s*bar.*Running\s*baz.*Running\s*foo.*Running\s*virginti'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
 
 def test_argp_positional_param_fail_fast():
     cgen = CGen('test.c')
@@ -457,37 +457,6 @@ def test_argp_positional_param_fail_fast():
     run(ContainsMatcher(r'Running\s*bar'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
     run(ContainsNotMatcher(r'Running\s*foo.*Running\s*goo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
-def test_argp_positional_param_order_override():
-    cgen = CGen('bar_test.c')
-    cgen.append_include('cldm.h', system_header=False)
-
-    with cgen.open_macro('TEST', 'bar'):
-        cgen.append_line('ASSERT_EQ(1, 1);')
-    with cgen.open_macro('TEST', 'baz'):
-        cgen.append_line('ASSERT_TRUE(1);')
-    cgen.write()
-
-    cgen = CGen('foo_test.c')
-    cgen.append_include('cldm.h', system_header=False)
-
-    with cgen.open_macro('TEST', 'foo'):
-        cgen.append_line('ASSERT_EQ(2, 2);')
-    cgen.write()
-
-    cgen = CGen('gen_test.c')
-    cgen.append_include('cldm.h', system_header=False)
-
-    with cgen.open_macro('TEST', 'virginti'):
-        cgen.append_line('ASSERT_EQ(1,1);')
-    cgen.write()
-    gen_makefile()
-
-    runcmd = gen_runcmd('gen_test.c bar_test.c foo_test.c')
-    run(ContainsMatcher(r'Running\s*virginti.*Running\s*bar.*Running\s*baz.*Running\s*foo'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
-
-    runcmd = gen_runcmd('foo_test.c gen_test.c bar_test.c')
-    run(ContainsMatcher(r'Running\s*foo.*Running\s*virginti.*Running\s*bar.*Running\s*baz'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
-
 def test_argp_invalid_positional_param():
     file = 'baz.c'
     cgen = CGen('test.c')
@@ -502,4 +471,4 @@ def test_argp_invalid_positional_param():
     gen_makefile()
 
     runcmd = gen_runcmd(file)
-    run(DummyMatcher(), stderr_matcher=ContainsMatcher(r"File '{}' not found".format(file)), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+    run(stderr_matcher=ContainsMatcher('Positional parameter \'{}\' does not match'.format(file)), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)

@@ -1,17 +1,10 @@
 #include "cldm_argp.h"
-#include "cldm_dl.h"
 #include "cldm_elf.h"
-#include "cldm_elfdump.h"
 #include "cldm_io.h"
 #include "cldm_log.h"
-#include "cldm_macro.h"
 #include "cldm_mock.h"
-#include "cldm_runner.h"
-#include "cldm_test.h"
-
-#include <stdbool.h>
-
-#include <sys/types.h>
+#include "cldm_parallel.h"
+#include "cldm_sequential.h"
 
 int main(int argc, char **argv) {
     int status;
@@ -19,7 +12,7 @@ int main(int argc, char **argv) {
     struct cldm_args args;
 
     /* Prevent mocks from interfering with internals */
-    cldm_mock_force_disable = true;
+    cldm_mock_disable_all();
 
     if(!cldm_argp_parse(&args, argc, argv)) {
         return 1;
@@ -50,7 +43,12 @@ int main(int argc, char **argv) {
         goto epilogue;
     }
 
-    status = cldm_collect_and_run(&map, args.fail_fast, &argv[args.posidx], (unsigned)argc - args.posidx);
+    if(args.jobs > 1) {
+        status = cldm_parallel_run(&map, &args);
+    }
+    else {
+        status = cldm_sequential_run(&map, &args);
+    }
 
     cldm_io_capture_dump(args.capture, args.redirect);
 

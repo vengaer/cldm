@@ -22,6 +22,17 @@ bool cldm_is_prime(size_t num) {
     return true;
 }
 
+unsigned cldm_clp232(unsigned x) {
+    /* Round up to next power of 2 */
+    x -= 1u;
+    x |= (x >> 1u);
+    x |= (x >> 2u);
+    x |= (x >> 4u);
+    x |= (x >> 8u);
+    x |= (x >> 16u);
+    return x + 1;
+}
+
 ssize_t cldm_stable_partition(void *data, size_t elemsize, size_t nelems, bool(*predicate)(void const *)) {
     unsigned char *arr;
     unsigned char *elem;

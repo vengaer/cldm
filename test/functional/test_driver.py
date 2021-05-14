@@ -36,59 +36,63 @@ def test_collection():
 
 def test_setup_detection():
     cgen = CGen(__TESTFILE)
-    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)  \
+        .append_include('stdio.h')
 
     with cgen.open_macro('TEST_SETUP'):
-        pass
+        cgen.append_line('puts("Local setup");')
     with cgen.open_macro('TEST', 'baz'):
         pass
 
     cgen.write()
     gen_makefile(__TESTFILE)
 
-    run(ContainsMatcher('Detected local setup'))
+    run(ContainsMatcher('Local setup'))
 
 def test_teardown_detection():
     cgen = CGen(__TESTFILE)
-    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)  \
+        .append_include('stdio.h')
 
     with cgen.open_macro('TEST_TEARDOWN'):
-        pass
+        cgen.append_line('puts("Local teardown");')
     with cgen.open_macro('TEST', 'baz'):
         pass
 
     cgen.write()
     gen_makefile(__TESTFILE)
 
-    run(ContainsMatcher('Detected local teardown'))
+    run(ContainsMatcher('Local teardown'))
 
 def test_global_setup_detection():
     cgen = CGen(__TESTFILE)
-    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)  \
+        .append_include('stdio.h')
 
     with cgen.open_macro('GLOBAL_SETUP'):
-        pass
+        cgen.append_line('puts("Global setup");')
     with cgen.open_macro('TEST', 'baz'):
         pass
 
     cgen.write()
     gen_makefile(__TESTFILE)
 
-    run(ContainsMatcher('Detected global setup'))
+    run(ContainsMatcher('Global setup'))
 
 def test_global_teardown_detection():
     cgen = CGen(__TESTFILE)
-    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)  \
+        .append_include('stdio.h')
 
     with cgen.open_macro('GLOBAL_TEARDOWN'):
-        pass
+        cgen.append_line('puts("Global teardown");')
     with cgen.open_macro('TEST', 'baz'):
         pass
 
     cgen.write()
     gen_makefile(__TESTFILE)
 
-    run(ContainsMatcher('Detected global teardown'))
+    run(ContainsMatcher('Global teardown'))
 
 def test_runner():
     cgen = CGen(__TESTFILE)

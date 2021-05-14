@@ -1,22 +1,29 @@
-#include "cldm_io.h"
+#include "cldm_cache.h"
 #include "cldm_log.h"
+#include "cldm_macro.h"
 #include "cldm_mock.h"
 #include "cldm_ntbs.h"
 #include "cldm_rtassert.h"
 #include "cldm_test.h"
+#include "cldm_thread.h"
 
+#include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-enum { CLDM_ASSERTION_LEN = 1024 };
-enum { CLDM_LOG_INITIAL_CAP = 32 };
-enum { CLDM_RUNWIDTH = 48 };
-enum { CLDM_IDXWIDTH = 10 };
-enum { CLDM_MAX_EXPAND_SIZE = 384 };
+#include <pthread.h>
 
-struct cldm_test_log {
+enum { CLDM_TESTBUFFER_SIZE = 16 };
+enum { CLDM_LOG_INITIAL_CAP = 32 };
+enum { CLDM_TEST_PRINT_WIDTH = 64 };
+enum { CLDM_INDEX_PRINT_WIDTH = 10 };
+enum { CLDM_MAX_EXPAND_SIZE = 256 };
+enum { CLDM_ASSERTION_SIZE = 1024 };
+
+struct cldm_testlog {
     union {
-        char (*data)[CLDM_ASSERTION_LEN];
+        char (*buffer)[CLDM_ASSERTION_SIZE];
         void *addr;
     } l_un;
     size_t size;
@@ -26,165 +33,180 @@ struct cldm_test_log {
     unsigned long long total_assertions;
 };
 
-struct cldm_test {
+struct cldm_teststats {
     char const *name;
-    bool passed;
+    bool pass;
+    bool fatal_error;
 };
 
-static struct cldm_test_log cldm_test_log;
-static struct cldm_test cldm_current_test;
+struct cldm_testbuffer {
+    struct {
+        char const *name;
+        int namepad;
+        bool pass;
+    } stats[CLDM_TESTBUFFER_SIZE];
+    unsigned size;
+};
 
-static void cldm_test_empty_func(void) { }
+static cldm_cachealign(struct cldm_testlog) testlogs[CLDM_MAX_THREADS];
+static cldm_cachealign(struct cldm_teststats) current_tests[CLDM_MAX_THREADS];
+static cldm_cachealign(struct cldm_testbuffer) buffered_tests[CLDM_MAX_THREADS];
 
-#define cldm_record_failed_assertion(...)                                                           \
-    do {                                                                                            \
-        if(cldm_current_test.passed) {                                                              \
-            ++cldm_test_log.failed_tests;                                                           \
-            cldm_current_test.passed = false;                                                       \
-        }                                                                                           \
-        ++cldm_test_log.failed_assertions;                                                          \
-        cldm_rtassert(cldm_test_ensure_logcapacity(), "Could not increase test log size");          \
-        snprintf(cldm_test_log.l_un.data[cldm_test_log.size],                                       \
-                 sizeof(cldm_test_log.l_un.data[cldm_test_log.size]),                               \
-                 __VA_ARGS__);                                                                      \
-        ++cldm_test_log.size;                                                                       \
+static pthread_mutex_t io_lock;
+static size_t io_index;
+static size_t io_total;
+
+#define record_failed_assertion(thread_id, ...)                                                         \
+    do {                                                                                                \
+        if(current_tests[thread_id].data.pass) {                                                        \
+            ++testlogs[thread_id].data.failed_tests;                                                    \
+            current_tests[thread_id].data.pass = false;                                                 \
+        }                                                                                               \
+        ++testlogs[thread_id].data.failed_assertions;                                                   \
+        if(!cldm_test_ensure_capacity(thread_id)) {                                                     \
+            current_tests[thread_id].data.fatal_error = true;                                           \
+        }                                                                                               \
+        else {                                                                                          \
+            snprintf(testlogs[thread_id].data.l_un.buffer[testlogs[thread_id].data.size],               \
+                     sizeof(testlogs[thread_id].data.l_un.buffer[testlogs[thread_id].data.size]),       \
+                     __VA_ARGS__);                                                                      \
+            ++testlogs[thread_id].data.size;                                                            \
+        }                                                                                               \
     } while(0)
 
-#define cldm_load_stage(map, stage, scope)                                                  \
-    stage = cldm_elf_func(map, cldm_str_expand(cldm_ ## scope ## _ ## stage ## _ident));    \
-    if(!stage) {                                                                            \
-        stage = cldm_test_empty_func;                                                       \
-    }                                                                                       \
-    else {                                                                                  \
-        cldm_log("Detected " cldm_str_expand(scope) " " cldm_str_expand(stage));            \
+static unsigned cldm_test_ndigits(size_t number) {
+    unsigned n;
+    if(!number) {
+        return 1u;
     }
 
-static cldm_setup_handle cldm_test_local_setup(struct cldm_elfmap const *map) {
-    cldm_setup_handle setup = { 0 };
-    cldm_load_stage(map, setup, local);
-    return setup;
+    for(n = 0u; number; number /= 10u, ++n);
+
+    return n;
 }
 
-static cldm_teardown_handle cldm_test_local_teardown(struct cldm_elfmap const *map) {
-    cldm_teardown_handle teardown = { 0 };
-    cldm_load_stage(map, teardown, local);
-    return teardown;
-}
+static bool cldm_test_ensure_capacity(unsigned thread_id) {
+    void *addr;
+    size_t newcap;
 
-static cldm_setup_handle cldm_test_global_setup(struct cldm_elfmap const *map) {
-    cldm_setup_handle setup = { 0 };
-    cldm_load_stage(map, setup, global);
-    return setup;
-}
-
-static cldm_teardown_handle cldm_test_global_teardown(struct cldm_elfmap const *map) {
-    cldm_teardown_handle teardown = { 0 };
-    cldm_load_stage(map, teardown, global);
-    return teardown;
-}
-
-static inline void cldm_test_set(char const *name) {
-    cldm_current_test = (struct cldm_test) {
-        .name = name,
-        .passed = true
-    };
-}
-
-static int cldm_test_init(void) {
-    cldm_test_log.capacity = CLDM_LOG_INITIAL_CAP;
-    cldm_test_log.l_un.addr = malloc(CLDM_LOG_INITIAL_CAP * sizeof(*cldm_test_log.l_un.data));
-    if(!cldm_test_log.l_un.data) {
-        cldm_err("Could not allocate chunk of %d bytes", CLDM_LOG_INITIAL_CAP);
-        return -1;
+    if(testlogs[thread_id].data.size + 1 < testlogs[thread_id].data.capacity) {
+        return true;
     }
+    newcap = 2 * testlogs[thread_id].data.capacity;
+    addr = realloc(testlogs[thread_id].data.l_un.addr, newcap * sizeof(*testlogs[thread_id].data.l_un.buffer));
+    if(!addr) {
+        return false;
+    }
+    testlogs[thread_id].data.l_un.addr = addr;
+    testlogs[thread_id].data.capacity = newcap;
+    return true;
+}
+
+static void cldm_test_print(struct cldm_testbuffer const *buffer) {
+    int l;
+    int idxpad;
+    cldm_mutex_guard(&io_lock) {
+        for(unsigned i = 0; i < buffer->size; i++) {
+            ++io_index;
+            l = cldm_strlitlen("(/)") + cldm_test_ndigits(io_index) + cldm_test_ndigits(io_total);
+            idxpad = (l <= CLDM_INDEX_PRINT_WIDTH) * (CLDM_INDEX_PRINT_WIDTH - l);
+            cldm_log("[Running %s]%-*s (%zu/%zu)%-*s  %s",
+                      buffer->stats[i].name, buffer->stats[i].namepad, "",
+                      io_index, io_total, idxpad, "",
+                      buffer->stats[i].pass ? "pass" : "fail");
+        }
+    }
+
+}
+
+static void cldm_test_schedule_print(unsigned thread_id) {
+    struct cldm_testbuffer *buffer;
+    int l;
+
+    buffer = &buffered_tests[thread_id].data;
+    if(buffer->size >= cldm_arrsize(buffer->stats)) {
+        cldm_test_print(buffer);
+        buffer->size = 0;
+    }
+
+    buffer->stats[buffer->size].name = current_tests[thread_id].data.name;
+    buffer->stats[buffer->size].pass = current_tests[thread_id].data.pass;
+    l = strlen(current_tests[thread_id].data.name) + cldm_strlitlen("[Running ]");
+    buffer->stats[buffer->size].namepad = (l <= CLDM_TEST_PRINT_WIDTH) * (CLDM_TEST_PRINT_WIDTH - l);
+    ++buffer->size;
+}
+
+void cldm_test_register_total(size_t n) {
+    cldm_log("Collected %zu tests", (size_t)n);
+    io_total = n;
+}
+
+int cldm_test_summary(void) {
+    if(testlogs[0].data.failed_tests) {
+        cldm_log_stream(cldm_stderr, "\n%llu/%llu assertions failed across %llu/%zu test%s",
+                        testlogs[0].data.failed_assertions, testlogs[0].data.total_assertions,
+                        testlogs[0].data.failed_tests, io_total, io_total == 1u ? "" : "s");
+
+        for(unsigned i = 0; i < cldm_jobs; i++) {
+            for(unsigned j = 0; j < testlogs[i].data.size; j++) {
+                cldm_log_stream(cldm_stderr, "\n%s", testlogs[i].data.l_un.buffer[j]);
+            }
+        }
+        return 1;
+    }
+
+    cldm_log("\nSuccessfully finished %llu assertions across %zu test%s", testlogs[0].data.total_assertions, io_total, io_total == 1u ? "" : "s");
     return 0;
 }
 
-static inline void cldm_test_free(void) {
-    free(cldm_test_log.l_un.addr);
-}
+bool cldm_test_init(unsigned thread_id) {
+    struct cldm_testlog *log;
+    int err;
+    log = &testlogs[thread_id].data;
 
-static bool cldm_test_ensure_logcapacity(void) {
-    void *addr;
-    size_t new_cap;
+    *log = (struct cldm_testlog) {
+        .l_un.addr = malloc(CLDM_LOG_INITIAL_CAP * sizeof(*log->l_un.buffer)),
+        .capacity = CLDM_LOG_INITIAL_CAP
+    };
 
-    if(cldm_test_log.size  + 1 >= cldm_test_log.capacity) {
-        new_cap = 2 * cldm_test_log.capacity;
-        addr = realloc(cldm_test_log.l_un.addr, new_cap * sizeof(*cldm_test_log.l_un.data));
-        if(!addr) {
-            free(cldm_test_log.l_un.addr);
+    if(!log->l_un.buffer) {
+        cldm_err("Thread %u: could not allocate chunk of %d bytes for test log", thread_id, CLDM_LOG_INITIAL_CAP);
+        return false;
+    }
+
+    buffered_tests[thread_id].data.size = 0;
+
+    if(!thread_id) {
+        err = cldm_mutex_init(&io_lock, 0);
+        if(err) {
+            cldm_err("Could not initialize io mutex: %s", strerror(err));
             return false;
         }
-        cldm_test_log.l_un.addr = addr;
-        cldm_test_log.capacity = new_cap;
     }
 
     return true;
 }
 
-static void cldm_test_summary(size_t ntests) {
-    if(cldm_test_log.failed_tests) {
-        cldm_log_stream(cldm_stderr, "\n%llu/%llu assertions failed across %llu test%s",
-                        cldm_test_log.failed_assertions, cldm_test_log.total_assertions, cldm_test_log.failed_tests, cldm_test_log.failed_tests == 1 ? "" : "s");
-        for(unsigned i = 0; i < cldm_test_log.size; i++) {
-            cldm_log_stream(cldm_stderr, "\n%s", cldm_test_log.l_un.data[i]);
+void cldm_test_free(unsigned thread_id) {
+    int err;
+    free(testlogs[thread_id].data.l_un.addr);
+    if(!thread_id) {
+        err = cldm_mutex_destroy(&io_lock);
+        if(err) {
+            cldm_warn("Could not destroy io mutex: %s", strerror(err));
         }
-        return;
     }
-    cldm_log("\nSuccessfully finished %llu assertions across %zu test%s", cldm_test_log.total_assertions, ntests, ntests == 1 ? "" : "s");
 }
 
-static int cldm_test_prologue(struct cldm_elfmap const *restrict map, size_t ntests, cldm_setup_handle *restrict lcl_setup, cldm_teardown_handle *restrict lcl_teardown) {
-    cldm_setup_handle glob_setup;
-
-    cldm_log("Collected %zu tests", ntests);
-
-    if(cldm_test_init()) {
-        return -1;
-    }
-
-    *lcl_setup = cldm_test_local_setup(map);
-    *lcl_teardown= cldm_test_local_teardown(map);
-    glob_setup = cldm_test_global_setup(map);
-    cldm_log("");
+bool cldm_test_run(unsigned thread_id, struct cldm_testrec const *restrict record, struct cldm_auxprocs const *restrict auxprocs, bool fail_fast) {
+    current_tests[thread_id].data = (struct cldm_teststats) {
+        .name = record->name,
+        .pass = true,
+        .fatal_error = false
+    };
 
     cldm_mock_enable() {
-        glob_setup();
-    }
-
-    return 0;
-}
-
-static int cldm_test_epilogue(struct cldm_elfmap const *restrict map, size_t ntests) {
-    cldm_teardown_handle glob_teardown;
-
-    glob_teardown = cldm_test_global_teardown(map);
-
-    cldm_mock_enable() {
-        glob_teardown();
-    }
-
-    cldm_test_summary(ntests);
-    cldm_test_free();
-
-    return !!cldm_test_log.failed_tests;
-}
-
-static void cldm_test_invoke(struct cldm_testrec const *restrict record, size_t *restrict testidx, size_t ntests, cldm_setup_handle lcl_setup, cldm_teardown_handle lcl_teardown) {
-    unsigned runpad;
-    unsigned idxpad;
-    unsigned length;
-
-    cldm_test_set(record->name);
-
-    length = strlen(record->name) + sizeof("[Running ]") - 1;
-    runpad = (length <= CLDM_RUNWIDTH) * (CLDM_RUNWIDTH - length);
-    length = snprintf(0, 0, "(%zu/%zu)", ++(*testidx), ntests);
-    idxpad = (length <= CLDM_IDXWIDTH) * (CLDM_IDXWIDTH - length);
-
-    cldm_log_raw("[Running %s]%-*s (%zu/%zu)%-*s", record->name, runpad, "", *testidx, ntests, idxpad, "");
-    cldm_mock_enable() {
-        lcl_setup();
+        auxprocs->local_setup();
         if(record->runinfo.setup) {
             record->runinfo.setup();
         }
@@ -192,164 +214,105 @@ static void cldm_test_invoke(struct cldm_testrec const *restrict record, size_t 
         if(record->runinfo.teardown) {
             record->runinfo.teardown();
         }
-        lcl_teardown();
+        auxprocs->local_teardown();
     }
 
-    cldm_log("  %s", cldm_current_test.passed ? "pass" : "fail");
+    cldm_test_schedule_print(thread_id);
+
+    return !current_tests[thread_id].data.fatal_error && (!fail_fast || (fail_fast && current_tests[thread_id].data.pass));
 }
 
-static inline char const *cldm_test_expandsuffix(char const *str) {
-    return strlen(str) > CLDM_MAX_EXPAND_SIZE ? "..." : "";
+void cldm_test_flush(unsigned thread_id) {
+    cldm_test_print(&buffered_tests[thread_id].data);
 }
 
-int cldm_test_invoke_each(struct cldm_rbtree const *restrict tests, struct cldm_elfmap const *restrict map, bool fail_fast) {
-    struct cldm_testrec const *record;
-    struct cldm_rbnode *iter;
-    size_t testidx;
-
-    cldm_setup_handle lcl_setup;
-    cldm_teardown_handle lcl_teardown;
-
-    if(!cldm_rbtree_size(tests)) {
-        return 0;
-    }
-
-    if(cldm_test_prologue(map, cldm_rbtree_size(tests), &lcl_setup, &lcl_teardown)) {
-        return -1;
-    }
-
-    testidx = 0;
-    cldm_rbtree_for_each(iter, tests) {
-        record = cldm_testrec_get(iter, const);
-        cldm_test_invoke(record, &testidx, cldm_rbtree_size(tests), lcl_setup, lcl_teardown);
-
-        if(fail_fast && !cldm_current_test.passed) {
-            break;
-        }
-    }
-
-    return cldm_test_epilogue(map, cldm_rbtree_size(tests));
+void cldm_test_reduce(unsigned thread_id, unsigned offset) {
+    testlogs[thread_id].data.failed_assertions += testlogs[thread_id + offset].data.failed_assertions;
+    testlogs[thread_id].data.failed_tests += testlogs[thread_id + offset].data.failed_tests;
+    testlogs[thread_id].data.total_assertions += testlogs[thread_id + offset].data.total_assertions;
 }
 
-int cldm_test_invoke_specified(struct cldm_ht *restrict lookup_table, struct cldm_elfmap const *restrict map, bool fail_fast, size_t ntests, char **restrict files, size_t nfiles) {
-    struct cldm_testrec const *record;
-    struct cldm_rbht_node *node;
-    struct cldm_ht_entry *entry;
-    struct cldm_rbnode *rbiter;
-    size_t testidx;
-    char **iter;
-
-    cldm_setup_handle lcl_setup;
-    cldm_teardown_handle lcl_teardown;
-
-    if(!cldm_ht_size(lookup_table)) {
-        return 0;
-    }
-
-    if(cldm_test_prologue(map, ntests, &lcl_setup, &lcl_teardown)) {
-        return -1;
-    }
-
-    testidx = 0;
-    cldm_for_each(iter, files, nfiles) {
-        entry = cldm_ht_find(lookup_table, &cldm_ht_mkentry_str(*iter));
-        node = cldm_container(entry, struct cldm_rbht_node, entry);
-
-        /* Iterate between begin and end for each entry in lookup table */
-        cldm_rbtree_for_each(rbiter, 0, node->begin, node->end) {
-            record = cldm_testrec_get(rbiter, const);
-            cldm_test_invoke(record, &testidx, ntests, lcl_setup, lcl_teardown);
-
-            if(fail_fast && !cldm_current_test.passed) {
-                break;
-            }
-        }
-    }
-
-    return cldm_test_epilogue(map, ntests);
-}
-
-void cldm_assert_internal(bool eval, char const *restrict expr, char const *restrict file, char const *restrict line) {
-    ++cldm_test_log.total_assertions;
-
+void cldm_assert_true(bool eval, char const *restrict expand, char const *restrict file, char const *restrict line) {
+    unsigned thread_id = cldm_thread_id();
+    ++testlogs[thread_id].data.total_assertions;
     if(eval) {
         return;
     }
 
-    cldm_record_failed_assertion("| %s:%s: Assertion failure in %s:\n"
-                                 "| '%s'", cldm_basename(file), line, cldm_current_test.name, expr);
+    record_failed_assertion(thread_id,
+                            "| %s:%s: Assertion failure in %s:\n"
+                            "| '%s'", cldm_basename(file), line,
+                            current_tests[thread_id].data.name,
+                            expand);
 }
 
-void cldm_assert_streq_internal(char const *restrict l, char const *restrict r, long long n, char const *restrict lname, char const *restrict rname, char const *restrict file, char const *restrict line) {
+void cldm_assert_streq(char const *restrict l, char const *restrict r, long long n, char const *restrict lname, char const *restrict rname, char const *restrict file, char const *restrict line) {
+    unsigned thread_id = cldm_thread_id();
+    size_t diffoffset;
     char const *ll;
     char const *rr;
-    size_t doffset;
     int expandsize;
 
-    ++cldm_test_log.total_assertions;
 
-    if(n > 0) {
-        if(strncmp(l, r, n) == 0) {
-            return;
-        }
-        expandsize = n > CLDM_MAX_EXPAND_SIZE ? CLDM_MAX_EXPAND_SIZE : n;
-    }
-    else {
-        if(strcmp(l, r) == 0) {
-            return;
-        }
-        expandsize = CLDM_MAX_EXPAND_SIZE;
+    ++testlogs[thread_id].data.total_assertions;
+
+    if((n < 0 && strcmp(l, r) == 0) || (n >= 0 && strncmp(l, r, n) == 0)) {
+        return;
     }
 
     ll = l;
     rr = r;
-    doffset = sizeof("string 0 is '") - 1;
+    while(*ll++ == *rr++);
+    diffoffset = ll - l;
 
-    while(*ll++ == *rr++) {
-        ++doffset;
-    }
-
-
-    if(n > 0) {
-        cldm_record_failed_assertion("| %s:%s: Assertion failure in %s:\n"
-                                     "| expected %lld initial bytes of '%s' and '%s' to be equal where\n"
-                                     "| string 0 is '%.*s%s' and\n"
-                                     "| string 1 is '%.*s%s'\n"
-                                     "  %-*s^\n"
-                                     "  %-*sdiff\n",
-                                     cldm_basename(file), line, cldm_current_test.name, n, lname, rname,
-                                     expandsize, l, cldm_test_expandsuffix(l),
-                                     expandsize, r, cldm_test_expandsuffix(r),
-                                     (int)doffset, "", (int)doffset - 1, "");
+    #define expandsuffix(str)   strlen(str) > CLDM_MAX_EXPAND_SIZE ? "..." : ""
+    if(n < 0) {
+        expandsize = CLDM_MAX_EXPAND_SIZE;
+        record_failed_assertion(thread_id,
+                                "| %s:%s: Assertion failure in %s:\n"
+                                "| expected '%s' to be equal to '%s' where \n"
+                                "| string 0 is '%.*s%s' and \n"
+                                "| string 1 is '%.*s%s'\n"
+                                "  %-*s^\n",
+                                cldm_basename(file), line, current_tests[thread_id].data.name,
+                                lname, rname,
+                                expandsize, l, expandsuffix(l),
+                                expandsize, r, expandsuffix(r),
+                                (int)diffoffset, "");
     }
     else {
-        cldm_record_failed_assertion("| %s:%s: Assertion failure in %s:\n"
-                                     "| expected '%s' to be equal to '%s' where\n"
-                                     "| string 0 is '%.*s%s' and\n"
-                                     "| string 1 is '%.*s%s'\n"
-                                     "  %-*s^\n"
-                                     "  %-*sdiff\n",
-                                     cldm_basename(file), line, cldm_current_test.name, lname, rname,
-                                     expandsize, l, cldm_test_expandsuffix(l),
-                                     expandsize, r, cldm_test_expandsuffix(r),
-                                     (int)doffset, "", (int)doffset - 1, "");
+        expandsize = n > CLDM_MAX_EXPAND_SIZE ? CLDM_MAX_EXPAND_SIZE : n;
+        record_failed_assertion(thread_id,
+                                "| %s:%s: Assertion failure in %s:\n"
+                                "| expected %lld initial bytes of '%s' and '%s' to be equal where\n"
+                                "| string 0 is '%.*s%s' and \n"
+                                "| string 1 is '%.*s%s'\n"
+                                "  %-*s^\n",
+                                cldm_basename(file), line, current_tests[thread_id].data.name,
+                                n, lname, rname,
+                                expandsize, l, expandsuffix(l),
+                                expandsize, r, expandsuffix(r),
+                                (int)diffoffset, "");
     }
+    #undef expandsuffix
 
 }
 
 #ifdef CLDM_HAS_GENERIC
 
-#define generic_cmp_assertion(lhs, rhs, lexpand, rexpand, file, line, fmt, cmp)                     \
-    do {                                                                                            \
-        ++cldm_test_log.total_assertions;                                                           \
-        if((lhs) cmp (rhs)) {                                                                       \
-            return;                                                                                 \
-        }                                                                                           \
-        cldm_record_failed_assertion("| %s:%s: Assertion failure in %s:\n"                          \
-                                     "| '%s " #cmp " %s' with expansion\n"                          \
-                                     "| '" #fmt " " #cmp " " #fmt "'\n",                            \
-                                     cldm_basename(file), line, cldm_current_test.name,             \
-                                     lexpand, rexpand, lhs, rhs);                                   \
+#define generic_cmp_assertion(l, r, lexpand, rexpand, file, line, fmt, cmp)                             \
+    do {                                                                                                \
+        unsigned cldm_cat_expand(cldm_gcd_tid,__LINE__) = cldm_thread_id();                             \
+        ++testlogs[cldm_cat_expand(cldm_gcd_tid,__LINE__)].data.total_assertions;                       \
+        if(!((l) cmp (r))) {                                                                            \
+            record_failed_assertion(cldm_thread_id(),                                                   \
+                                    "| %s:%s: Assertion failure in %s:\n"                               \
+                                    "| '%s " #cmp " %s' with expansion\n"                               \
+                                    "| '" #fmt " " #cmp " " #fmt "'\n",                                 \
+                                    cldm_basename(file), line,                                          \
+                                    current_tests[cldm_cat_expand(cldm_gcd_tid,__LINE__)].data.name,    \
+                                    lexpand, rexpand, l, r);                                            \
+        }                                                                                               \
     } while(0)
 
 #define cldm_genassert_defs4(op, opstr, suffix, type)                                                                                                                               \

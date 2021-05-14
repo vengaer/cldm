@@ -29,7 +29,6 @@ enum abi {
 };
 
 struct makecfg {
-    char has_atomics;
     char has_generic;
     enum arch arch;
     enum abi abi;
@@ -89,7 +88,6 @@ static bool write_config(char const *out) {
         return false;
     }
 
-    fprintf(fp, "has_atomics := %c\n", makecfg.abi == abi_sysv && makecfg.arch == arch_64 ? 'y' : 'n');
     fprintf(fp, "has_generic := %c\n", makecfg.has_generic);
     fprintf(fp, "arch        := %s\n", arch_strings[makecfg.arch]);
     fprintf(fp, "abi         := %s\n", abi_strings[makecfg.abi]);

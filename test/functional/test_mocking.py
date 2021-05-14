@@ -459,8 +459,7 @@ def test_force_disable():
         .append_include('stdlib.h')
 
     with cgen.open_function('int', 'main'):
-        cgen.append_line('extern bool cldm_mock_force_disable;')    \
-            .append_line('cldm_mock_force_disable = true;')         \
+        cgen.append_line('cldm_mock_disable_all();')                \
             .append_line('EXPECT_CALL(atoi).WILL_ONCE(RETURN(5));') \
             .append_line('printf("%d\\n", atoi("1"));')
     cgen.write()
