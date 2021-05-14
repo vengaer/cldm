@@ -19,6 +19,7 @@
         "ret2": {"rettype": "int", "params": ["void"], "return": 2, "exec": ["puts(\"default ret2\");"]},
         "atoi": {"rettype": "int", "params": ["char const *"], "generate": false},
         "retarg": {"rettype": "int", "params": ["char const *", "void *", "int"], "return": 0},
-        "retpointee": {"rettype": "int", "params": ["int *", "int *"], "return": 0}
+        "retpointee": {"rettype": "int", "params": ["int *", "int *"], "return": 0},
+        "strtoul": {"rettype": "unsigned long", "params": ["char const *restrict", "char **restrict", "int"], "generate": false}
     }
 }
