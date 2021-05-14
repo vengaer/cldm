@@ -1,3 +1,4 @@
+#include "cldm_algo.h"
 #include "cldm_cache.h"
 #include "cldm_log.h"
 #include "cldm_macro.h"
@@ -77,17 +78,6 @@ static bool io_verbose;
         }                                                                                               \
     } while(0)
 
-static unsigned cldm_test_ndigits(size_t number) {
-    unsigned n;
-    if(!number) {
-        return 1u;
-    }
-
-    for(n = 0u; number; number /= 10u, ++n);
-
-    return n;
-}
-
 static bool cldm_test_ensure_capacity(unsigned thread_id) {
     void *addr;
     size_t newcap;
@@ -111,11 +101,11 @@ static void cldm_test_print(unsigned thread_id, struct cldm_testbuffer const *bu
     cldm_mutex_guard(&io_lock) {
         for(unsigned i = 0; i < buffer->size; i++) {
             ++io_index;
-            l = cldm_strlitlen("(/)") + cldm_test_ndigits(io_index) + cldm_test_ndigits(io_total);
+            l = cldm_strlitlen("(/)") + cldm_ndigits(io_index) + cldm_ndigits(io_total);
             idxpad = (l <= CLDM_INDEX_PRINT_WIDTH) * (CLDM_INDEX_PRINT_WIDTH - l);
             if(io_verbose) {
                 cldm_log("[Thread %u:%-*s running %s::%s]%-*s (%zu/%zu)%-*s  %s",
-                        thread_id, 2 - cldm_test_ndigits(thread_id), "", buffer->stats[i].file, buffer->stats[i].name,
+                        thread_id, 2 - cldm_ndigits(thread_id), "", buffer->stats[i].file, buffer->stats[i].name,
                         buffer->stats[i].namepad, "",
                         io_index, io_total, idxpad, "",
                         buffer->stats[i].pass ? "pass" : "fail");

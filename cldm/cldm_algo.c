@@ -85,3 +85,14 @@ size_t cldm_uniq(void *dst, void const *src, size_t elemsize, size_t nelems, int
 
     return (d - (unsigned char *)dst) / elemsize;
 }
+
+unsigned cldm_ndigits(size_t number) {
+    unsigned n;
+    if(!number) {
+        return 1u;
+    }
+
+    for(n = 0u; number; number /= 10u, ++n);
+
+    return n;
+}
