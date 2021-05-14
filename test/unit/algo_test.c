@@ -63,3 +63,11 @@ TEST(cldm_ndigits) {
     ASSERT_EQ(cldm_ndigits(1221u), 4);
     ASSERT_EQ(cldm_ndigits(12218u), 5);
 }
+
+TEST(cldm_clp232) {
+    ASSERT_EQ(cldm_clp232(7), 8);
+    ASSERT_EQ(cldm_clp232(8), 8);
+    ASSERT_EQ(cldm_clp232(9), 16);
+    ASSERT_EQ(cldm_clp232(17), 32);
+    ASSERT_EQ(cldm_clp232(1025), 2048);
+}
