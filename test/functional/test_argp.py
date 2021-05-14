@@ -361,10 +361,10 @@ def test_argp_long_switch_without_value():
     gen_makefile()
 
     runcmd = gen_runcmd('--capture= all')
-    run(stderr_matcher=ContainsMatcher(r'--capture requires an argument'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+    run(stderr_matcher=ContainsMatcher(r'\'--capture\' requires an argument'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
     runcmd = gen_runcmd('--capture=')
-    run(stderr_matcher=ContainsNotMatcher(r'--capture requires and argument'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+    run(stderr_matcher=ContainsMatcher(r'\'--capture\' requires an argument'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
 
 def test_argp_long_redirect():
     idstring = 'redirected output from bar'

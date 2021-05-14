@@ -166,7 +166,7 @@ TEST(cldm_argp_parse_capture) {
         ASSERT_EQ(args.capture, *it1);
 
         strcpy(opt0, "-c");
-        ASSERT_LT((size_t)snprintf(opt1, sizeof(opt1), "%s", *it0), sizeof(opt1));
+        strcpy(opt1, *it0);
 
         args = (struct cldm_args) { 0 };
         ASSERT_TRUE(cldm_argp_parse(&args, 3, opts));

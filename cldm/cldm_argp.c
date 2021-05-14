@@ -151,11 +151,6 @@ static bool cldm_argp_set_redirect(struct cldm_argp_ctx *restrict ctx, char cons
     return true;
 }
 
-static bool cldm_argp_set_posidx(struct cldm_argp_ctx *restrict ctx, char const *restrict optarg) {
-    ctx->treat_as_posparam = true;
-    return optarg;
-}
-
 static bool cldm_argp_set_jobs(struct cldm_argp_ctx *restrict ctx, char const *restrict optarg) {
     char *end;
     unsigned long n;
@@ -187,6 +182,12 @@ static bool cldm_argp_set_jobs(struct cldm_argp_ctx *restrict ctx, char const *r
     ctx->args->jobs = n;
     return true;
 }
+
+static bool cldm_argp_set_posidx(struct cldm_argp_ctx *restrict ctx, char const *restrict optarg) {
+    ctx->treat_as_posparam = true;
+    return optarg;
+}
+
 
 static bool cldm_argp_partition(struct cldm_argp_ctx *restrict ctx, unsigned char const *restrict posflags, int argc, char **restrict argv) {
     unsigned lidx;
@@ -261,7 +262,7 @@ static bool cldm_argp_parse_long_switch(struct cldm_argp_ctx *restrict ctx, stru
         if(strncmp(param->p_long, sw, len + !sw[len]) == 0) {
             if(param->p_argument) {
                 if(sw[len] != '=' || (sw[len] && !sw[len + 1])) {
-                    cldm_err("Option %s requires an argument", param->p_long);
+                    cldm_err("Option '%s' requires an argument", param->p_long);
                     return false;
                 }
                 ++len;
@@ -319,6 +320,7 @@ bool cldm_argp_parse(struct cldm_args *restrict args, int argc, char **restrict 
             if(!ctx.assign_pending(&ctx, argv[i])) {
                 goto epilogue;
             }
+            ctx.pending_arg = false;
             continue;
         }
         switch(!ctx.treat_as_posparam * cldm_argp_paramtype(argv[i])) {
@@ -338,6 +340,11 @@ bool cldm_argp_parse(struct cldm_args *restrict args, int argc, char **restrict 
             default:
                 cldm_rtassert(0, "Invalid parameter type");
         }
+    }
+
+    if(ctx.pending_arg) {
+        cldm_err("Option '%s' requires an argument", argv[argc - 1]);
+        goto epilogue;
     }
 
     if(!cldm_argp_partition(&ctx, posflags, argc, argv)) {
