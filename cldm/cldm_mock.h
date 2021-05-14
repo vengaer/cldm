@@ -192,12 +192,12 @@ inline bool cldm_mock_enabled(void) {
 #define cldm_mock_function_void0_1(name) CLDM_MOCK_FUNCTION_VOID(name)
 #define cldm_mock_function_void0_2(name, _) CLDM_MOCK_FUNCTION_VOID(name)
 
-#define cldm_will(invocations, ...)                                                                             \
-        __VA_ARGS__;                                                                                            \
-        *(int *)((unsigned char *)mockinfos[cldm_thread_id()].data->addr +                                      \
-                                  mockinfos[cldm_thread_id()].data->invocations_offset) = invocations;          \
-        cldm_rtassert((*(int *)((unsigned char *)mockinfos[cldm_thread_id()].data->addr +                       \
-                                                 mockinfos[cldm_thread_id()].data->invocations_offset)) > -2);  \
+#define cldm_will(invocations, ...)                                                                                                     \
+        __VA_ARGS__;                                                                                                                    \
+        *(int *)((unsigned char *)mockinfos[cldm_cat_expand(cldm_exp_tid,__LINE__)].data->addr +                                        \
+                                  mockinfos[cldm_cat_expand(cldm_exp_tid,__LINE__)].data->invocations_offset) = invocations;            \
+        cldm_rtassert((*(int *)((unsigned char *)mockinfos[cldm_cat_expand(cldm_exp_tid,__LINE__)].data->addr +                         \
+                                                 mockinfos[cldm_cat_expand(cldm_exp_tid,__LINE__)].data->invocations_offset)) > -2);    \
     } while (0)
 
 #define cldm_set_opmode(mode)                                                                   \
@@ -444,11 +444,13 @@ enum cldm_opmode {
 #define CLDM_MOCK_FUNCTION_VOID0(...)   \
     cldm_cat_expand(cldm_mock_function_void0_, cldm_count(__VA_ARGS__))(__VA_ARGS__)
 
-#define CLDM_EXPECT_CALL(name)                                                                              \
-    do {                                                                                                    \
-        extern cldm_aligned_mock_ ## name ## _ctx cldm_mock_ ## name[CLDM_MAX_THREADS];                      \
-        mockinfos[cldm_thread_id()].data = &cldm_mock_ ## name[cldm_thread_id()].data.info;                 \
-        cldm_mock_ ## name[cldm_thread_id()].data
+#define CLDM_EXPECT_CALL(name)                                                          \
+    do {                                                                                \
+        extern cldm_aligned_mock_ ## name ## _ctx cldm_mock_ ## name[CLDM_MAX_THREADS]; \
+        unsigned cldm_cat_expand(cldm_exp_tid,__LINE__) = cldm_thread_id();             \
+        mockinfos[cldm_cat_expand(cldm_exp_tid,__LINE__)].data =                        \
+            &cldm_mock_ ## name[cldm_cat_expand(cldm_exp_tid,__LINE__)].data.info;      \
+        cldm_mock_ ## name[cldm_cat_expand(cldm_exp_tid,__LINE__)].data
 
 #define CLDM_WILL_ONCE(...) cldm_will(1, __VA_ARGS__)
 #define CLDM_WILL_REPEATEDLY(...) cldm_will(-1, __VA_ARGS__)
