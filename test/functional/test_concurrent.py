@@ -5,6 +5,7 @@ from makegen import *
 from runner import *
 from util import *
 
+import datetime
 import os
 
 _BINARY='concurrent_test'
@@ -64,6 +65,25 @@ def do_concurrent_teardown_test(nthreads):
 
     assert exec_bash('make -C {}'.format(working_dir))[0] == 0
     assert os.system(gen_runcmd('-j{}'.format(nthreads))) == 0
+
+def test_concurrent_execution():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)          \
+        .append_include('cldm_thread.h', system_header=False)   \
+        .append_include('unistd.h')
+
+    for i in range(4):
+        with cgen.open_macro('TEST', 'test{}'.format(i)):
+            cgen.append_line('sleep(5);')
+
+    cgen.write()
+    gen_makefile()
+
+    start = datetime.datetime.now()
+    assert os.system('make -C {}'.format(working_dir)) == 0
+    assert os.system(gen_runcmd('-j4')) == 0
+    duration = datetime.datetime.now() - start
+    assert duration.seconds < 20
 
 def test_concurrent_setup_2():
     do_concurrent_setup_test(2)
