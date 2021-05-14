@@ -51,8 +51,11 @@ pipeline {
             steps {
                 script {
                     ccs.each { cc ->
-                        echo "-- Running ${cc} Tests --"
+                        echo "-- Running Single Threaded ${cc} Tests --"
                         sh "CC=${cc} make -B vgcheck"
+
+                        echo "-- Running Parallel ${cc} Tests --"
+                        sh "CC=${cc} make -B vgparunit"
                     }
                 }
             }
