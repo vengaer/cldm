@@ -39,6 +39,7 @@ ssize_t cldm_collect_from(struct cldm_rbtree *restrict tree, struct cldm_elfmap 
     struct cldm_ht_entry *entries;
     struct cldm_ht_entry *entry;
     struct cldm_testrec *record;
+    char const *identifiers[2];
     struct cldm_ht ht;
     bool *param_known;
     bool success;
@@ -73,10 +74,15 @@ ssize_t cldm_collect_from(struct cldm_rbtree *restrict tree, struct cldm_elfmap 
                 cldm_err("Could not map test record for %s", map->strtab.addr + i + sizeof(cldm_str_expand(cldm_testrec_prefix)) - 1);
                 goto epilogue;
             }
-            entry = cldm_ht_find(&ht, &cldm_ht_mkentry_str(cldm_basename(record->file)));
-            if(entry) {
-                param_known[cldm_arrindex(entries, entry)] = true;
-                cldm_rbtree_insert(tree, &record->rbnode, cldm_testrec_compare);
+            identifiers[0] = cldm_basename(record->file);
+            identifiers[1] = record->name;
+            for(unsigned j = 0; j < cldm_arrsize(identifiers); j++) {
+                entry = cldm_ht_find(&ht, &cldm_ht_mkentry_str(identifiers[j]));
+                if(entry) {
+                    param_known[cldm_arrindex(entries, entry)] = true;
+                    cldm_rbtree_insert(tree, &record->rbnode, cldm_testrec_compare);
+                    break;
+                }
             }
         }
     }

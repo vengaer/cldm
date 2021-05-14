@@ -77,8 +77,9 @@ static char const *cldm_argp_params_doc[] = {
     "Run tests concurrently using JOBS threads, max number is " cldm_str_expand(CLDM_MAX_THREADS)
 };
 
-static char const *cldm_argp_positional_doc = "If a [FILE]... list is specified, cldm will run only tests contained in the files specified.\n"
-                                              "The parameters are expected to contain only basenames, full paths are not supported.";
+static char const *cldm_argp_positional_doc = "[IDENTIFIER].. is a list of test identifiers and may contain both file and test names, in any order.\n"
+                                              "If provided, cldm will run only tests identified by members of the list. File parameters are expected\n"
+                                              "to contain only basenames, full paths are not supported.";
 
 static char const *cldm_argp_bug_address = "vilhelm.engstrom@tuta.io";
 
@@ -372,7 +373,7 @@ void cldm_argp_usage(char const *argv0) {
     cldm_static_assert(cldm_arrsize(cldm_argp_params) - 1 == cldm_arrsize(cldm_argp_params_doc), "Size mismatch between parameters and doc strings");
 
     cldm_log("cldm -- unit test and mocking framework\n");
-    cldm_log("Usage:\n %s [OPTION]... [FILE]...\n", cldm_basename(argv0));
+    cldm_log("Usage:\n %s [OPTION]... [IDENTIFIER]...\n", cldm_basename(argv0));
     cldm_log("Options:");
 
     cldm_for_each_zip(doc, param, cldm_argp_params_doc, cldm_argp_params) {
