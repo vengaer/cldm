@@ -55,3 +55,11 @@ TEST(cldm_uniq) {
         ASSERT_EQ(*it0, *it1);
     }
 }
+
+TEST(cldm_ndigits) {
+    ASSERT_EQ(cldm_ndigits(1u), 1);
+    ASSERT_EQ(cldm_ndigits(18u), 2);
+    ASSERT_EQ(cldm_ndigits(122u), 3);
+    ASSERT_EQ(cldm_ndigits(1221u), 4);
+    ASSERT_EQ(cldm_ndigits(12218u), 5);
+}
