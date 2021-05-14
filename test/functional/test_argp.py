@@ -472,3 +472,45 @@ def test_argp_invalid_positional_param():
 
     runcmd = gen_runcmd(file)
     run(stderr_matcher=ContainsMatcher('Positional parameter \'{}\' does not match'.format(file)), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+def test_argp_positional_param_testname():
+    cgen = CGen('test.c')
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('ASSERT_EQ(1, 2);')
+    with cgen.open_macro('TEST', 'foo'):
+        cgen.append_line('ASSERT_TRUE(1);')
+    cgen.write()
+
+    gen_makefile()
+
+    runcmd = gen_runcmd('bar')
+    run(ContainsNotMatcher('Running.*foo'), rvmatcher=RvDiffMatcher(0), runcmd=runcmd)
+
+def test_argp_positional_param_testname_and_file():
+    cgen = CGen('test.c')
+    cgen.append_include('cldm.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'bar'):
+        cgen.append_line('ASSERT_EQ(1, 1);')
+    with cgen.open_macro('TEST', 'foo'):
+        cgen.append_line('ASSERT_TRUE(0);')
+    cgen.write()
+
+    cgen = CGen('test1.c')
+    cgen.append_include('cldm.h', system_header=False)
+    with cgen.open_macro('TEST', 'baz'):
+        pass
+    cgen.write()
+
+    cgen= CGen('test2.c')
+    cgen.append_include('cldm.h', system_header=False)
+    with cgen.open_macro('TEST', 'bub'):
+        pass
+    cgen.write()
+
+    gen_makefile()
+
+    runcmd = gen_runcmd('bar test1.c test2.c')
+    run(ContainsMatcher('Running.*bar.*Running.*baz.*Running.*bub'), rvmatcher=RvEqMatcher(0), runcmd=runcmd)
