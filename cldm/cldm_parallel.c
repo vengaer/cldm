@@ -18,7 +18,6 @@ struct cldm_threadargs {
     bool fail_fast;
     unsigned id;
     struct cldm_testrec *volatile *records;
-    struct cldm_auxprocs volatile *auxprocs;
     pthread_barrier_t *barrier;
 };
 
@@ -30,10 +29,10 @@ struct cldm_extended_threadargs {
 static struct cldm_threadargs cldm_threadargs[CLDM_MAX_THREADS];
 static unsigned long long ntest_per_thread[CLDM_MAX_THREADS];
 static unsigned long long startidx_per_thread[CLDM_MAX_THREADS];
+static struct cldm_auxprocs auxprocs;
 
 static void *cldm_thread_run(void *data) {
     struct cldm_threadargs *thrdargs;
-    struct cldm_auxprocs auxprocs;
     unsigned long long startidx;
     unsigned long long ntests;
     bool init_successful;
@@ -51,8 +50,6 @@ static void *cldm_thread_run(void *data) {
 
     ntests = ntest_per_thread[thrdargs->id];
     startidx = startidx_per_thread[thrdargs->id];
-
-    auxprocs = *thrdargs->auxprocs;
 
     for(unsigned i = 0; i < ntests; i++) {
         if(!cldm_test_run(thrdargs->id, &(*thrdargs->records)[startidx + i], &auxprocs, thrdargs->fail_fast)) {
@@ -82,7 +79,6 @@ static void *cldm_thread_run(void *data) {
 
 static void *cldm_parallel_collect_and_run(void *data) {
     struct cldm_extended_threadargs *ethrdargs;
-    struct cldm_auxprocs auxprocs;
     struct cldm_rbnode *rbnode;
     struct cldm_rbtree tree;
     unsigned testidx;
@@ -131,12 +127,11 @@ static void *cldm_parallel_collect_and_run(void *data) {
 
     /* Collect auxiliary procedures */
     cldm_collect_auxprocs(&auxprocs, ethrdargs->map);
-    *ethrdargs->thrdargs->auxprocs = auxprocs;
 
     /* Issue global setup while other threads are blocked */
     /* TODO: mock all threads */
     cldm_mock_enable() {
-        ethrdargs->thrdargs->auxprocs->global_setup();
+        auxprocs.global_setup();
     }
 epilogue:
     return cldm_thread_run(ethrdargs->thrdargs);
@@ -144,7 +139,6 @@ epilogue:
 
 int cldm_parallel_run(struct cldm_elfmap const *restrict map, struct cldm_args const *restrict args) {
     pthread_barrier_t barrier;
-    struct cldm_auxprocs auxprocs;
     struct cldm_testrec *records;
     int err;
 
@@ -168,7 +162,6 @@ int cldm_parallel_run(struct cldm_elfmap const *restrict map, struct cldm_args c
         .fail_fast = args->fail_fast,
         .id = 1u,
         .records = &records,
-        .auxprocs = &auxprocs,
         .barrier = &barrier
     };
 
@@ -181,7 +174,6 @@ int cldm_parallel_run(struct cldm_elfmap const *restrict map, struct cldm_args c
             .fail_fast = args->fail_fast,
             .id = i,
             .records = &records,
-            .auxprocs = &auxprocs,
             .barrier = &barrier
         };
         err = pthread_create(&cldm_threads[i - 1], 0, cldm_thread_run, &cldm_threadargs[i]);
@@ -193,7 +185,6 @@ int cldm_parallel_run(struct cldm_elfmap const *restrict map, struct cldm_args c
         .fail_fast = args->fail_fast,
         .id = 0u,
         .records = &records,
-        .auxprocs = &auxprocs,
         .barrier = &barrier
     };
     cldm_thread_run(&cldm_threadargs[0]);
