@@ -328,6 +328,7 @@ enum cldm_opmode {
         cldm_populate_mockctx(name)                                                                                                 \
     };                                                                                                                              \
     rettype name(cldm_genparams(__VA_ARGS__)) {                                                                                     \
+        cldm_static_assert(CLDM_MAX_THREADS == 32);                                                                                 \
         rvinit;                                                                                                                     \
         unsigned thread_id = cldm_thread_id();                                                                                      \
         void const *argaddrs[cldm_count(__VA_ARGS__)];                                                                              \
@@ -392,6 +393,7 @@ enum cldm_opmode {
         cldm_populate_mockctx(name)                                                                         \
     };                                                                                                      \
     rettype name(void) {                                                                                    \
+        cldm_static_assert(CLDM_MAX_THREADS == 32);                                                         \
         rvinit;                                                                                             \
         unsigned thread_id = cldm_thread_id();                                                              \
         if(cldm_mock_enabled() && cldm_mock_ ## name[thread_id].data.invocations) {                         \
