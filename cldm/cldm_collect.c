@@ -35,7 +35,7 @@ ssize_t cldm_collect(struct cldm_rbtree *restrict tree, struct cldm_elfmap const
     return (ssize_t)cldm_rbtree_size(tree);
 }
 
-ssize_t cldm_collect_from(struct cldm_rbtree *restrict tree, struct cldm_elfmap const *restrict map, char *const *restrict files, size_t nfiles) {
+ssize_t cldm_collect_from(struct cldm_rbtree *restrict tree, struct cldm_elfmap const *restrict map, char *const *restrict idents, size_t nidents) {
     struct cldm_ht_entry *entries;
     struct cldm_ht_entry *entry;
     struct cldm_testrec *record;
@@ -49,19 +49,19 @@ ssize_t cldm_collect_from(struct cldm_rbtree *restrict tree, struct cldm_elfmap 
     success = false;
     ht = cldm_ht_init();
 
-    entries = malloc(nfiles * (sizeof(*entries) + sizeof(bool)));
+    entries = malloc(nidents * (sizeof(*entries) + sizeof(bool)));
     if(!entries) {
         cldm_err("Could not allocate nodes for hashing");
         goto epilogue;
     }
 
-    param_known = (bool *)((unsigned char *)entries + nfiles * sizeof(*entries));
-    memset(param_known, 0, nfiles * sizeof(bool));
+    param_known = (bool *)((unsigned char *)entries + nidents * sizeof(*entries));
+    memset(param_known, 0, nidents * sizeof(bool));
 
-    for(unsigned i = 0; i < nfiles; i++) {
-        entries[i] = cldm_ht_mkentry_str(files[i]);
+    for(unsigned i = 0; i < nidents; i++) {
+        entries[i] = cldm_ht_mkentry_str(idents[i]);
         if(!cldm_ht_insert(&ht, &entries[i])) {
-            cldm_warn("Ignoring duplicate parameter '%s'", files[i]);
+            cldm_warn("Ignoring duplicate parameter '%s'", idents[i]);
             /* exempt from validity check */
             param_known[i] = true;
         }
@@ -87,9 +87,9 @@ ssize_t cldm_collect_from(struct cldm_rbtree *restrict tree, struct cldm_elfmap 
         }
     }
 
-    for(unsigned i = 0; i < nfiles; i++) {
+    for(unsigned i = 0; i < nidents; i++) {
         if(!param_known[i]) {
-            cldm_err("Positional parameter '%s' does not match any file known to cldm", files[i]);
+            cldm_err("Positional parameter '%s' does not match any file or test known to cldm", idents[i]);
             goto epilogue;
         }
     }
