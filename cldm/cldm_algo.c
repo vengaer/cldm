@@ -30,7 +30,16 @@ unsigned cldm_clp232(unsigned x) {
     x |= (x >> 4u);
     x |= (x >> 8u);
     x |= (x >> 16u);
-    return x + 1;
+    return x + 1u;
+}
+
+unsigned cldm_flp232(unsigned x) {
+    x |= (x >> 1u);
+    x |= (x >> 2u);
+    x |= (x >> 4u);
+    x |= (x >> 8u);
+    x |= (x >> 16u);
+    return x - (x >> 1u);
 }
 
 ssize_t cldm_stable_partition(void *data, size_t elemsize, size_t nelems, bool(*predicate)(void const *)) {
