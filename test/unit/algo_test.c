@@ -71,3 +71,11 @@ TEST(cldm_clp232) {
     ASSERT_EQ(cldm_clp232(17), 32);
     ASSERT_EQ(cldm_clp232(1025), 2048);
 }
+
+TEST(cldm_flp232) {
+    ASSERT_EQ(cldm_flp232(7), 4);
+    ASSERT_EQ(cldm_flp232(8), 8);
+    ASSERT_EQ(cldm_flp232(65), 64);
+    ASSERT_EQ(cldm_flp232(127), 64);
+    ASSERT_EQ(cldm_flp232(4095), 2048);
+}
