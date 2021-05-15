@@ -129,9 +129,8 @@ cldm_avx2_strscpy:
     test    r8d, r8d                        ; Set bit indicates null byte in loaded xmmword
     jnz     .xmmword_null
 
-    mov     r9, rdx                         ; Remaining number of bytes in destination
-    sub     r9, rax
-    cmp     r9, 0x10                        ; Check room for 16 bytes
+    lea     r10, [rax + 0x10]               ; Check room for 16 bytes
+    cmp     rdx, r10
     jb      .xmmword_ovf
 
     vmovdqu [rdi + rax], xmm0               ; Write xmmword
@@ -176,6 +175,9 @@ cldm_avx2_strscpy:
     jmp     .epi_term
 
 .xmmword_ovf:                               ; Destination cannot hold entire xmmword, all bytes non-null
+    mov     r9, rdx                         ; Compute number of remaining bytes in destination
+    sub     r9, rax
+
     mov     ecx, r9d                        ; Number of remaining bytes
     mov     r10d, 8                         ; Size of qword
     cmp     ecx, r10d
