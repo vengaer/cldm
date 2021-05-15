@@ -135,3 +135,15 @@ TEST(cldm_for_each_zip_arr0_lt_arr1) {
 
     ASSERT_EQ(i, cldm_arrsize(arr0));
 }
+
+TEST(cldm_arrindex) {
+    unsigned arr[] = { 1, 2, 3, 4, 5, 6, 7 };
+
+    ASSERT_EQ(cldm_arrindex(arr, &arr[0]), 0);
+    ASSERT_EQ(cldm_arrindex(arr, &arr[1]), 1);
+    ASSERT_EQ(cldm_arrindex(arr, &arr[2]), 2);
+    ASSERT_EQ(cldm_arrindex(arr, &arr[3]), 3);
+    ASSERT_EQ(cldm_arrindex(arr, &arr[4]), 4);
+    ASSERT_EQ(cldm_arrindex(arr, &arr[5]), 5);
+    ASSERT_EQ(cldm_arrindex(arr, &arr[6]), 6);
+}
