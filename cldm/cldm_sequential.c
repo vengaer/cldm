@@ -41,12 +41,16 @@ int cldm_sequential_run(struct cldm_elfmap const *restrict map, struct cldm_args
     cldm_test_register((size_t)ntests, args->verbose);
     cldm_collect_auxprocs(&auxprocs, map);
 
+
+    if(!cldm_test_init(0)) {
+        return 1;
+    }
+
     cldm_mock_global() {
         cldm_mock_enable() {
             auxprocs.global_setup();
         }
     }
-    cldm_test_init(0);
 
     cldm_rbtree_for_each(iter, &tree) {
         record = cldm_testrec_get(iter, const);
