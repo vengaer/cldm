@@ -205,7 +205,7 @@ static bool cldm_argp_partition(struct cldm_argp_ctx *restrict ctx, unsigned cha
     hidx = argc;
 
     for(int i = 1; i < argc; i++) {
-        if(posflags[i / CHAR_BIT] & (1 << ((i % CHAR_BIT) - 1))) {
+        if(posflags[i / CHAR_BIT] & (1 << (i % CHAR_BIT))) {
             tmp[hidx++] = argv[i];
         }
         else {
@@ -326,7 +326,7 @@ bool cldm_argp_parse(struct cldm_args *restrict args, int argc, char **restrict 
         }
         switch(!ctx.treat_as_posparam * cldm_argp_paramtype(argv[i])) {
             case cldm_argp_positional:
-                posflags[i / CHAR_BIT] |= (1 << ((i % CHAR_BIT) - 1));
+                posflags[i / CHAR_BIT] |= (1 << (i % CHAR_BIT));
                 break;
             case cldm_argp_switch_short:
                 if(!cldm_argp_parse_short_switch(&ctx, argv[i])) {
