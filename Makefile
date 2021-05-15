@@ -102,6 +102,8 @@ $(cldmtest): $($(cldmtest)_obj) $(link) $(lcldm_main)
 	$(info [LD]  $@)
 	$(QUIET)$(CC) -o $@ $($(cldmtest)_obj) $(testldflags) $(testldlibs)
 
+$(cldmfuzz): CC     := $(FUZZCC)
+$(cldmfuzz): CFLAGS := $(fuzzinstr) $(CFLAGS)
 $(cldmfuzz): $($(cldmfuzz)_obj) $(link)
 	$(info [LD]  $@)
 	$(QUIET)$(FUZZCC) -o $@ $($(cldmfuzz)_obj) $(fuzzldflags)
