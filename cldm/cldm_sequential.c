@@ -34,7 +34,6 @@ int cldm_sequential_run(struct cldm_elfmap const *restrict map, struct cldm_args
     }
 
     if(ntests < 0) {
-        cldm_err("Test collection failed");
         return 1;
     }
 

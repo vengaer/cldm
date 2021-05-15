@@ -91,7 +91,6 @@ static void *cldm_parallel_collect_and_run(void *data) {
     }
 
     if(ntests < 0) {
-        cldm_err("Test collection failed");
         /* Allow all threads to run, but do nothing, to bypass barrier */
         for(unsigned i = 0; i < cldm_arrsize(cldm_threadargs); i++) {
             thread_ntests[i] = 0;
