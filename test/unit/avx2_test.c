@@ -12,7 +12,7 @@ TEST(cldm_avx2_strscpy) {
     enum { SIZE = 256 };
     char dst[SIZE];
     char const *src = "Fear Inoculum Pneuma Litanie contre la Peur Invincible Legion Inculant Descending Culling Voices Chocolate Chip Trip 7empest Mockingbeat";
-    ASSERT_EQ(cldm_avx2_strscpy(dst, src, sizeof(dst)), (ssize_t)strlen(src));
+    ASSERT_EQ(cldm_avx2_strscpy(dst, src, sizeof(dst)), (long long)strlen(src));
     ASSERT_STREQ(dst, src);
 }
 
