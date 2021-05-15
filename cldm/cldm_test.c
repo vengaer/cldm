@@ -270,7 +270,7 @@ void cldm_assert_streq(char const *restrict l, char const *restrict r, long long
     ll = l;
     rr = r;
     while(*ll++ == *rr++);
-    diffoffset = ll - l;
+    diffoffset = cldm_strlitlen("string n is '") + ll - l - 1;
 
     #define expandsuffix(str)   strlen(str) > CLDM_MAX_EXPAND_SIZE ? "..." : ""
     if(n < 0) {
