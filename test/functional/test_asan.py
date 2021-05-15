@@ -29,4 +29,4 @@ def test_asan_compat():
     cgen.write()
     gen_makefile()
     assert exec_bash('make -j$(nproc) -C {}'.format(working_dir))[0] == 0
-    assert os.system('make -sC {} run'.format(working_dir)) == 0
+    run(rvmatcher=RvEqMatcher(0), runcmd='LD_PRELOAD={} {}/{}'.format(solib, working_dir, _BINARY))
