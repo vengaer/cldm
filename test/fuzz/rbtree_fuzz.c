@@ -24,7 +24,7 @@ static int qcmp(void const *l, void const *r) {
     return fuzznodeval(r) - fuzznodeval(l);
 }
 
-static void dump_tree(struct cldm_rbtree const *tree) {
+static void dump_tree(struct cldm_rbtree *tree) {
     struct cldm_rbnode *iter;
     fputs("Dumping tree...\n", stderr);
     fprintf(stderr, "Size: %zu\n", cldm_rbtree_size(tree));
@@ -38,12 +38,12 @@ static void dump_tree(struct cldm_rbtree const *tree) {
     }
 }
 
-static inline void report_violation(int errnum, struct cldm_rbtree const *tree) {
+static inline void report_violation(int errnum, struct cldm_rbtree *tree) {
     fprintf(stderr, "Violation encountered: %s\n", rbtree_strviolation(errnum));
     dump_tree(tree);
 }
 
-static inline void report_missing_value(struct fuzznode const *node, struct cldm_rbtree const *tree) {
+static inline void report_missing_value(struct fuzznode const *node, struct cldm_rbtree *tree) {
     fprintf(stderr, "Value %hhu not in tree\n", (unsigned char)node->value);
     dump_tree(tree);
 }
