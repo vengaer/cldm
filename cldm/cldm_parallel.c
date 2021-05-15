@@ -56,7 +56,7 @@ static void *cldm_thread_run(void *data) {
 
     pthread_barrier_wait(thrdargs->barrier);
     /* Parallel reduction */
-    for(unsigned i = cldm_clp232(cldm_jobs) >> 1u; i; i >>= 1) {
+    for(unsigned i = cldm_flp232(cldm_jobs); i; i >>= 1) {
         if(thrdargs->id < i) {
             cldm_test_reduce(thrdargs->id, i);
         }
