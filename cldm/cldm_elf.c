@@ -1,4 +1,5 @@
 #include "cldm_rtassert.h"
+#include "cldm_dl.h"
 #include "cldm_elf.h"
 #include "cldm_log.h"
 #include "cldm_macro.h"
@@ -34,13 +35,13 @@ static char const *cldm_elf_shstrtab(struct cldm_elfmap const *map) {
         return 0;
     }
 
-    memcpy(&shdr, cldm_elf_shdr(map, map->m_un.ehdr->e_shstrndx), sizeof(shdr));
+    cldm_explicit_memcpy(&shdr, cldm_elf_shdr(map, map->m_un.ehdr->e_shstrndx), sizeof(shdr));
     return (char const *)map->m_un.addr + shdr.sh_offset;
 }
 
 static inline void cldm_map_strtab(struct cldm_strtab *restrict strtab, size_t mapaddr, void *restrict hdr) {
     Elf64_Shdr shdr;
-    memcpy(&shdr, hdr, sizeof(shdr));
+    cldm_explicit_memcpy(&shdr, hdr, sizeof(shdr));
     strtab->addr = (char const *)mapaddr + shdr.sh_offset;
     strtab->size = shdr.sh_size - 1;
 }
@@ -54,13 +55,13 @@ static int cldm_elf_map_sections(struct cldm_elfmap *map) {
 
     for(Elf64_Half i = 0; i < map->m_un.ehdr->e_shnum; i++) {
         addr = cldm_elf_shdr(map, i);
-        memcpy(&shdr, addr, sizeof(shdr));
+        cldm_explicit_memcpy(&shdr, addr, sizeof(shdr));
 
         if(shdr.sh_type == SHT_STRTAB) {
-            if(strcmp(map->shstrtab + shdr.sh_name, ".strtab") == 0) {
+            if(cldm_explicit_strcmp(map->shstrtab + shdr.sh_name, ".strtab") == 0) {
                 strtab_hdr = addr;
             }
-            else if(strcmp(map->shstrtab + shdr.sh_name, ".dynstr") == 0) {
+            else if(cldm_explicit_strcmp(map->shstrtab + shdr.sh_name, ".dynstr") == 0) {
                 dynstr_hdr = addr;
             }
         }
@@ -84,8 +85,8 @@ static void *cldm_elf_section(struct cldm_elfmap const *restrict map, Elf64_Word
 
     for(Elf64_Half i = 0; i < map->m_un.ehdr->e_shnum; i++) {
         addr = cldm_elf_shdr(map, i);
-        memcpy(&shdr, addr, sizeof(shdr));
-        if(shdr.sh_type == type && strcmp(map->shstrtab + shdr.sh_name, secname) == 0) {
+        cldm_explicit_memcpy(&shdr, addr, sizeof(shdr));
+        if(shdr.sh_type == type && cldm_explicit_strcmp(map->shstrtab + shdr.sh_name, secname) == 0) {
             return addr;
         }
     }
@@ -110,11 +111,11 @@ static void *cldm_elf_sym(struct cldm_elfmap const *restrict map, char const *re
     void *addr;
 
     for(Elf64_Half i = 0; i < map->m_un.ehdr->e_shnum; i++) {
-        memcpy(&shdr, cldm_elf_shdr(map, i), sizeof(shdr));
+        cldm_explicit_memcpy(&shdr, cldm_elf_shdr(map, i), sizeof(shdr));
         if(shdr.sh_type == SHT_SYMTAB) {
             for(Elf64_Xword j = 0; j < shdr.sh_size; j += sizeof(sym)) {
                 addr = (unsigned char *)map->m_un.addr + shdr.sh_offset + j;
-                memcpy(&sym, addr, sizeof(sym));
+                cldm_explicit_memcpy(&sym, addr, sizeof(sym));
                 if(sym.st_name != STN_UNDEF && strcmp(symbol, map->strtab.addr + sym.st_name) == 0) {
                     return addr;
                 }
@@ -140,14 +141,14 @@ static void *cldm_elf_baseaddr(struct cldm_elfmap const *map) {
     for(Elf64_Half i = 0; i < map->m_un.ehdr->e_phnum; i++) {
         phaddr = (void *)((unsigned char const *)map->m_un.addr + map->m_un.ehdr->e_phoff + i * map->m_un.ehdr->e_phentsize);
 
-        memcpy(&phdr, phaddr, sizeof(phdr));
+        cldm_explicit_memcpy(&phdr, phaddr, sizeof(phdr));
 
         /* min(baseaddr, phdr.p_vaddr) */
         baseaddr = baseaddr ^ ((phdr.p_vaddr ^ baseaddr) & -(phdr.p_vaddr < baseaddr));
     }
 
     relmain = cldm_elf_sym(map, "main");
-    memcpy(&sym, relmain, sizeof(sym));
+    cldm_explicit_memcpy(&sym, relmain, sizeof(sym));
 
     switch(sym.st_shndx) {
         case SHN_UNDEF:
@@ -161,7 +162,7 @@ static void *cldm_elf_baseaddr(struct cldm_elfmap const *map) {
             break;
     }
 
-    memcpy(&shdr, cldm_elf_shdr(map, sym.st_shndx), sizeof(shdr));
+    cldm_explicit_memcpy(&shdr, cldm_elf_shdr(map, sym.st_shndx), sizeof(shdr));
 
     return (void *)((size_t)main - sym.st_value - baseaddr);
 }
@@ -194,19 +195,19 @@ int cldm_map_elf(struct cldm_elfmap *restrict map, char const *restrict file) {
 
     status = -1;
 
-    fd = open(file, O_RDONLY);
+    fd = cldm_explicit_open(file, O_RDONLY);
 
     if(fd == -1) {
         cldm_err("open %s: %s", file, strerror(errno));
         goto epilogue;
     }
 
-    if(fstat(fd, &sb) == -1) {
+    if(cldm_explicit_fstat(fd, &sb) == -1) {
         cldm_err("fstat %s: %s", file, strerror(errno));
         goto epilogue;
     }
 
-    addr = mmap(0, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    addr = cldm_explicit_mmap(0, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 
     if(addr == MAP_FAILED) {
         cldm_err("mmap %s: %s", file, strerror(errno));
@@ -239,15 +240,15 @@ int cldm_map_elf(struct cldm_elfmap *restrict map, char const *restrict file) {
     status = 0;
 epilogue:
     if(fd != -1) {
-        close(fd);
+        cldm_explicit_close(fd);
     }
 
     return status;
 }
 
 int cldm_unmap_elf(struct cldm_elfmap *map) {
-    if(munmap(map->m_un.addr, map->size) == -1) {
-        cldm_err("munmap: %s", strerror(errno));
+    if(cldm_explicit_munmap(map->m_un.addr, map->size) == -1) {
+        cldm_err("munmap: %s", cldm_explicit_strerror(errno));
         return -1;
     }
 
@@ -313,11 +314,11 @@ ssize_t cldm_elf_read_needed(struct cldm_elfmap const *restrict map, char *restr
         return -1;
     }
 
-    memcpy(&shdr, dynamic, sizeof(shdr));
+    cldm_explicit_memcpy(&shdr, dynamic, sizeof(shdr));
 
     offset = 0;
     for(Elf64_Xword i = 0; i < shdr.sh_size; i += sizeof(dyn)) {
-        memcpy(&dyn, (unsigned char *)map->m_un.addr + shdr.sh_offset + i, sizeof(dyn));
+        cldm_explicit_memcpy(&dyn, (unsigned char *)map->m_un.addr + shdr.sh_offset + i, sizeof(dyn));
         if(dyn.d_tag == DT_NEEDED) {
             nbytes = cldm_strscpy(buffer + offset, map->dynstr.addr + dyn.d_un.d_val, bufsize - offset);
             if(nbytes < 0 || (size_t)(offset + nbytes + 1) >= bufsize) {

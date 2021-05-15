@@ -382,6 +382,7 @@ enum cldm_opmode {
             *(void **) (& cldm_handle_ ## name) = cldm_dlsym_next(#name);                                                           \
             cldm_rtassert(cldm_handle_ ## name);                                                                                    \
             call_prefix cldm_handle_ ## name(cldm_arglist(cldm_count(__VA_ARGS__)));                                                \
+            cldm_dlresolve(#name);                                                                                                  \
         }                                                                                                                           \
         retstatement;                                                                                                               \
     }                                                                                                                               \
@@ -425,6 +426,7 @@ enum cldm_opmode {
             *(void **) (& cldm_handle_ ## name) = cldm_dlsym_next(#name);                                   \
             cldm_rtassert(cldm_handle_ ## name);                                                            \
             call_prefix cldm_handle_ ## name ();                                                            \
+            cldm_dlresolve(#name);                                                                          \
         }                                                                                                   \
         retstatement;                                                                                       \
     }                                                                                                       \

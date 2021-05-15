@@ -1,4 +1,5 @@
 #include "cldm_argp.h"
+#include "cldm_dl.h"
 #include "cldm_elf.h"
 #include "cldm_io.h"
 #include "cldm_log.h"
@@ -14,25 +15,35 @@ int main(int argc, char **argv) {
     /* Prevent mocks from interfering with internals */
     cldm_mock_disable_all();
 
-    if(!cldm_argp_parse(&args, argc, argv)) {
+    if(cldm_dlmap_explicit()) {
         return 1;
-    }
-
-    if(args.help) {
-        cldm_argp_usage(argv[0]);
-        return 0;
-    }
-    if(args.version) {
-        cldm_argp_version();
-        return 0;
     }
 
     if(cldm_map_elf(&map, argv[0])) {
         cldm_err("Mapping %s failed", argv[0]);
-        return -1;
+        return 1;
     }
 
     status = 1;
+
+    if(cldm_dlmap_needed(&map) < 0) {
+        goto epilogue;
+    }
+
+    if(!cldm_argp_parse(&args, argc, argv)) {
+        goto epilogue;
+    }
+
+    if(args.help) {
+        cldm_argp_usage(argv[0]);
+        status = 0;
+        goto epilogue;
+    }
+    if(args.version) {
+        cldm_argp_version();
+        status = 0;
+        goto epilogue;
+    }
 
     if(!cldm_is_elf64(&map) || !cldm_elf_is_executable(&map)) {
         cldm_err("%s is not a 64-bit ELF executable", argv[0]);
@@ -53,6 +64,7 @@ int main(int argc, char **argv) {
     cldm_io_capture_dump(args.capture, args.redirect);
 
 epilogue:
+    cldm_dlfree();
     cldm_unmap_elf(&map);
     cldm_io_capture_restore(args.capture);
 

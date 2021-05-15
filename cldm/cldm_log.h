@@ -9,7 +9,7 @@
 #ifndef CLDM_SUPPRESS_LOGGING
 
 #define cldm_print_guard_raw(stream, fallback, fmt, ...)    \
-    fprintf(stream ? stream : fallback, fmt, __VA_ARGS__)
+    cldm_explicit_fprintf(stream ? stream : fallback, fmt, __VA_ARGS__)
 
 #define cldm_print_guard(stream, fallback, fmt, ...)    \
     cldm_print_guard_raw(stream, fallback, fmt "%.0d\n", __VA_ARGS__)
