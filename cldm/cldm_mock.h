@@ -505,20 +505,6 @@ enum cldm_opmode {
 #define ASSIGN_ARG(...)          CLDM_ASSIGN_ARG(__VA_ARGS__)
 #endif
 
-#ifdef CLDM_GMOCK_COMPAT
-#define WillOnce(...)         CLDM_WILL_ONCE(__VA_ARGS__)
-#define WillRepeatedly(...)   CLDM_WILL_REPEATEDLY(__VA_ARGS__)
-#define WillNTimes(...)       CLDM_WILL_N_TIMES(__VA_ARGS__)
-#define WillInvokeDefault()   CLDM_WILL_INVOKE_DEFAULT()
-#define Invoke(...)           CLDM_INVOKE(__VA_ARGS__)
-#define Return(...)           CLDM_RETURN(__VA_ARGS__)
-#define ReturnArg(...)        CLDM_RETURN_ARG(__VA_ARGS__)
-#define ReturnPointee(...)    CLDM_RETURN_POINTEE(__VA_ARGS__)
-#define IncrementCounter(...) CLDM_INCREMENT_COUNTER(__VA_ARGS__)
-#define Assign(...)           CLDM_ASSIGN(__VA_ARGS__)
-#define AssignArg(...)        CLDM_ASSIGN_ARG(__VA_ARGS__)
-#endif
-
 #include "cldmgen.h"
 
 #endif /* CLDM_MOCK_H */
