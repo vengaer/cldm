@@ -21,4 +21,10 @@ inline char const *cldm_basename(char const *path) {
     return p ? p + 1 : path;
 }
 
+inline unsigned cldm_scan_lt(char const *str, int lim) {
+    unsigned pos;
+    for(pos = 0u; str[pos] > lim; pos++);
+    return pos;
+}
+
 #endif /* CLDM_NTBS_H */

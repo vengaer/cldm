@@ -3,6 +3,7 @@
 
 #include "cldm_macro.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,7 +16,7 @@ struct cldm_ht_entry {
 };
 
 union cldm_ht_internal_entry {
-    struct cldm_ht_entry *ent;
+    struct cldm_ht_entry ent;
     size_t status;
 };
 
@@ -58,6 +59,6 @@ inline size_t cldm_ht_capacity(struct cldm_ht const *ht) {
 
 struct cldm_ht_entry *cldm_ht_find(struct cldm_ht *restrict ht, struct cldm_ht_entry const *restrict entry);
 struct cldm_ht_entry *cldm_ht_insert(struct cldm_ht *restrict ht, struct cldm_ht_entry *restrict entry);
-struct cldm_ht_entry *cldm_ht_remove(struct cldm_ht *restrict ht, struct cldm_ht_entry const *restrict entry);
+bool cldm_ht_remove(struct cldm_ht *restrict ht, struct cldm_ht_entry const *restrict entry);
 
 #endif /* CLDM_HASH_H */

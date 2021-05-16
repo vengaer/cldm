@@ -36,12 +36,11 @@ ssize_t cldm_collect(struct cldm_rbtree *restrict tree, struct cldm_elfmap const
 }
 
 ssize_t cldm_collect_from(struct cldm_rbtree *restrict tree, struct cldm_elfmap const *restrict map, char *const *restrict idents, size_t nidents) {
-    struct cldm_ht_entry *entries;
     struct cldm_ht_entry *entry;
     struct cldm_testrec *record;
     char const *identifiers[2];
     struct cldm_ht ht;
-    bool *param_known;
+    unsigned pos;
     bool success;
 
     *tree = cldm_rbtree_init();
@@ -49,21 +48,11 @@ ssize_t cldm_collect_from(struct cldm_rbtree *restrict tree, struct cldm_elfmap 
     success = false;
     ht = cldm_ht_init();
 
-    entries = malloc(nidents * (sizeof(*entries) + sizeof(bool)));
-    if(!entries) {
-        cldm_err("Could not allocate nodes for hashing");
-        goto epilogue;
-    }
-
-    param_known = (bool *)((unsigned char *)entries + nidents * sizeof(*entries));
-    memset(param_known, 0, nidents * sizeof(bool));
-
     for(unsigned i = 0; i < nidents; i++) {
-        entries[i] = cldm_ht_mkentry_str(idents[i]);
-        if(!cldm_ht_insert(&ht, &entries[i])) {
+        if(!cldm_ht_insert(&ht, &cldm_ht_mkentry_str(idents[i]))) {
             cldm_warn("Ignoring duplicate parameter '%s'", idents[i]);
             /* exempt from validity check */
-            param_known[i] = true;
+            idents[i][strlen(idents[i])] = 1;
         }
     }
 
@@ -79,7 +68,8 @@ ssize_t cldm_collect_from(struct cldm_rbtree *restrict tree, struct cldm_elfmap 
             for(unsigned j = 0; j < cldm_arrsize(identifiers); j++) {
                 entry = cldm_ht_find(&ht, &cldm_ht_mkentry_str(identifiers[j]));
                 if(entry) {
-                    param_known[cldm_arrindex(entries, entry)] = true;
+                    /* Use null byte for storing result of validity check */
+                    ((char *)entry->key)[strlen((char *)entry->key)] = 1;
                     cldm_rbtree_insert(tree, &record->rbnode, cldm_testrec_compare);
                     break;
                 }
@@ -88,7 +78,8 @@ ssize_t cldm_collect_from(struct cldm_rbtree *restrict tree, struct cldm_elfmap 
     }
 
     for(unsigned i = 0; i < nidents; i++) {
-        if(!param_known[i]) {
+        pos = cldm_scan_lt((char const *)idents[i], 1);
+        if(!idents[i][pos]) {
             cldm_err("Positional parameter '%s' does not match any file or test known to cldm", idents[i]);
             goto epilogue;
         }
@@ -97,9 +88,6 @@ ssize_t cldm_collect_from(struct cldm_rbtree *restrict tree, struct cldm_elfmap 
     success = true;
 epilogue:
     cldm_ht_free(&ht);
-    if(entries) {
-        free(entries);
-    }
     return success ? (ssize_t)cldm_rbtree_size(tree) : -1;
 }
 

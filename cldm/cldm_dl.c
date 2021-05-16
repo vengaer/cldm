@@ -30,7 +30,6 @@ struct cldm_dlentry {
 
 struct cldm_dllookup {
     struct cldm_ht ht;
-    struct cldm_ht_entry *htentries;
     struct cldm_dlentry *dlentries;
     size_t capacity;
 };
@@ -58,13 +57,8 @@ static cldm_cachealign(struct cldm_dllookup) dllookups[CLDM_MAX_THREADS];
 
 static bool cldm_dllookup_init(unsigned thread_id) {
     dllookups[thread_id].data.ht = cldm_ht_init();
-    dllookups[thread_id].data.htentries = malloc(CLDM_INITIAL_DLLOOKUP_SIZE * sizeof(*dllookups[thread_id].data.htentries));
-    if(!dllookups[thread_id].data.htentries) {
-        return false;
-    }
     dllookups[thread_id].data.dlentries = malloc(CLDM_INITIAL_DLLOOKUP_SIZE * sizeof(*dllookups[thread_id].data.dlentries));
     if(!dllookups[thread_id].data.dlentries) {
-        free(dllookups[thread_id].data.htentries);
         return false;
     }
     dllookups[thread_id].data.capacity = CLDM_INITIAL_DLLOOKUP_SIZE;
@@ -77,11 +71,6 @@ static bool cldm_dllookup_ensure_capacity(unsigned thread_id) {
         return true;
     }
 
-    addr = realloc(dllookups[thread_id].data.htentries, 2 * dllookups[thread_id].data.capacity * sizeof(*dllookups[thread_id].data.htentries));
-    if(!addr) {
-        return false;
-    }
-    dllookups[thread_id].data.htentries = addr;
     addr = realloc(dllookups[thread_id].data.dlentries, 2 * dllookups[thread_id].data.capacity * sizeof(*dllookups[thread_id].data.dlentries));
     if(!addr) {
         return false;
@@ -195,7 +184,6 @@ void cldm_dlfree(void) {
 
     for(unsigned i = 0; i < cldm_jobs; i++) {
         if(dllookups[i].data.capacity) {
-            free(dllookups[i].data.htentries);
             free(dllookups[i].data.dlentries);
             cldm_ht_free(&dllookups[i].data.ht);
         }
@@ -258,10 +246,7 @@ void *cldm_dlsym_next(char const *symname) {
     dlentry->loadidx = probeidx;
     dlentry->resolved = false;
 
-    htentry = &dllookups[thread_id].data.htentries[cldm_ht_size(&dllookups[thread_id].data.ht)];
-    *htentry = cldm_ht_mkentry_str(dlentry->symname);
-
-    if(!cldm_ht_insert(&dllookups[thread_id].data.ht, htentry)) {
+    if(!cldm_ht_insert(&dllookups[thread_id].data.ht, &cldm_ht_mkentry_str(dlentry->symname))) {
         cldm_err("Could not cache symbol %s", symname);
         return 0;
     }

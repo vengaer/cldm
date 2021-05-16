@@ -55,7 +55,7 @@ static union cldm_ht_internal_entry *cldm_ht_probe(struct cldm_ht *restrict ht, 
             }
             continue;
         }
-        if(entries[idx].ent->size == entry->size && memcmp(entries[idx].ent->key, entry->key, entry->size) == 0) {
+        if(entries[idx].ent.size == entry->size && memcmp(entries[idx].ent.key, entry->key, entry->size) == 0) {
             return &entries[idx];
         }
     }
@@ -100,7 +100,7 @@ static bool cldm_ht_expand(struct cldm_ht *ht) {
     if(pdyn) {
         for(unsigned i = 0; i < prev_capacity; i++) {
             if(t_un.dyn[i].status) {
-                cldm_ht_insert(ht, t_un.dyn[i].ent);
+                cldm_ht_insert(ht, &t_un.dyn[i].ent);
             }
         }
         free(t_un.dyn);
@@ -108,7 +108,7 @@ static bool cldm_ht_expand(struct cldm_ht *ht) {
     else {
         for(unsigned i = 0; i < prev_capacity; i++) {
             if(t_un.stat[i].status) {
-                cldm_ht_insert(ht, t_un.stat[i].ent);
+                cldm_ht_insert(ht, &t_un.stat[i].ent);
             }
         }
     }
@@ -132,7 +132,7 @@ struct cldm_ht_entry *cldm_ht_find(struct cldm_ht *restrict ht, struct cldm_ht_e
     union cldm_ht_internal_entry *found;
 
     found = cldm_ht_probe(ht, entry, false);
-    return cldm_ht_slot_vacant(found) ? 0 : found->ent;
+    return cldm_ht_slot_vacant(found) ? 0 : &found->ent;
 }
 
 struct cldm_ht_entry *cldm_ht_insert(struct cldm_ht *restrict ht, struct cldm_ht_entry *restrict entry) {
@@ -148,23 +148,21 @@ struct cldm_ht_entry *cldm_ht_insert(struct cldm_ht *restrict ht, struct cldm_ht
     if(!cldm_ht_slot_vacant(slot)) {
         return 0;
     }
-    slot->ent = entry;
+    slot->ent = *entry;
     ++ht->size;
-    return slot->ent;
+    return &slot->ent;
 }
 
-struct cldm_ht_entry *cldm_ht_remove(struct cldm_ht *restrict ht, struct cldm_ht_entry const *restrict entry) {
+bool cldm_ht_remove(struct cldm_ht *restrict ht, struct cldm_ht_entry const *restrict entry) {
     union cldm_ht_internal_entry *slot;
-    struct cldm_ht_entry *ret;
 
     slot = cldm_ht_probe(ht, entry, false);
     if(cldm_ht_slot_vacant(slot)) {
-        return 0;
+        return false;
     }
-    ret = slot->ent;
     /* Mark slot as previously occupied */
     slot->status = CLDM_HASH_VACANT;
     --ht->size;
 
-    return ret;
+    return true;
 }

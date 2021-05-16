@@ -1,6 +1,7 @@
 #include "cldm_ntbs.h"
 
 char const *cldm_basename(char const *path);
+unsigned cldm_scan_lt(char const *str, int lim);
 
 #ifdef CLDM_HAS_AVX2
 long long cldm_strscpy(char *restrict dst, char const *restrict src, unsigned long long dstsize);
