@@ -60,5 +60,6 @@ inline size_t cldm_ht_capacity(struct cldm_ht const *ht) {
 struct cldm_ht_entry *cldm_ht_find(struct cldm_ht *restrict ht, struct cldm_ht_entry const *restrict entry);
 struct cldm_ht_entry *cldm_ht_insert(struct cldm_ht *restrict ht, struct cldm_ht_entry *restrict entry);
 bool cldm_ht_remove(struct cldm_ht *restrict ht, struct cldm_ht_entry const *restrict entry);
+void cldm_ht_clear(struct cldm_ht *ht);
 
 #endif /* CLDM_HASH_H */

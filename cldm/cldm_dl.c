@@ -76,6 +76,14 @@ static bool cldm_dllookup_ensure_capacity(unsigned thread_id) {
         return false;
     }
     dllookups[thread_id].data.dlentries = addr;
+
+    cldm_ht_clear(&dllookups[thread_id].data.ht);
+
+    for(unsigned i = 0; i < dllookups[thread_id].data.capacity; i++) {
+        /* This cannot fail */
+        cldm_ht_insert(&dllookups[thread_id].data.ht, &cldm_ht_mkentry_str(dllookups[thread_id].data.dlentries[i].symname));
+    }
+
     dllookups[thread_id].data.capacity *= 2u;
     return true;
 }
@@ -205,10 +213,6 @@ void *cldm_dlsym_next(char const *symname) {
             return 0;
         }
     }
-    else if(!cldm_dllookup_ensure_capacity(thread_id)) {
-        cldm_err("Could not increase size of symbol cache");
-        return 0;
-    }
 
     (void)dlerror();
 
@@ -235,6 +239,11 @@ void *cldm_dlsym_next(char const *symname) {
         dlentry->addr = sym;
         dlentry->loadidx = probeidx;
         goto epilogue;
+    }
+
+    if(!cldm_dllookup_ensure_capacity(thread_id)) {
+        cldm_err("Could not increase size of symbol cache");
+        return 0;
     }
 
     dlentry = &dllookups[thread_id].data.dlentries[cldm_ht_size(&dllookups[thread_id].data.ht)];

@@ -166,3 +166,8 @@ bool cldm_ht_remove(struct cldm_ht *restrict ht, struct cldm_ht_entry const *res
 
     return true;
 }
+
+void cldm_ht_clear(struct cldm_ht *ht) {
+    memset(cldm_ht_storage(ht), 0, ht->capacity * sizeof(*cldm_ht_storage(ht)));
+    ht->size = 0;
+}
