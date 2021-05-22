@@ -211,7 +211,6 @@ bool cldm_io_capture_stream(enum cldm_capture capture) {
     }
 
     return true;
-
 }
 
 bool cldm_io_capture_dump(enum cldm_capture capture, char const *file) {
