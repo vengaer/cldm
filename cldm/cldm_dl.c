@@ -214,6 +214,7 @@ void *cldm_dlsym_next(char const *symname) {
         }
     }
 
+    sym = 0;
     (void)dlerror();
 
     probeidx = 0;
