@@ -2,7 +2,6 @@
 
 #include <cldm/cldm_config.h>
 
-#include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
