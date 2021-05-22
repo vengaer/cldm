@@ -2,6 +2,8 @@
 
     default rel
 
+    global cldm_avx2_memset
+
     %macro resjmp 1
         %if %1 != 0
             cmp     rdi, r10                ; Check if done
@@ -15,8 +17,6 @@
         shl     ecx, 0x3                    ; Multiply by 8 for offset
         jmp     [r9 + rcx]
     %endmacro
-
-    global cldm_avx2_memset
 
 ; AVX2-accelerated memset
 ; Params:

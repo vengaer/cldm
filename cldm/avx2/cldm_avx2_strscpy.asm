@@ -2,6 +2,8 @@
 
     default rel
 
+    global cldm_avx2_strscpy
+
     %define E2BIG 7
 
     %macro writebyte 4
@@ -32,8 +34,6 @@
         shl     r9d, 0x3                    ; Multiply by 8 for offset
         jmp     [rcx + r9]                  ; Jump to branch
     %endmacro
-
-    global cldm_avx2_strscpy
 
 ; AVX2-accelerated string copy routine.
 ; Provided that the destination buffer can
