@@ -96,42 +96,10 @@ cldm_avx2_memset:
     add     ecx, 0x20
 
 .wrlt32b:
-    sub     ecx, 0x10
-    cmp     edx, ecx                        ; Check room for 16 bytes
-    jb      .wrlt16b
-    vmovdqa [rdi + rcx - 0x10], xmm1        ; Write xmmword
-    je      .wrepi
-    add     ecx, 0x10
-
-.wrlt16b:
-    mov     r11, 0x0101010101010101
-    imul    rsi, r11                        ; Broadcast low byte
-
-    sub     ecx, 0x8                        ; Check room for qword
-    cmp     edx, ecx
-    jb      .wrlt8b
-    mov     qword [rdi + rcx - 0x8], rsi    ; Write qword
-    je      .wrepi
-    add     ecx, 0x8
-
-.wrlt8b:
-    sub     ecx, 0x4                        ; Check room for dword
-    cmp     edx, ecx
-    jb      .wrlt4b
-    mov     dword [rdi + rcx - 0x4], esi    ; Write dword
-    je      .wrepi
-    add     ecx, 0x4
-
-.wrlt4b:
-    sub     ecx, 0x2                        ; Check room for word
-    cmp     edx, ecx
-    jb      .wrlt2b
-    mov     word [rdi + rcx - 0x2], si      ; Write word
-    je      .wrepi
-    add     ecx, 0x2
-
-.wrlt2b:
-    mov     byte [rdi + rcx - 0x2], sil
+    lea     rdi, [rdi + rcx - 0x20]         ; Address of next byte
+    sub     rcx, rdx                        ; Number of bytes that would overflow
+    sub     rdi, rcx                        ; Move address back to avoid overflow
+    vmovdqu [rdi], ymm1                     ; Write unaligned
 
 .wrepi:
     vzeroupper
