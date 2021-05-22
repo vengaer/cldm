@@ -8,6 +8,7 @@
 
 extern long long cldm_avx2_strscpy(char *restrict dst, char const *restrict src, unsigned long long dstsize);
 extern void *cldm_avx2_memset(void *dst, int v, unsigned long long n);
+extern int cldm_avx2_memcmp(void const *s0, void const *s1, unsigned long long n);
 
 TEST(cldm_avx2_strscpy) {
     enum { SIZE = 256 };
@@ -78,5 +79,44 @@ TEST(cldm_avx2_memset_odd_size) {
     ASSERT_EQ(cldm_avx2_memset(dst, 0xff, sizeof(dst)), dst);
     ASSERT_EQ(memcmp(dst, ref, sizeof(dst)), 0);
 }
+
+TEST(cldm_avx2_memcmp) {
+    enum { SIZE = 4096 };
+    unsigned char s0[SIZE] = { 0 };
+    unsigned char s1[SIZE] = { 0 };
+    ASSERT_EQ(cldm_avx2_memcmp(s0, s1, sizeof(s0)), 0);
+    ASSERT_EQ(cldm_avx2_memcmp(s1, s0, sizeof(s0)), 0);
+    memset(s0 + SIZE / 2, 0xef, sizeof(s0) / 2);
+    ASSERT_GT(cldm_avx2_memcmp(s0, s1, sizeof(s0)), 0);
+    ASSERT_LT(cldm_avx2_memcmp(s1, s0, sizeof(s0)), 0);
+}
+
+TEST(cldm_avx2_memcmp_unaligned) {
+    enum { SIZE = 2048 };
+    struct {
+        unsigned long long p0;
+        unsigned char p1;
+        unsigned char s0[SIZE];
+    } s;
+    unsigned char s1[SIZE] = { 0 };
+    memset(s.s0, 0, sizeof(s.s0));
+    ASSERT_EQ(cldm_avx2_memcmp(s.s0, s1, sizeof(s.s0)), 0);
+    ASSERT_EQ(cldm_avx2_memcmp(s1, s.s0, sizeof(s.s0)), 0);
+    memset(s.s0 + SIZE / 2, 0x11, sizeof(s.s0) / 2);
+    ASSERT_GT(cldm_avx2_memcmp(s.s0, s1, sizeof(s.s0)), 0);
+    ASSERT_LT(cldm_avx2_memcmp(s1, s.s0, sizeof(s.s0)), 0);
+}
+
+TEST(cldm_avx2_memcmp_odd_size) {
+    enum { SIZE = 3999 };
+    unsigned char s0[SIZE] = { 0 };
+    unsigned char s1[SIZE] = { 0 };
+    ASSERT_EQ(cldm_avx2_memcmp(s0, s1, sizeof(s0)), 0);
+    ASSERT_EQ(cldm_avx2_memcmp(s1, s0, sizeof(s0)), 0);
+    memset(s0 + SIZE / 2, 0xef, sizeof(s0) / 2);
+    ASSERT_GT(cldm_avx2_memcmp(s0, s1, sizeof(s0)), 0);
+    ASSERT_LT(cldm_avx2_memcmp(s1, s0, sizeof(s0)), 0);
+}
+
 
 #endif /* CLDM_HAS_AVX2 */
