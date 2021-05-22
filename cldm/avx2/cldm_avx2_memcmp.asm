@@ -33,12 +33,10 @@ cldm_avx2_memcmp:
     jb      .clt32b
     je      .ceq32b
 
-    xor     ecx, ecx                        ; Address offset
-    mov     r9d, 0x100
+    mov     ecx, 0x100                      ; Address offset
 
     tzcnt   r8, rdi                         ; Least significant set bit
     cmp     r8d, 0x5                        ; Check if aligned
-    cmovnb  ecx, r9d
     jnb     .c256b
 
     vmovdqu ymm1, [rdi]                     ; Load ymmword
@@ -47,7 +45,7 @@ cldm_avx2_memcmp:
     vptest  ymm2, ymm0                      ; Set carry if nand yields zero
     jnc     .c32bdiff
 
-    lea     rcx, [rdi + 0x11f]              ; End of offset for first 256-byte block
+    lea     rcx, [rdi + rcx + 0x1f]         ; End of offset for first 256-byte block
     and     rcx, -0x20
     sub     rcx, rdi
 
@@ -301,7 +299,7 @@ cldm_avx2_memcmp:
     vpmovmskb   r8d, ymm2                   ; Extract bitmask
     not     r8d                             ; Invert
     tzcnt   edx, r8d                        ; Offset of offending byte
-    lea     r8, [rcx + rdx]
+    lea     r8, [rcx + rdx - 0x100]
     movzx   eax, byte [rdi + r8]            ; First byte at offending offset
     movzx   ecx, byte [rsi + r8]            ; Second byte at offending offset
     sub     eax, ecx                        ; Compute return value
