@@ -51,13 +51,13 @@
 ; risk crossing page boundaries.
 ;
 ; Params:
-;     rdi: address of destination
-;     rsi: address of source
-;     rdx: size of destination
+;   rdi: address of destination
+;   rsi: address of source
+;   rdx: size of destination
 ; Return:
-;     rax: Size of the string written to
-;          [rdx], or -7 if the length of
-;          [rsi] is greater than rdx
+;   rax: Size of the string written to
+;        [rdx], or -7 if the length of
+;        [rsi] is greater than rdx
 cldm_avx2_strscpy:
 
     section .data
