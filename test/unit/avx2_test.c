@@ -10,6 +10,7 @@ extern long long cldm_avx2_strscpy(char *restrict dst, char const *restrict src,
 extern void *cldm_avx2_memset(void *dst, int v, unsigned long long n);
 extern void *cldm_avx2_memcpy(void *restrict dst, void const *restrict src, unsigned long long n);
 extern int cldm_avx2_memcmp(void const *s0, void const *s1, unsigned long long n);
+extern unsigned cldm_avx2_scan_lt(char const *str, int sentinel);
 
 TEST(cldm_avx2_strscpy) {
     enum { SIZE = 256 };
@@ -166,6 +167,26 @@ TEST(cldm_avx2_memcpy_odd_size) {
 
     ASSERT_EQ(cldm_avx2_memcpy(dst, src, sizeof(dst)), dst);
     ASSERT_EQ(memcmp(dst, src, sizeof(dst)), 0);
+}
+
+TEST(cldm_avx2_scan_lt) {
+    char const *relapse = "Noises. Noises. Are all I hear when you speak. The point of it all left much faster than it crept to me";
+    ASSERT_EQ(cldm_avx2_scan_lt("contort", 'o'), 0);
+    ASSERT_EQ(cldm_avx2_scan_lt("packed", 'c'), 1);
+    ASSERT_EQ(cldm_avx2_scan_lt("godspeed", 'a'), strlen("godspeed"));
+    ASSERT_EQ(cldm_avx2_scan_lt(relapse, 1), strlen(relapse));
+}
+
+TEST(cldm_avx2_scan_lt_unaligned) {
+    enum { SIZE = 1024 };
+    struct {
+        unsigned long long p0;
+        unsigned char p1;
+        char str[SIZE];
+    } s;
+    char const *sp = "All mixed up, turned around. You're thinking out loud. What were we talking about now? Emotion free, euphoric stat. Too little too late. Let it go";
+    strcpy(s.str, sp);
+    ASSERT_EQ(cldm_avx2_scan_lt(s.str, 1), strlen(s.str));
 }
 
 #endif /* CLDM_HAS_AVX2 */
