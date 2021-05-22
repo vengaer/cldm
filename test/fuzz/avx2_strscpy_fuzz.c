@@ -41,7 +41,7 @@ static void report_error(char const *restrict type, char const *restrict src, ch
 
 int avx2_strscpy_fuzz(uint8_t const *data, size_t size) {
 #ifndef CLDM_HAS_AVX2
-    puts("cldm compiled without avx2 support");
+    fputs("cldm compiled without avx2 support\n", stderr);
     abort();
 #endif
     size_t dstsize;
