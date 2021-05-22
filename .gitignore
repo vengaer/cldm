@@ -19,6 +19,8 @@ test/functional/running/**
 
 test/fuzz/corpora/argp/*
 !test/fuzz/corpora/argp/corpus_*
+test/fuzz/corpora/avx2_memcmp/*
+!test/fuzz/corpora/avx2_memcmp/corpus_*
 test/fuzz/corpora/avx2_memset/*
 !test/fuzz/corpora/avx2_memset/corpus_*
 test/fuzz/corpora/avx2_strscpy/*
