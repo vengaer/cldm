@@ -33,7 +33,7 @@ cldm_avx2_memcmp:
     jb      .clt32b
     je      .ceq32b
 
-    mov     ecx, 0x100                      ; Address offset
+    mov     ecx, 0x0100                     ; Address offset
 
     tzcnt   r8, rdi                         ; Least significant set bit
     cmp     r8d, 0x5                        ; Check if aligned
@@ -45,12 +45,12 @@ cldm_avx2_memcmp:
     vptest  ymm2, ymm0                      ; Set carry if nand yields zero
     jnc     .c32bdiff
 
-    lea     rcx, [rdi + rcx + 0x1f]         ; End of offset for first 256-byte block
+    lea     rcx, [rdi + rcx + 0x1f]         ; Compute offset for end of first 256-byte block
     and     rcx, -0x20
     sub     rcx, rdi
 
 .c256b:
-    cmp     rdx, rcx                        ; Check number of remaining bytes
+    cmp     rdx, rcx                        ; Check room for 256 bytes
     jb      .clt256b
 
     vmovdqa ymm1, [rdi + rcx - 0x0100]      ; Load 8 ymmwords from each source and compare
@@ -88,8 +88,8 @@ cldm_avx2_memcmp:
     vptest  ymm10, ymm0                     ; Set carry if nand yields zero
     jnc     .c256bdiff
 
-    cmp     rdx, rcx                        ; Check number of remaining bytes
-    lea     rcx, [rcx + 0x100]              ; Advance offset
+    cmp     rdx, rcx                        ; Check for remaining bytes
+    lea     rcx, [rcx + 0x0100]             ; Advance offset
     ja      .c256b
     xor     eax, eax
     vzeroupper
@@ -97,7 +97,7 @@ cldm_avx2_memcmp:
 
 .clt256b:
     sub     rcx, 0x80
-    cmp     rdx, rcx
+    cmp     rdx, rcx                        ; Check room for 128 bytes
     jb      .clt128b
 
     vmovdqa ymm1, [rdi + rcx - 0x80]        ; Load 4 ymmwords from each source and compare
@@ -119,14 +119,14 @@ cldm_avx2_memcmp:
     vptest  ymm6, ymm0                      ; Set carry if nand yields zero
     jnc     .clt256bdiff
 
-    cmp     rdx, rcx
+    cmp     rdx, rcx                        ; Check if done
     jna     .epilogue
 
     add     rcx, 0x80
 
 .clt128b:
     sub     rcx, 0x40
-    cmp     rdx, rcx
+    cmp     rdx, rcx                        ; Check room for 64 bytes
     jb      .clt64b
 
     vmovdqa ymm1, [rdi + rcx - 0x40]        ; Load 2 ymmwords from each source and compare
@@ -137,41 +137,41 @@ cldm_avx2_memcmp:
 
     vpand   ymm4, ymm2, ymm3                ; Reduce
 
-    vptest  ymm4, ymm0
+    vptest  ymm4, ymm0                      ; Set carry if nand yields zero
     jnc     .clt128bdiff
 
-    cmp     rdx, rcx
+    cmp     rdx, rcx                        ; Check if done
     jna     .epilogue
 
     add     rcx, 0x40
 
 .clt64b:
     sub     rcx, 0x20
-    cmp     rdx, rcx
+    cmp     rdx, rcx                        ; Check room for 32 bytes
     jb      .clast32
 
     vmovdqa ymm1, [rdi + rcx - 0x20]        ; Load ymmword
     vpcmpeqb    ymm2, ymm1, [rsi + rcx - 0x20]
 
-    vptest  ymm2, ymm0
+    vptest  ymm2, ymm0                      ; Set carry if nand yields zero
     jnc     .clt64bdiff
 
-    cmp     rdx, rcx
+    cmp     rdx, rcx                        ; Check if done
     jna     .epilogue
 
     add     rcx, 0x20
 
 .clast32:
-    lea     r8, [rcx - 0x20]
+    lea     r8, [rcx - 0x20]                ; Subtract from offset to allow for loading unaligned ymmword
     sub     rcx, rdx
     sub     r8, rcx
-    vmovdqu ymm1, [rdi + r8]                ; Load unaligned ymmword
+    vmovdqu ymm1, [rdi + r8]                ; Load
     vpcmpeqb    ymm2, ymm1, [rsi + r8]      ; Compare
 
     vptest  ymm2, ymm0
     jc      .epilogue
 
-    vpmovmskb   ecx, ymm2
+    vpmovmskb   ecx, ymm2                   ; Extract bitmask
     not     ecx                             ; Invert
     tzcnt   edx, ecx                        ; Vector index of offending byte
     lea     rdx, [rdx + r8]                 ; Compute offset
@@ -183,8 +183,8 @@ cldm_avx2_memcmp:
     ret
 
 .c256bdiff:
-    vpmovmskb   r8d, ymm2
-    cmp     r8d, VECMASK
+    vpmovmskb   r8d, ymm2                   ; Extract bitmask
+    cmp     r8d, VECMASK                    ; Check for offending byte
     jne     .c256bdiff001f
 
     vpmovmskb   r8d, ymm3
@@ -211,7 +211,7 @@ cldm_avx2_memcmp:
     cmp     r8d, VECMASK
     jne     .c256bdiffc0df
 
-    vpmovmskb   r8d, ymm9
+    vpmovmskb   r8d, ymm9                   ; Offender not found in earlier ymmwords, must be here
     bytecpt -0x20
     ret
 
@@ -244,8 +244,8 @@ cldm_avx2_memcmp:
     ret
 
 .clt256bdiff:
-    vpmovmskb   r8d, ymm2
-    cmp     r8d, VECMASK
+    vpmovmskb   r8d, ymm2                   ; Extract bitmask
+    cmp     r8d, VECMASK                    ; Check for offending byte
     jne     .clt256bdiff001f
 
     vpmovmskb   r8d, ymm3
@@ -256,7 +256,7 @@ cldm_avx2_memcmp:
     cmp     r8d, VECMASK
     jne     .clt256bdiff405f
 
-    vpmovmskb   r8d, ymm5
+    vpmovmskb   r8d, ymm5                   ; Offender not found in earlier ymmwords, must be here
     bytecpt -0x20
     ret
 
@@ -273,11 +273,11 @@ cldm_avx2_memcmp:
     ret
 
 .clt128bdiff:
-    vpmovmskb   r8d, ymm2
-    cmp     r8d, VECMASK
+    vpmovmskb   r8d, ymm2                   ; Extract bitmask
+    cmp     r8d, VECMASK                    ; Check for offending byte
     jne     .clt128bdiff001f
 
-    vpmovmskb   r8d, ymm3
+    vpmovmskb   r8d, ymm3                   ; Offender not found in previous ymmword, must be here
     bytecpt -0x20
     ret
 
@@ -299,7 +299,7 @@ cldm_avx2_memcmp:
     vpmovmskb   r8d, ymm2                   ; Extract bitmask
     not     r8d                             ; Invert
     tzcnt   edx, r8d                        ; Offset of offending byte
-    lea     r8, [rcx + rdx - 0x100]
+    lea     r8, [rcx + rdx - 0x0100]
     movzx   eax, byte [rdi + r8]            ; First byte at offending offset
     movzx   ecx, byte [rsi + r8]            ; Second byte at offending offset
     sub     eax, ecx                        ; Compute return value
