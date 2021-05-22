@@ -2,7 +2,7 @@ class config {
     public static final int NFUZZRUNS = 30
 }
 
-fuzztargets = ['avx2_strscpy', 'rbtree', 'argp', 'hash']
+fuzztargets = ['avx2_memset', 'avx2_strscpy', 'rbtree', 'argp', 'hash']
 ccs = ['gcc', 'clang']
 
 pipeline {

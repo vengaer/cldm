@@ -1,4 +1,5 @@
 #include "argp_fuzz.h"
+#include "avx2_memset_fuzz.h"
 #include "avx2_strscpy_fuzz.h"
 #include "hash_fuzz.h"
 #include "rbtree_fuzz.h"
@@ -16,6 +17,7 @@ struct cldm_fuzzentry {
 };
 
 static struct cldm_fuzzentry const entrypoints[] = {
+    { "avx2_memset",  avx2_memset_fuzz  },
     { "avx2_strscpy", avx2_strscpy_fuzz },
     { "rbtree",       rbtree_fuzz       },
     { "argp",         argp_fuzz         },
