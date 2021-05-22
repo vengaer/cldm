@@ -5,7 +5,7 @@ from makegen import *
 from runner import *
 from util import *
 
-_BINARY='pie_test'
+_BINARY='cc_test'
 
 def gen_runcmd(flags):
     return 'LD_LIBRARY_PATH={} {}/{} {}'.format(project_root, working_dir, _BINARY, flags)
@@ -26,7 +26,7 @@ def do_optimization_test(optlvl):
     mgen.export('LD_LIBRARY_PATH', project_root)
     mgen.generate()
 
-    build_cldm('-std=c99 -Wall -Wextra -Wpedantic -Werror -c -O{} -fPIC'.format(optlvl))
+    assert build_cldm('-std=c99 -Wall -Wextra -Wpedantic -Werror -c -O{} -fPIC'.format(optlvl))[0] == 0
     run(ContainsMatcher('Successfully finished.*across 10'),rvmatcher=RvEqMatcher(0))
 
 def test_pie():
