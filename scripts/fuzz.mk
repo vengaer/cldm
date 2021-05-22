@@ -3,7 +3,7 @@ FUZZTARGET               := CLDM_FUZZTARGET
 
 fuzzdir                   = $(testdir)/fuzz
 
-FUZZTIME                 := 240
+FUZZTIME                 ?= 240
 FUZZVALPROF              := 1
 FUZZTIMEOUT              := 30
 FUZZLEN                  := 8192
