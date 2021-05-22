@@ -124,7 +124,7 @@ cldm_avx2_strscpy:
 .rdxmmword:                                 ; Source aligned to 16 byte boundary
     vmovdqa xmm0, [rsi + rax]               ; Read xmmword
     vpcmpeqb    xmm1, xmm0, xmm15           ; Compare bytes to null
-    vpmovmskb   r8d, xmm1                   ; Extract byte mask
+    vpmovmskb   r8d, xmm1                   ; Extract bitmask
 
     test    r8d, r8d                        ; Set bit indicates null byte in loaded xmmword
     jnz     .xmmword_null
@@ -210,7 +210,7 @@ cldm_avx2_strscpy:
 .rdymmword:                                 ; Source aligned to 32 byte boundary
     vmovdqa ymm0, [rsi + rax]               ; Read ymmword
     vpcmpeqb    ymm1, ymm0, ymm15           ; Compare bytes to null
-    vpmovmskb   r8d, ymm1                   ; Extract byte mask
+    vpmovmskb   r8d, ymm1                   ; Extract bitmask
 
     test    r8d, r8d                        ; Set bit indicates null byte in loaded ymmword
     jnz     .ymmword_null
