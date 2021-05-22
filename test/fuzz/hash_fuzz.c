@@ -72,10 +72,7 @@ int hash_fuzz(uint8_t const *data, size_t size) {
     }
 
     for(unsigned i = 0; i < size; i++) {
-        if(!cldm_ht_insert(&ht, &entries[i])) {
-            report_failure("Insertion", &ht, input[i]);
-            goto epilogue;
-        }
+        cldm_ht_insert(&ht, &entries[i]);
 
         for(unsigned j = 0; j <= i; j++) {
             if(!cldm_ht_find(&ht, &entries[j])) {
