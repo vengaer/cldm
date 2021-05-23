@@ -50,7 +50,7 @@ cldm_avx2_scan_lt:
     vpxor   xmm2, xmm2, xmm2                ; Shuffle mask
     sub     esi, 1
     vmovd   xmm1, esi                       ; Insert dword
-    vpshufb     xmm0, xmm1, xmm2            ; Broadcast byte to all lanes
+    vpshufb xmm0, xmm1, xmm2                ; Broadcast byte to all lanes
     vpcmpeqb    ymm1, ymm3, ymm3            ; All ones
 
     mov     r8d, 0x5                        ; For clamping jump offset
@@ -91,7 +91,7 @@ cldm_avx2_scan_lt:
 .rdxmmword:
     vmovdqa xmm2, [rdi + rax]               ; Load xmmword
     vpcmpgtb    xmm3, xmm2, xmm0            ; Compare for greater
-    vptest  xmm3, xmm1                      ; Set carry if nand yields non-zero
+    vptest  xmm3, xmm1                      ; Set carry if nand yields zero
     jnc     .sntfound
 
     add     eax, 0x10                       ; Advance offset
@@ -99,7 +99,7 @@ cldm_avx2_scan_lt:
 .rdymmword:
     vmovdqa ymm2, [rdi + rax]               ; Load ymmword
     vpcmpgtb    ymm3, ymm2, ymm0            ; Compare for greater
-    vptest  ymm3, ymm1                      ; Set carry if nand yields non-zero
+    vptest  ymm3, ymm1                      ; Set carry if nand yields zero
     jnc     .sntfound
 
     add     eax, 0x20                       ; Advance offset

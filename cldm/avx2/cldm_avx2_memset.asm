@@ -36,7 +36,7 @@ cldm_avx2_memset:
 
     vpxor   xmm2, xmm2, xmm2                ; Shuffle mask
     vmovd   xmm1, esi                       ; Insert dword
-    vpshufb     xmm0, xmm1, xmm2            ; Broadcast 0th byte
+    vpshufb xmm0, xmm1, xmm2                ; Broadcast 0th byte
     vinserti128 ymm1, ymm0, xmm0, 0x1       ; Copy low xmmword to high
 
     tzcnt   r8, rdi                         ; Least significant set bit
@@ -108,7 +108,7 @@ cldm_avx2_memset:
 .deq32b:
     vpxor   xmm2, xmm2, xmm2                ; Shuffle mask
     vmovd   xmm1, esi                       ; Insert dword
-    vpshufb     xmm0, xmm1, xmm2            ; Broadcast 0th byte
+    vpshufb xmm0, xmm1, xmm2                ; Broadcast 0th byte
     vinserti128 ymm1, ymm0, xmm0, 0x1       ; Copy low xmmword to high
     vmovdqu [rdi], ymm1                     ; Write ymmword
     vzeroupper
@@ -121,7 +121,7 @@ cldm_avx2_memset:
 .deq16b:
     vpxor   xmm2, xmm2, xmm2                ; Shuffle mask
     vmovd   xmm1, esi                       ; Insert dword
-    vpshufb     xmm0, xmm1, xmm2            ; Broadcast low byte
+    vpshufb xmm0, xmm1, xmm2                ; Broadcast low byte
     vmovdqu [rdi], xmm0                     ; Write xmmword
     ja      .da16b
     vzeroupper
