@@ -1,8 +1,8 @@
+#include "cldm_byteseq.h"
 #include "cldm_collect.h"
 #include "cldm_hash.h"
 #include "cldm_log.h"
 #include "cldm_macro.h"
-#include "cldm_ntbs.h"
 #include "cldm_test.h"
 #include "cldm_testrec.h"
 

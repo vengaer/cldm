@@ -1,6 +1,6 @@
 #include <cldm/cldm.h>
+#include <cldm/cldm_byteseq.h>
 #include <cldm/cldm_log.h>
-#include <cldm/cldm_ntbs.h>
 
 #include <string.h>
 

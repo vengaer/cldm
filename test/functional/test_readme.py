@@ -29,10 +29,10 @@ def test_readme_example_usage():
         .append_include('stdlib.h')
 
     with cgen.open_macro('TEST', 'foo'):
-        cgen.append_line('EXPECT_CALL(atoi).WILL_ONCE(RETURN(8));')         \
+        cgen.append_line('WHEN_CALLED(atoi).SHOULD_ONCE(RETURN(8));')         \
             .append_line('assert(atoi("2") == 8);')                         \
             .append_line('assert(atoi("2") == 2);')                         \
-            .append_line('EXPECT_CALL(atoi).WILL_REPEATEDLY(RETURN(7));')   \
+            .append_line('WHEN_CALLED(atoi).SHOULD_REPEATEDLY(RETURN(7));')   \
             .append_line('assert(atoi("2") == 7);')                         \
             .append_line('assert(atoi("6") == 7);')
     cgen.write()
@@ -64,7 +64,7 @@ def test_readme_build():
         .append_include('assert.h')
     with cgen.open_macro('TEST', 'foo'):
         cgen.append_line('int i = 12;')                                         \
-            .append_line('EXPECT_CALL(get_resource).WILL_ONCE(RETURN(&i));')    \
+            .append_line('WHEN_CALLED(get_resource).SHOULD_ONCE(RETURN(&i));')    \
             .append_line('int *res = get_resource(0);')                         \
             .append_line('assert(res == &i);')
 
@@ -97,7 +97,7 @@ def test_readme_incorrect_build():
         .append_include('assert.h')
     with cgen.open_function('int', 'main'):
         cgen.append_line('int i = 12;')                                         \
-            .append_line('EXPECT_CALL(get_resource).WILL_ONCE(RETURN(&i));')    \
+            .append_line('WHEN_CALLED(get_resource).SHOULD_ONCE(RETURN(&i));')    \
             .append_line('int *res = get_resource(0);')                         \
             .append_line('assert(res == &i);')                                  \
             .append_return(0)
@@ -123,10 +123,10 @@ def test_readme_assign():
             .append_line('union uic u;')                                                        \
             .append_line('memset(&u.as_bytes, 1, sizeof(u));')                                  \
             .append_line('u.as_int = 10;')                                                      \
-            .append_line('EXPECT_CALL(baz).WILL_REPEATEDLY(ASSIGN(i, u.as_int));')              \
+            .append_line('WHEN_CALLED(baz).SHOULD_REPEATEDLY(ASSIGN(i, u.as_int));')              \
             .append_line('baz();')                                                              \
             .append_line('ASSERT_NE(i, 10);')                                                   \
-            .append_line('EXPECT_CALL(baz).WILL_REPEATEDLY(ASSIGN(i, u.as_int, long long));')   \
+            .append_line('WHEN_CALLED(baz).SHOULD_REPEATEDLY(ASSIGN(i, u.as_int, long long));')   \
             .append_line('baz();')                                                              \
             .append_line('ASSERT_EQ(i, 10);')
     cgen.write()

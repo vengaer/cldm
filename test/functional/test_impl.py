@@ -51,7 +51,7 @@ def test_sequential_strscpy():
              'Out to run the train at the railway station, Shotgun Betty stoppin\' dead at my shoes'
     cgen = CGen('tests.c')
     cgen.append_include('cldm.h', system_header=False)      \
-        .append_include('cldm_ntbs.h', system_header=False) \
+        .append_include('cldm_byteseq.h', system_header=False) \
         .append_include('string.h')
 
     with cgen.open_macro('TEST', 'sequential_strscpy'):

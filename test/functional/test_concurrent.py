@@ -91,7 +91,7 @@ def test_global_setup():
         .append_include('stdlib.h')
 
     with cgen.open_macro('GLOBAL_SETUP'):
-        cgen.append_line('EXPECT_CALL(atoi).WILL_REPEATEDLY(RETURN(1));')
+        cgen.append_line('WHEN_CALLED(atoi).SHOULD_REPEATEDLY(RETURN(1));')
 
     for i in range(2):
         with cgen.open_macro('TEST', 'test{}'.format(i)):
@@ -110,7 +110,7 @@ def test_global_teardown():
         .append_include('stdlib.h')
 
     with cgen.open_macro('GLOBAL_SETUP'):
-        cgen.append_line('EXPECT_CALL(atoi).WILL_REPEATEDLY(RETURN(1));')
+        cgen.append_line('WHEN_CALLED(atoi).SHOULD_REPEATEDLY(RETURN(1));')
 
     with cgen.open_macro('GLOBAL_TEARDOWN'):
         cgen.append_line('if(atoi("18") != 1) {')    \
@@ -135,7 +135,7 @@ def test_local_setup_thread_local():
         .append_include('stdlib.h')
 
     with cgen.open_macro('LOCAL_SETUP'):
-        cgen.append_line('EXPECT_CALL(strtoul).WILL_REPEATEDLY(RETURN(cldm_thread_id()));')
+        cgen.append_line('WHEN_CALLED(strtoul).SHOULD_REPEATEDLY(RETURN(cldm_thread_id()));')
 
     for i in range(2):
         with cgen.open_macro('TEST', 'test{}'.format(i)):
@@ -155,7 +155,7 @@ def test_local_teardown_thread_local():
         .append_include('stdlib.h')
 
     with cgen.open_macro('LOCAL_SETUP'):
-        cgen.append_line('EXPECT_CALL(strtoul).WILL_REPEATEDLY(RETURN(cldm_thread_id()));')
+        cgen.append_line('WHEN_CALLED(strtoul).SHOULD_REPEATEDLY(RETURN(cldm_thread_id()));')
 
     with cgen.open_macro('LOCAL_TEARDOWN'):
         cgen.append_line('ASSERT_EQ(strtoul("32", 0, 0), cldm_thread_id());')

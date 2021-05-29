@@ -1,6 +1,8 @@
 #ifndef CLDM_MACRO_H
 #define CLDM_MACRO_H
 
+#include "cldm_token.h"
+
 #include <stddef.h>
 
 #define cldm_cat(a, b) a ## b
@@ -9,7 +11,8 @@
 #define cldm_str(a) #a
 #define cldm_str_expand(a) cldm_str(a)
 
-#define cldm_expand(a) a
+#define cldm_chk_pick(_, x, ...) x
+#define cldm_chk(...) cldm_chk_pick(__VA_ARGS__, 0,)
 
 #define cldm_bytediff(p0, p1)   \
     ((unsigned char const *)(p1) - (unsigned char const *)(p0))
@@ -38,6 +41,12 @@
 
 #define cldm_container(...) \
     cldm_overload(cldm_container, __VA_ARGS__)
+
+#define cldm_first_pick(x, ...) x
+#define cldm_first(...) cldm_first_pick(__VA_ARGS__,)
+
+#define cldm_second_pick(_, x, ...) x
+#define cldm_second(...) cldm_second_pick(__VA_ARGS__,)
 
 #define cldm_count_sequence 128, 127, 126, 125, 124, 123, 122, 121, \
                             120, 119, 118, 117, 116, 115, 114, 113, \
@@ -109,5 +118,303 @@
 
 #define cldm_for_each_zip(...)                                                              \
     cldm_overload(cldm_for_each_zip,__VA_ARGS__)
+
+#define cldm_expand(...)    __VA_ARGS__
+#define cldm_expand2(...)   cldm_expand(__VA_ARGS__)
+#define cldm_expand4(...)   cldm_expand(cldm_expand2(__VA_ARGS__))
+#define cldm_expand8(...)   cldm_expand(cldm_expand2(cldm_expand4(__VA_ARGS__)))
+#define cldm_expand16(...)  cldm_expand(cldm_expand2(cldm_expand4(cldm_expand8(__VA_ARGS__))))
+#define cldm_expand32(...)  cldm_expand(cldm_expand2(cldm_expand4(cldm_expand8(cldm_expand16(__VA_ARGS__)))))
+#define cldm_expand64(...)  cldm_expand(cldm_expand2(cldm_expand4(cldm_expand8(cldm_expand16(cldm_expand32(__VA_ARGS__))))))
+#define cldm_expand128(...) cldm_expand(cldm_expand2(cldm_expand4(cldm_expand8(cldm_expand16(cldm_expand32(cldm_expand64(__VA_ARGS__)))))))
+
+#define cldm_nothing()
+#define cldm_block(x) x cldm_nothing()
+
+#define cldm_map_recurse1(...)
+#define cldm_defer_map_recursion() cldm_map_recurse
+#define cldm_map_recurse0(ctr, m, separator, ...)           \
+    separator cldm_block(cldm_defer_map_recursion)()(cldm_inc(ctr), m, separator, __VA_ARGS__)
+
+#define cldm_map_recurse(ctr, m, separator, first, ...)     \
+    m(ctr, first)                                           \
+    cldm_cat_expand(cldm_map_recurse,cldm_token_1(cldm_count(__VA_ARGS__)))(ctr, m, separator, __VA_ARGS__)
+
+#define cldm_map_separate(m, depth, separator, ...)         \
+    cldm_cat_expand(cldm_expand, depth)(cldm_map_recurse(0, m, separator, __VA_ARGS__,))
+
+#define cldm_map_list_recurse1(...)
+#define cldm_defer_map_list_recursion() cldm_map_list_recurse
+#define cldm_map_list_recurse0(ctr, m, ...)                 \
+    ,cldm_block(cldm_defer_map_list_recursion)()(cldm_inc(ctr), m, __VA_ARGS__)
+
+#define cldm_map_list_recurse(ctr, m, first, ...)           \
+    m(ctr, first)                                           \
+    cldm_cat_expand(cldm_map_list_recurse,cldm_token_1(cldm_count(__VA_ARGS__)))(ctr, m, __VA_ARGS__)
+
+#define cldm_map_list(m, depth, ...)                        \
+    cldm_cat_expand(cldm_expand, depth)(cldm_map_list_recurse(0, m, __VA_ARGS__,))
+
+#define cldm_map(m, depth, ...)                             \
+    cldm_cat_expand(cldm_expand, depth)(cldm_map_recurse(0, m,, __VA_ARGS__,))
+
+#define cldm_inc(num) cldm_cat(cldm_inc_,num)
+#define cldm_dec(num) cldm_cat(cldm_dec_,num)
+
+#define cldm_inc_0   1
+#define cldm_inc_1   2
+#define cldm_inc_2   3
+#define cldm_inc_3   4
+#define cldm_inc_4   5
+#define cldm_inc_5   6
+#define cldm_inc_6   7
+#define cldm_inc_7   8
+#define cldm_inc_8   9
+#define cldm_inc_9   10
+#define cldm_inc_10  11
+#define cldm_inc_11  12
+#define cldm_inc_12  13
+#define cldm_inc_13  14
+#define cldm_inc_14  15
+#define cldm_inc_15  16
+#define cldm_inc_16  17
+#define cldm_inc_17  18
+#define cldm_inc_18  19
+#define cldm_inc_19  20
+#define cldm_inc_20  21
+#define cldm_inc_21  22
+#define cldm_inc_22  23
+#define cldm_inc_23  24
+#define cldm_inc_24  25
+#define cldm_inc_25  26
+#define cldm_inc_26  27
+#define cldm_inc_27  28
+#define cldm_inc_28  29
+#define cldm_inc_29  30
+#define cldm_inc_30  31
+#define cldm_inc_31  32
+#define cldm_inc_32  33
+#define cldm_inc_33  34
+#define cldm_inc_34  35
+#define cldm_inc_35  36
+#define cldm_inc_36  37
+#define cldm_inc_37  38
+#define cldm_inc_38  39
+#define cldm_inc_39  40
+#define cldm_inc_40  41
+#define cldm_inc_41  42
+#define cldm_inc_42  43
+#define cldm_inc_43  44
+#define cldm_inc_44  45
+#define cldm_inc_45  46
+#define cldm_inc_46  47
+#define cldm_inc_47  48
+#define cldm_inc_48  49
+#define cldm_inc_49  50
+#define cldm_inc_50  51
+#define cldm_inc_51  52
+#define cldm_inc_52  53
+#define cldm_inc_53  54
+#define cldm_inc_54  55
+#define cldm_inc_55  56
+#define cldm_inc_56  57
+#define cldm_inc_57  58
+#define cldm_inc_58  59
+#define cldm_inc_59  60
+#define cldm_inc_60  61
+#define cldm_inc_61  62
+#define cldm_inc_62  63
+#define cldm_inc_63  64
+#define cldm_inc_64  65
+#define cldm_inc_65  66
+#define cldm_inc_66  67
+#define cldm_inc_67  68
+#define cldm_inc_68  69
+#define cldm_inc_69  70
+#define cldm_inc_70  71
+#define cldm_inc_71  72
+#define cldm_inc_72  73
+#define cldm_inc_73  74
+#define cldm_inc_74  75
+#define cldm_inc_75  76
+#define cldm_inc_76  77
+#define cldm_inc_77  78
+#define cldm_inc_78  79
+#define cldm_inc_79  80
+#define cldm_inc_80  81
+#define cldm_inc_81  82
+#define cldm_inc_82  83
+#define cldm_inc_83  84
+#define cldm_inc_84  85
+#define cldm_inc_85  86
+#define cldm_inc_86  87
+#define cldm_inc_87  88
+#define cldm_inc_88  89
+#define cldm_inc_89  90
+#define cldm_inc_90  91
+#define cldm_inc_91  92
+#define cldm_inc_92  93
+#define cldm_inc_93  94
+#define cldm_inc_94  95
+#define cldm_inc_95  96
+#define cldm_inc_96  97
+#define cldm_inc_97  98
+#define cldm_inc_98  99
+#define cldm_inc_99  100
+#define cldm_inc_100 101
+#define cldm_inc_101 102
+#define cldm_inc_102 103
+#define cldm_inc_103 104
+#define cldm_inc_104 105
+#define cldm_inc_105 106
+#define cldm_inc_106 107
+#define cldm_inc_107 108
+#define cldm_inc_108 109
+#define cldm_inc_109 110
+#define cldm_inc_110 111
+#define cldm_inc_111 112
+#define cldm_inc_112 113
+#define cldm_inc_113 114
+#define cldm_inc_114 115
+#define cldm_inc_115 116
+#define cldm_inc_116 117
+#define cldm_inc_117 118
+#define cldm_inc_118 119
+#define cldm_inc_119 120
+#define cldm_inc_120 121
+#define cldm_inc_121 122
+#define cldm_inc_122 123
+#define cldm_inc_123 124
+#define cldm_inc_124 125
+#define cldm_inc_125 126
+#define cldm_inc_126 127
+
+#define cldm_dec_1   0
+#define cldm_dec_2   1
+#define cldm_dec_3   2
+#define cldm_dec_4   3
+#define cldm_dec_5   4
+#define cldm_dec_6   5
+#define cldm_dec_7   6
+#define cldm_dec_8   7
+#define cldm_dec_9   8
+#define cldm_dec_10  9
+#define cldm_dec_11  10
+#define cldm_dec_12  11
+#define cldm_dec_13  12
+#define cldm_dec_14  13
+#define cldm_dec_15  14
+#define cldm_dec_16  15
+#define cldm_dec_17  16
+#define cldm_dec_18  17
+#define cldm_dec_19  18
+#define cldm_dec_20  19
+#define cldm_dec_21  20
+#define cldm_dec_22  21
+#define cldm_dec_23  22
+#define cldm_dec_24  23
+#define cldm_dec_25  24
+#define cldm_dec_26  25
+#define cldm_dec_27  26
+#define cldm_dec_28  27
+#define cldm_dec_29  28
+#define cldm_dec_30  29
+#define cldm_dec_31  30
+#define cldm_dec_32  31
+#define cldm_dec_33  32
+#define cldm_dec_34  33
+#define cldm_dec_35  34
+#define cldm_dec_36  35
+#define cldm_dec_37  36
+#define cldm_dec_38  37
+#define cldm_dec_39  38
+#define cldm_dec_40  39
+#define cldm_dec_41  40
+#define cldm_dec_42  41
+#define cldm_dec_43  42
+#define cldm_dec_44  43
+#define cldm_dec_45  44
+#define cldm_dec_46  45
+#define cldm_dec_47  46
+#define cldm_dec_48  47
+#define cldm_dec_49  48
+#define cldm_dec_50  49
+#define cldm_dec_51  50
+#define cldm_dec_52  51
+#define cldm_dec_53  52
+#define cldm_dec_54  53
+#define cldm_dec_55  54
+#define cldm_dec_56  55
+#define cldm_dec_57  56
+#define cldm_dec_58  57
+#define cldm_dec_59  58
+#define cldm_dec_60  59
+#define cldm_dec_61  60
+#define cldm_dec_62  61
+#define cldm_dec_63  62
+#define cldm_dec_64  63
+#define cldm_dec_65  64
+#define cldm_dec_66  65
+#define cldm_dec_67  66
+#define cldm_dec_68  67
+#define cldm_dec_69  68
+#define cldm_dec_70  69
+#define cldm_dec_71  70
+#define cldm_dec_72  71
+#define cldm_dec_73  72
+#define cldm_dec_74  73
+#define cldm_dec_75  74
+#define cldm_dec_76  75
+#define cldm_dec_77  76
+#define cldm_dec_78  77
+#define cldm_dec_79  78
+#define cldm_dec_80  79
+#define cldm_dec_81  80
+#define cldm_dec_82  81
+#define cldm_dec_83  82
+#define cldm_dec_84  83
+#define cldm_dec_85  84
+#define cldm_dec_86  85
+#define cldm_dec_87  86
+#define cldm_dec_88  87
+#define cldm_dec_89  88
+#define cldm_dec_90  89
+#define cldm_dec_91  90
+#define cldm_dec_92  91
+#define cldm_dec_93  92
+#define cldm_dec_94  93
+#define cldm_dec_95  94
+#define cldm_dec_96  95
+#define cldm_dec_97  96
+#define cldm_dec_98  97
+#define cldm_dec_99  98
+#define cldm_dec_100 99
+#define cldm_dec_101 100
+#define cldm_dec_102 101
+#define cldm_dec_103 102
+#define cldm_dec_104 103
+#define cldm_dec_105 104
+#define cldm_dec_106 105
+#define cldm_dec_107 106
+#define cldm_dec_108 107
+#define cldm_dec_109 108
+#define cldm_dec_110 109
+#define cldm_dec_111 110
+#define cldm_dec_112 111
+#define cldm_dec_113 112
+#define cldm_dec_114 113
+#define cldm_dec_115 114
+#define cldm_dec_116 115
+#define cldm_dec_117 116
+#define cldm_dec_118 117
+#define cldm_dec_119 118
+#define cldm_dec_120 119
+#define cldm_dec_121 120
+#define cldm_dec_122 121
+#define cldm_dec_123 122
+#define cldm_dec_124 123
+#define cldm_dec_125 124
+#define cldm_dec_126 125
+#define cldm_dec_127 126
 
 #endif /* CLDM_MACRO_H */

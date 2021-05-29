@@ -26,12 +26,8 @@ def gen_symbols():
             fd.write('};\n')
         for symname in db['symbols']:
             sym = db['symbols'][symname]
-            suffix = '0' if len(sym.get('params', [])) == 1 and sym['params'][0] == 'void' else ''
             param_delim = ', ' if len(sym.get('params', [])) else ''
-            if sym['rettype'] == 'void':
-                fd.write('MOCK_FUNCTION_VOID{}({}{} {});\n'.format(suffix, symname, param_delim, ', '.join(sym.get('params', []))))
-            else:
-                fd.write('MOCK_FUNCTION{}({}, {}{} {});\n'.format(suffix, sym['rettype'], symname, param_delim, ', '.join(sym.get('params', []))))
+            fd.write('MOCK_FUNCTION({}, {}{} {});\n'.format(sym['rettype'], symname, param_delim, ', '.join(sym.get('params', []))))
 
     return build_cldm()
 

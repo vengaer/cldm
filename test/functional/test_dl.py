@@ -37,8 +37,8 @@ def test_dl_cycle():
         cgen.append_return('pad0(a0);')
 
     with cgen.open_macro('TEST', 'whirl'):
-        cgen.append_line('EXPECT_CALL(pad0).WILL_REPEATEDLY(INVOKE(whirlf));')  \
-            .append_line('EXPECT_CALL(pad1).WILL_REPEATEDLY(INVOKE(whirlb));')  \
+        cgen.append_line('WHEN_CALLED(pad0).SHOULD_REPEATEDLY(INVOKE(whirlf));')  \
+            .append_line('WHEN_CALLED(pad1).SHOULD_REPEATEDLY(INVOKE(whirlb));')  \
             .append_line('ASSERT_EQ(pad0(0), 1);')
 
     cgen.write()

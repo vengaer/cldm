@@ -1,8 +1,8 @@
 #include "cldm_argp.h"
+#include "cldm_byteseq.h"
 #include "cldm_log.h"
 #include "cldm_macro.h"
 #include "cldm_nfa.h"
-#include "cldm_ntbs.h"
 #include "cldm_rtassert.h"
 #include "cldm_thread.h"
 
