@@ -48,7 +48,6 @@ cldm_avx2_scan_lt:
     xor     eax, eax
 
     vpxor   xmm2, xmm2, xmm2                ; Shuffle mask
-    sub     esi, 1
     vmovd   xmm1, esi                       ; Insert dword
     vpshufb xmm0, xmm1, xmm2                ; Broadcast byte to all lanes
     vpcmpeqb    ymm1, ymm3, ymm3            ; All ones
