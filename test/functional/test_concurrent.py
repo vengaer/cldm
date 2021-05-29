@@ -78,9 +78,28 @@ def test_concurrent_execution():
     cgen.write()
     gen_makefile()
 
-    start = datetime.datetime.now()
     assert os.system('make -C {}'.format(working_dir)) == 0
+    start = datetime.datetime.now()
     assert os.system(gen_runcmd('-j4')) == 0
+    duration = datetime.datetime.now() - start
+    assert duration.seconds < 20
+
+def test_fast_fail_reflection():
+    cgen = CGen('tests.c')
+    cgen.append_include('cldm.h', system_header=False)          \
+        .append_include('unistd.h')
+
+    with cgen.open_macro('TEST', 'test0'):
+        cgen.append_line('ASSERT_FALSE(1);')
+    for i in range(1,11):
+        with cgen.open_macro('TEST', 'test{}'.format(i)):
+            cgen.append_line('sleep(5);')
+
+    cgen.write()
+    gen_makefile()
+    assert os.system('make -C {}'.format(working_dir)) == 0
+    start = datetime.datetime.now()
+    assert os.system(gen_runcmd('-j2 -x'))
     duration = datetime.datetime.now() - start
     assert duration.seconds < 20
 
