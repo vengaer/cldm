@@ -77,7 +77,6 @@ def test_invoke():
     run(ContainsMatcher(success_string(1)), runcmd=_RUNCMD)
 
 def test_increment_counter():
-    db = read_db()
     cgen = CGen('test.c')
     cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)
@@ -121,7 +120,6 @@ def test_invoke_with_fallback():
     run(ContainsMatcher(success_string(2)), runcmd=_RUNCMD)
 
 def test_will_once():
-    db = read_db()
     cgen = CGen('test.c')
     cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)
@@ -138,7 +136,6 @@ def test_will_once():
     run(ContainsMatcher(success_string(2)), runcmd=_RUNCMD)
 
 def test_atoi_mock():
-    db = read_db()
     cgen = CGen('test.c')
     cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)      \
@@ -189,7 +186,6 @@ def test_max_params():
     run(ContainsMatcher(success_string(1)), runcmd=_RUNCMD)
 
 def test_will_n_times():
-    db = read_db()
     cgen = CGen('test.c')
     cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)
@@ -207,7 +203,6 @@ def test_will_n_times():
     run(ContainsMatcher(success_string(3)), runcmd=_RUNCMD)
 
 def test_will_invoke_default():
-    db = read_db()
     cgen = CGen('test.c')
     cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)
@@ -226,7 +221,6 @@ def test_will_invoke_default():
     run(ContainsMatcher(success_string(3)), runcmd=_RUNCMD)
 
 def test_return_param():
-    db = read_db()
     cgen = CGen('test.c')
     cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)
@@ -243,7 +237,6 @@ def test_return_param():
     run(ContainsMatcher(success_string(2)), runcmd=_RUNCMD)
 
 def test_return_pointee():
-    db = read_db()
     cgen = CGen('test.c')
     cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)
@@ -262,7 +255,6 @@ def test_return_pointee():
     run(ContainsMatcher(success_string(2)), runcmd=_RUNCMD)
 
 def test_assign():
-    db = read_db()
     cgen = CGen('test.c')
     cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)
@@ -287,7 +279,6 @@ def test_assign():
     run(ContainsMatcher(success_string(4)), runcmd=_RUNCMD)
 
 def test_assign_param():
-    db = read_db()
     cgen = CGen('test.c')
     cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)
@@ -306,15 +297,14 @@ def test_assign_param():
     run(ContainsMatcher(success_string(2)), runcmd=_RUNCMD)
 
 def test_force_disable():
-    db = read_db()
     cgen = CGen('test.c')
     cgen.append_include('cldm.h', system_header=False)      \
         .append_include('syms.h', system_header=False)      \
         .append_include('stdlib.h')
 
     with cgen.open_macro('TEST', 'foo'):
-        cgen.append_line('cldm_mock_disable_all();')                \
-            .append_line('WHEN_CALLED(atoi).SHOULD_ONCE(RETURN(5));') \
+        cgen.append_line('cldm_mock_disable_all();')                    \
+            .append_line('WHEN_CALLED(atoi).SHOULD_ONCE(RETURN(5));')   \
             .append_line('ASSERT_EQ(1, atoi("1"));')
     cgen.write()
 
@@ -322,3 +312,16 @@ def test_force_disable():
     gen_makefile()
 
     run(ContainsMatcher(success_string(1)), runcmd=_RUNCMD)
+
+def test_return_void():
+    cgen = CGen('test.c')
+    cgen.append_include('cldm.h', system_header=False)      \
+        .append_include('syms.h', system_header=False)
+
+    with cgen.open_macro('TEST', 'test'):
+        cgen.append_line('WHEN_CALLED(printfoo).SHOULD_ONCE(RETURN_VOID());')
+    cgen.write()
+
+    gen_symbols()
+    gen_makefile()
+    run(ContainsNotMatcher("marble"), rvmatcher=RvEqMatcher(0), runcmd=_RUNCMD)
