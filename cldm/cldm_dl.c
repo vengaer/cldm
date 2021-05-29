@@ -20,6 +20,7 @@ enum { CLDM_DLBUF_SIZE = 1024 };
 enum { CLDM_DLNAME_MAX_SIZE = 32 };
 enum { CLDM_INITIAL_DLLOOKUP_SIZE = 32 };
 enum { CLDM_MAX_SYMNAME_SIZE = 128 };
+enum { CLDM_MAX_LIBC_VERSION = 32 };
 
 struct cldm_dlentry {
     char symname[CLDM_MAX_SYMNAME_SIZE];
@@ -89,24 +90,19 @@ static bool cldm_dllookup_ensure_capacity(unsigned thread_id) {
 }
 
 int cldm_dlmap_explicit(void) {
+    char buffer[CLDM_DLNAME_MAX_SIZE] = { 0 };
     struct cldm_dltab *iter;
-    char const **libc;
+    unsigned offset;
     void *handle;
     int status;
     char *err;
 
-    /* Cannot use sprintf and the like since they may be mocked. This should
-     * cover libc versions on more or less any system */
-    char const *libcvers[] = {
-        "libc.so.0",  "libc.so.1",  "libc.so.2",  "libc.so.3",
-        "libc.so.4",  "libc.so.5",  "libc.so.6",  "libc.so.7",
-        "libc.so.8",  "libc.so.9",  "libc.so.10", "libc.so.11",
-        "libc.so.12", "libc.so.13", "libc.so.14", "libc.so.15",
-        "libc.so.16", "libc.so.17", "libc.so.18", "libc.so.19",
-        "libc.so.20", "libc.so.21", "libc.so.22", "libc.so.23",
-        "libc.so.24", "libc.so.25", "libc.so.26", "libc.so.27",
-        "libc.so.28", "libc.so.29", "libc.so.30", "libc.so.31"
+    static char const digits[] = {
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '\0'
     };
+
+    cldm_static_assert(sizeof(buffer) >= cldm_strlitlen("libc.so.") + 3);
+    cldm_strscpy(buffer, "libc.so.", sizeof(buffer));
 
     struct cldm_dltab lookup[] = {
         { (void **)&cldm_explicit_open,     "open"     },
@@ -121,15 +117,19 @@ int cldm_dlmap_explicit(void) {
         { (void **)&cldm_explicit_fprintf,  "fprintf"  }
     };
 
-    cldm_for_each(libc, libcvers) {
-        handle = dlopen(*libc, RTLD_LAZY);
+    offset = cldm_strlitlen("libc.so.");
+    for(unsigned i = 0; i <= CLDM_MAX_LIBC_VERSION; i++) {
+        buffer[offset] = digits[(i % (cldm_arrsize(digits) - 1)) * (i < (cldm_arrsize(digits) - 1)) + i / (cldm_arrsize(digits) - 1)];
+        buffer[offset + 1] = digits[(i % (cldm_arrsize(digits) - 1)) * (i >= (cldm_arrsize(digits) - 1)) + (cldm_arrsize(digits) - 1) * (i < (cldm_arrsize(digits) - 1))];
+        handle = dlopen(buffer, RTLD_LAZY);
         if(handle) {
             break;
         }
     }
 
     if(!handle) {
-        cldm_err("Could not open libc.so (tried versions 0-%u)", cldm_arrsize(libcvers) - 1u);
+        /* logger not initialized yet, best effort */
+        fprintf(stderr, "Could not open libc.so, tried versions 0-%d\n", CLDM_MAX_LIBC_VERSION);
         return 1;
     }
 
@@ -139,7 +139,7 @@ int cldm_dlmap_explicit(void) {
         *iter->addr = dlsym(handle, iter->name);
         err = dlerror();
         if(err) {
-            cldm_log("Could not load %s from %s: %s", iter->name, *libc, err);
+            printf("Could not load %s from %s: %s\n", iter->name, buffer, err);
             goto epilogue;
         }
     }
