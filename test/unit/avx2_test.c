@@ -184,6 +184,7 @@ TEST(cldm_avx2_scan_lt_unaligned) {
         unsigned char p1;
         char str[SIZE];
     } s;
+    memset(s.str, 0, sizeof(s.str));
     char const *sp = "All mixed up, turned around. You're thinking out loud. What were we talking about now? Emotion free, euphoric stat. Too little too late. Let it go";
     strcpy(s.str, sp);
     ASSERT_EQ(cldm_avx2_scan_lt(s.str, 1), strlen(s.str));
