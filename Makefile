@@ -57,7 +57,7 @@ LDFLAGS     := -shared -Wl,-soname,$(libstem).$(soext).$(socompat)
 LDLIBS      := -ldl -pthread
 
 testldflags := -L$(root)
-testldlibs  := $(patsubst lib%,-l%,$(libstem)) $(patsubst lib%.a,-l%,$(lcldm_main))
+testldlibs  := $(patsubst lib%,-l%,$(libstem)) $(patsubst lib%.a,-l%,$(lcldm_main)) -pthread
 
 fuzzcflags  := $(fuzzinstr) $(CFLAGS)
 fuzzldflags := -L$(root) $(fuzzinstr)
