@@ -18,9 +18,11 @@ extern int (*cldm_mutex_destroy)(pthread_mutex_t *);
 extern int (*cldm_mutex_lock)(pthread_mutex_t *);
 extern int (*cldm_mutex_unlock)(pthread_mutex_t *);
 
-#define cldm_mutex_guard(mutex)                                                     \
-    for(int cldm_cat_expand(cldm_mtx_gd,__LINE__) = (cldm_mutex_lock(mutex), 0);    \
-        !cldm_cat_expand(cldm_mtx_gd,__LINE__);                                     \
-        cldm_cat_expand(cldm_mtx_gd,__LINE__) = (cldm_mutex_unlock(mutex),1))
+#define cldm_lock_guard(mutex, lock, unlock)    \
+    for(int cldm_cat_expand(cldm_lock_gd,__LINE__) = (lock(mutex),0);   \
+        !cldm_cat_expand(cldm_lock_gd,__LINE__);                        \
+        cldm_cat_expand(cldm_lock_gd,__LINE__) = (unlock(mutex),1))
+
+#define cldm_mutex_guard(mutex) cldm_lock_guard(mutex, cldm_mutex_lock, cldm_mutex_unlock)
 
 #endif /* CLDM_THREAD_H */
