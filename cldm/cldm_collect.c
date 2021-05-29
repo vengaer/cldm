@@ -78,7 +78,7 @@ ssize_t cldm_collect_from(struct cldm_rbtree *restrict tree, struct cldm_elfmap 
     }
 
     for(unsigned i = 0; i < nidents; i++) {
-        pos = cldm_scan_lt((char const *)idents[i], 1);
+        pos = cldm_scan_lt((char const *)idents[i], 2);
         if(!idents[i][pos]) {
             cldm_err("Positional parameter '%s' does not match any file or test known to cldm", idents[i]);
             goto epilogue;
