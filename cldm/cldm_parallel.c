@@ -19,6 +19,7 @@ struct cldm_threadargs {
     unsigned id;
     struct cldm_testrec *volatile *records;
     pthread_barrier_t *barrier;
+    pthread_rwlock_t *fail_lock;
 };
 
 struct cldm_extended_threadargs {
@@ -30,11 +31,15 @@ static struct cldm_threadargs cldm_threadargs[CLDM_MAX_THREADS];
 static unsigned long long thread_ntests[CLDM_MAX_THREADS];
 static unsigned long long thread_startidx[CLDM_MAX_THREADS];
 static struct cldm_auxprocs auxprocs;
+static bool early_abort;
 
 static void *cldm_thread_run(void *data) {
     struct cldm_threadargs *thrdargs;
     bool init_successful;
+    bool abort;
+
     thrdargs = data;
+    abort = false;
 
     /* Initialize test logs while waiting */
     init_successful = cldm_test_init(thrdargs->id);
@@ -48,7 +53,21 @@ static void *cldm_thread_run(void *data) {
 
     for(unsigned i = 0; i < thread_ntests[thrdargs->id]; i++) {
         if(!cldm_test_run(thrdargs->id, &(*thrdargs->records)[thread_startidx[thrdargs->id] + i], &auxprocs, thrdargs->fail_fast)) {
+            if(thrdargs->fail_fast) {
+                cldm_rwlock_wrguard(thrdargs->fail_lock) {
+                    early_abort = true;
+                }
+            }
             break;
+        }
+
+        if(thrdargs->fail_fast) {
+            cldm_rwlock_rdguard(thrdargs->fail_lock) {
+                abort = early_abort;
+            }
+            if(abort) {
+                break;
+            }
         }
     }
 
@@ -135,6 +154,7 @@ epilogue:
 
 int cldm_parallel_run(struct cldm_elfmap const *restrict map, struct cldm_args const *restrict args) {
     pthread_barrier_t barrier;
+    pthread_rwlock_t fail_lock;
     struct cldm_testrec *records;
     int err;
 
@@ -153,12 +173,20 @@ int cldm_parallel_run(struct cldm_elfmap const *restrict map, struct cldm_args c
         return 1;
     }
 
+    err = pthread_rwlock_init(&fail_lock, 0);
+    if(err) {
+        cldm_err("Could not initialize rwlock: %s", strerror(err));
+        pthread_barrier_destroy(&barrier);
+        return 1;
+    }
+
     /* Start test collection on thread 1 */
     cldm_threadargs[1] = (struct cldm_threadargs) {
         .fail_fast = args->fail_fast,
         .id = 1u,
         .records = &records,
-        .barrier = &barrier
+        .barrier = &barrier,
+        .fail_lock = &fail_lock
     };
 
     err = pthread_create(&cldm_threads[0], 0, cldm_parallel_collect_and_run, &(struct cldm_extended_threadargs) { .thrdargs = &cldm_threadargs[1], .map = map, .args = args });
@@ -170,7 +198,8 @@ int cldm_parallel_run(struct cldm_elfmap const *restrict map, struct cldm_args c
             .fail_fast = args->fail_fast,
             .id = i,
             .records = &records,
-            .barrier = &barrier
+            .barrier = &barrier,
+            .fail_lock = &fail_lock
         };
         err = pthread_create(&cldm_threads[i - 1], 0, cldm_thread_run, &cldm_threadargs[i]);
         cldm_rtassert(!err, "Spawning thread %u failed: %s", i, strerror(err));
@@ -181,7 +210,8 @@ int cldm_parallel_run(struct cldm_elfmap const *restrict map, struct cldm_args c
         .fail_fast = args->fail_fast,
         .id = 0u,
         .records = &records,
-        .barrier = &barrier
+        .barrier = &barrier,
+        .fail_lock = &fail_lock
     };
     cldm_thread_run(&cldm_threadargs[0]);
 

@@ -24,5 +24,7 @@ extern int (*cldm_mutex_unlock)(pthread_mutex_t *);
         cldm_cat_expand(cldm_lock_gd,__LINE__) = (unlock(mutex),1))
 
 #define cldm_mutex_guard(mutex) cldm_lock_guard(mutex, cldm_mutex_lock, cldm_mutex_unlock)
+#define cldm_rwlock_rdguard(lock) cldm_lock_guard(lock, pthread_rwlock_rdlock, pthread_rwlock_unlock)
+#define cldm_rwlock_wrguard(lock) cldm_lock_guard(lock, pthread_rwlock_wrlock, pthread_rwlock_unlock)
 
 #endif /* CLDM_THREAD_H */
