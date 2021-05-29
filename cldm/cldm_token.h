@@ -11,8 +11,8 @@
 #define cldm_match_token(token, x) cldm_chk(cldm_cat_expand(cldm_cat_expand(cldm_cat_expand(cldm_probe_,token),_),x)())
 
 #define cldm_token_void(x) cldm_match_token(void, x)
-#define cldm_token_1(x) cldm_match_token(1,x)
 #define cldm_token_0(x) cldm_match_token(0,x)
+#define cldm_token_1(x) cldm_match_token(1,x)
 
 #define cldm_repeat_token_recurse1(...)
 #define cldm_defer_repeat_token_recursion() cldm_repeat_token_recurse
