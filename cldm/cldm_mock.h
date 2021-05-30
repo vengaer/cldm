@@ -210,8 +210,8 @@ extern char const *cldm_mockop_strings[cldm_mockop_max + 1];
                                 cldm_mockctx(name).opdata.un_act.assign.size);                                      \
                     return;                                                                                         \
                 default:                                                                                            \
-                    cldm_rtassert(0, "Invalid action '%s' for procedure with no parameters",                        \
-                                cldm_mockop_str(cldm_mockctx(name).opdata.op));                                     \
+                    cldm_rtassert(0, "Invalid action '%s' for nullary procedure",                                   \
+                                 cldm_mockop_str(cldm_mockctx(name).opdata.op));                                    \
             }                                                                                                       \
         }                                                                                                           \
         cldm_mock_disable() {                                                                                       \
@@ -256,8 +256,8 @@ extern char const *cldm_mockop_strings[cldm_mockop_max + 1];
                                 cldm_mockctx(name).opdata.un_act.assign.size);                                      \
                     break;                                                                                          \
                 default:                                                                                            \
-                    cldm_rtassert(0, "Invalid action '%s' for function with no parameters",                         \
-                                cldm_mockop_str(cldm_mockctx(name).opdata.op));                                     \
+                    cldm_rtassert(0, "Invalid action '%s' for nullary function",                                    \
+                                  cldm_mockop_str(cldm_mockctx(name).opdata.op));                                   \
             }                                                                                                       \
             return rv;                                                                                              \
         }                                                                                                           \
@@ -295,14 +295,14 @@ extern char const *cldm_mockop_strings[cldm_mockop_max + 1];
                     break;                                                                                          \
                 case cldm_mockop_assign:                                                                            \
                     cldm_memcpy(cldm_mockctx(name).opdata.un_act.assign.lhs,                                        \
-                        cldm_mockctx(name).opdata.un_act.assign.rhs,                                                \
-                        cldm_mockctx(name).opdata.un_act.assign.size);                                              \
+                                cldm_mockctx(name).opdata.un_act.assign.rhs,                                        \
+                                cldm_mockctx(name).opdata.un_act.assign.size);                                      \
                     break;                                                                                          \
                 case cldm_mockop_assign_param:                                                                      \
                     cldm_rtassert(cldm_mockctx(name).opdata.un_act.assign_param.idx < cldm_arrsize(paramaddrs),     \
-                                "Attempt to access parameter %u in %s which accepts only %zu",                      \
-                                cldm_mockctx(name).opdata.un_act.assign_param.idx + 1, cldm_str_expand(name),       \
-                                cldm_arrsize(paramaddrs));                                                          \
+                                  "Attempt to access parameter %u in %s which accepts only %zu",                    \
+                                  cldm_mockctx(name).opdata.un_act.assign_param.idx + 1, cldm_str_expand(name),     \
+                                  cldm_arrsize(paramaddrs));                                                        \
                     if(cldm_mockctx(name).opdata.un_act.assign_param.dstsize <                                      \
                             paramsizes[cldm_mockctx(name).opdata.un_act.assign_param.idx])                          \
                     {                                                                                               \
@@ -316,7 +316,7 @@ extern char const *cldm_mockop_strings[cldm_mockop_max + 1];
                     break;                                                                                          \
                 default:                                                                                            \
                     cldm_rtassert(0, "Invalid action '%s' for variadic procedure",                                  \
-                                cldm_mockop_str(cldm_mockctx(name).opdata.op));                                     \
+                                  cldm_mockop_str(cldm_mockctx(name).opdata.op));                                   \
             }                                                                                                       \
             return;                                                                                                 \
         }                                                                                                           \
@@ -361,9 +361,9 @@ extern char const *cldm_mockop_strings[cldm_mockop_max + 1];
                     break;                                                                                          \
                 case cldm_mockop_return_param:                                                                      \
                     cldm_rtassert(cldm_mockctx(name).opdata.un_act.paramidx < cldm_arrsize(paramaddrs),             \
-                                "Attempt to access parameter %u in %s which accepts only %zu",                      \
-                                cldm_mockctx(name).opdata.un_act.paramidx + 1, cldm_str_expand(name),               \
-                                cldm_arrsize(paramaddrs));                                                          \
+                                  "Attempt to access parameter %u in %s which accepts only %zu",                    \
+                                  cldm_mockctx(name).opdata.un_act.paramidx + 1, cldm_str_expand(name),             \
+                                  cldm_arrsize(paramaddrs));                                                        \
                     if(sizeof(rettype) < paramsizes[cldm_mockctx(name).opdata.un_act.paramidx]) {                   \
                         cldm_warn("Reinterpreting block of %hu bytes in %s as object of size %zu "                  \
                                   "may alter its value", paramsizes[cldm_mockctx(name).opdata.un_act.paramidx],     \
@@ -374,9 +374,9 @@ extern char const *cldm_mockop_strings[cldm_mockop_max + 1];
                     break;                                                                                          \
                 case cldm_mockop_return_pointee:                                                                    \
                     cldm_rtassert(cldm_mockctx(name).opdata.un_act.paramidx < cldm_arrsize(paramaddrs),             \
-                                "Attempt to access parameter %u in %s which accepts only %zu",                      \
-                                cldm_mockctx(name).opdata.un_act.paramidx + 1, cldm_str_expand(name),               \
-                                cldm_arrsize(paramaddrs));                                                          \
+                                  "Attempt to access parameter %u in %s which accepts only %zu",                    \
+                                  cldm_mockctx(name).opdata.un_act.paramidx + 1, cldm_str_expand(name),             \
+                                  cldm_arrsize(paramaddrs));                                                        \
                     /* Atrocious hack to circumvent array subscript bug in GCC 11 */                                \
                     cldm_memcpy(&rv, **(rettype ***)cldm_memcpy(&(rettype **) { 0 },                                \
                                 &paramaddrs[cldm_mockctx(name).opdata.un_act.paramidx],                             \
@@ -389,9 +389,9 @@ extern char const *cldm_mockop_strings[cldm_mockop_max + 1];
                     break;                                                                                          \
                 case cldm_mockop_assign_param:                                                                      \
                     cldm_rtassert(cldm_mockctx(name).opdata.un_act.assign_param.idx < cldm_arrsize(paramaddrs),     \
-                                "Attempt to access parameter %u in %s which accepts only %zu",                      \
-                                cldm_mockctx(name).opdata.un_act.assign_param.idx + 1, cldm_str_expand(name),       \
-                                cldm_arrsize(paramaddrs));                                                          \
+                                  "Attempt to access parameter %u in %s which accepts only %zu",                    \
+                                  cldm_mockctx(name).opdata.un_act.assign_param.idx + 1, cldm_str_expand(name),     \
+                                  cldm_arrsize(paramaddrs));                                                        \
                     if(cldm_mockctx(name).opdata.un_act.assign_param.dstsize <                                      \
                             paramsizes[cldm_mockctx(name).opdata.un_act.assign_param.idx])                          \
                     {                                                                                               \
@@ -404,8 +404,8 @@ extern char const *cldm_mockop_strings[cldm_mockop_max + 1];
                                 cldm_mockctx(name).opdata.un_act.assign_param.dstsize);                             \
                     break;                                                                                          \
                 default:                                                                                            \
-                    cldm_rtassert(0, "Invalid action '%s' for variadic procedure",                                  \
-                                cldm_mockop_str(cldm_mockctx(name).opdata.op));                                     \
+                    cldm_rtassert(0, "Invalid action '%s' for variadic function",                                   \
+                                  cldm_mockop_str(cldm_mockctx(name).opdata.op));                                   \
             }                                                                                                       \
             return rv;                                                                                              \
         }                                                                                                           \
