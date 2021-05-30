@@ -2,14 +2,15 @@
 #include "cldm_macro.h"
 #include "cldm_mock.h"
 
-char const *cldm_mockop_strings[cldm_mockop_max] = {
+char const *cldm_mockop_strings[cldm_mockop_max + 1] = {
     "invoke",
     "return",
     "increment",
     "return param",
     "return pointee",
     "assign",
-    "assign param"
+    "assign param",
+    "unknown"
 };
 
 cldm_aligned_mockinfo mockinfos[CLDM_MAX_THREADS];

@@ -179,10 +179,10 @@ inline bool cldm_mock_enabled(void) {
 
 #ifdef CLDM_GENERATE_SYMBOLS
 
-extern char const *cldm_mockop_strings[cldm_mockop_max];
+extern char const *cldm_mockop_strings[cldm_mockop_max + 1];
 
 #define cldm_mockop_str(code)                           \
-    code < (cldm_mockop_max - 1) && code > 0 ? cldm_mockop_strings[code] : "Unknown"
+    ((!(code / cldm_mockop_max)) * code + (!!(code / cldm_mockop_max)) * cldm_mockop_max)
 
 #define cldm_mockctx(name)                              \
     cldm_cat_expand(cldm_mock_, name)[thread_id].data
