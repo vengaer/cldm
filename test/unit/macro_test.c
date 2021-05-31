@@ -150,13 +150,13 @@ TEST(cldm_arrindex) {
 
 TEST(cldm_map) {
 #define m(ctr, v) ASSERT_EQ(ctr, v);
-    cldm_map(m, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8);
+    cldm_map(m, 0, 1, 2, 3, 4, 5, 6, 7, 8);
 #undef m
 }
 
 TEST(cldm_map_separate) {
 #define m(ctr, v) ASSERT_EQ(ctr, v)
-    cldm_map_separate(m, 8, ;, 0, 1, 2, 3, 4, 5, 6, 7, 8);
+    cldm_map_separate(m, ;, 0, 1, 2, 3, 4, 5, 6, 7, 8);
 #undef m
 }
 

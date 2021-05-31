@@ -23,7 +23,7 @@
     token                                                       \
     cldm_cat_expand(cldm_repeat_token_recurse, cldm_token_0(n))(n, token)
 
-#define cldm_repeat_token(token, n, depth)                      \
-    cldm_cat_expand(cldm_expand, depth)(cldm_repeat_token_recurse(cldm_dec(n), token))
+#define cldm_repeat_token(token, n)                             \
+    cldm_cat_expand(cldm_expand, n)(cldm_repeat_token_recurse(cldm_dec(n), token))
 
 #endif /* CLDM_TOKEN_H */

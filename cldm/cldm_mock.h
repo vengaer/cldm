@@ -103,25 +103,25 @@ inline bool cldm_mock_enabled(void) {
     type cldm_cat_expand(param,ctr)
 
 #define cldm_mock_name_params(...)                              \
-    cldm_map_list(cldm_name_parameter, 128, __VA_ARGS__)
+    cldm_map_list(cldm_name_parameter, __VA_ARGS__)
 
 #define cldm_mock_store_single_address(ctr, _)                  \
     paramaddrs[ctr] = (void *)&cldm_cat_expand(param,ctr)
 
 #define cldm_mock_store_paramaddrs(...)                         \
-    cldm_map_separate(cldm_mock_store_single_address, 128, ;, __VA_ARGS__)
+    cldm_map_separate(cldm_mock_store_single_address, ;, __VA_ARGS__)
 
 #define cldm_mock_store_single_size(ctr, _)                     \
     paramsizes[ctr] = (unsigned short)sizeof(cldm_cat_expand(param,ctr))
 
 #define cldm_mock_store_paramsizes(...)                         \
-    cldm_map_separate(cldm_mock_store_single_size, 128, ;, __VA_ARGS__)
+    cldm_map_separate(cldm_mock_store_single_size, ;, __VA_ARGS__)
 
 #define cldm_mock_paramname_single(ctr, _)                      \
     cldm_cat_expand(param, ctr)
 
 #define cldm_mock_paramnames(...)                               \
-    cldm_map_list(cldm_mock_paramname_single, 128, __VA_ARGS__)
+    cldm_map_list(cldm_mock_paramname_single, __VA_ARGS__)
 
 #define cldm_mock_populate_ctx_single(ctr, name)                                                    \
     [ctr].data = {                                                                                  \
@@ -140,7 +140,7 @@ inline bool cldm_mock_enabled(void) {
 
 #define cldm_mock_populate_ctx(name)    \
     cldm_aligned_mock_ ## name ## _ctx cldm_mock_ ## name[CLDM_MAX_THREADS] = {                     \
-        cldm_map_list(cldm_mock_populate_ctx_single, 128, cldm_repeat_token(name, 32, 128))         \
+        cldm_map_list(cldm_mock_populate_ctx_single, cldm_repeat_token(name, 32))                   \
     }
 
 #define cldm_mock_gen_procctx(name, ...)                                                            \

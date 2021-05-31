@@ -22,6 +22,6 @@ TEST(token_1) {
 
 TEST(repeat_token) {
 #define m(_, v)   ASSERT_EQ(v,30)
-    cldm_map_separate(m, 8, ;, cldm_repeat_token(30, 8, 8));
+    cldm_map_separate(m, ;, cldm_repeat_token(30, 8));
 #undef m
 }
