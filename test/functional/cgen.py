@@ -174,7 +174,6 @@ class CGen():
                 if sym['rettype'] != 'void':
                     self.append_return(sym.get('return', '({}){{ 0 }}'.format(sym['rettype'])))
 
-        assert build_cldm()[0] == 0
         return self
 
     def append_line(self, line):
