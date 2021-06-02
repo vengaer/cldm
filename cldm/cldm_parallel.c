@@ -237,6 +237,7 @@ int cldm_parallel_run(struct cldm_elfmap const *restrict map, struct cldm_args c
         free(records);
     }
 
+    pthread_rwlock_destroy(&fail_lock);
     pthread_barrier_destroy(&barrier);
 
     return err;
