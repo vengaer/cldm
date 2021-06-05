@@ -91,6 +91,7 @@ static bool write_config(char const *out) {
     fprintf(fp, "has_generic := %c\n", makecfg.has_generic);
     fprintf(fp, "arch        := %s\n", arch_strings[makecfg.arch]);
     fprintf(fp, "abi         := %s\n", abi_strings[makecfg.abi]);
+    fprintf(fp, "pagesize    := %ld\n", sysconf(_SC_PAGESIZE));
 
     fclose(fp); return true;
 }

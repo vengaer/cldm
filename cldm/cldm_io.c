@@ -1,5 +1,5 @@
+#include "cldm_config.h"
 #include "cldm_io.h"
-#include "cldm_limits.h"
 #include "cldm_log.h"
 
 #include <errno.h>
