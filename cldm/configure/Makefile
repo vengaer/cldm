@@ -5,22 +5,22 @@ $(module_name)_obj    := $(patsubst $(root)/%.$(cext),$(builddir)/%.$(oext),$(wi
 
 $($(module_name)_target): $($(module_name)_obj)
 	$(info [LD]  $(notdir $@))
-	$(QUIET)$(CC) -o $@ $^
+	$(QUIET)$(CC) -o $@ $<
 
 $(system_mk): $($(module_name)_target)
-	$(QUIET)$^ $@
+	$(QUIET)$< $@
 
 $(module_name)_target := $(builddir)/avx2_support
 $(module_name)_obj    := $(patsubst $(root)/%.$(asext),$(builddir)/%.$(oext),$(wildcard $(module_path)/*.$(asext)))
 
 $($(module_name)_target): $($(module_name)_obj)
 	$(info [LD]  $(notdir $@))
-	$(QUIET)$(LD) -o $@ $^
+	$(QUIET)$(LD) -o $@ $<
 
 $(avx2_mk): $($(module_name)_target)
-	$(QUIET)$^ $@
+	$(QUIET)$< $@
 
-$(patsubst $(root)/%,$(builddir)/%,$(module_path))/%.$(oext): $(module_path)/%.$(cext)
+$(patsubst $(root)/%,$(builddir)/%,$(module_path))/%.$(oext): $(module_path)/%.$(cext) Makefile
 	$(info [CC]  $(notdir $@))
 	$(QUIET)$(CC) -o $@ $< $(CFLAGS) $(CPPFLAGS)
 
