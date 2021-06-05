@@ -32,7 +32,7 @@ void cldm_assert_streq(char const *restrict l, char const *restrict r, long long
 #define cldm_testrec_prefix         \
     cldm_testrec_
 
-#define cldm_gen_test(testname, ...)                                      \
+#define cldm_gen_test(testname, ...)                                        \
     void cldm_cat_expand(cldm_testproc_prefix,testname)(void);              \
     struct cldm_testrec cldm_cat_expand(cldm_testrec_prefix,testname) = {   \
         .name = #testname,                                                  \

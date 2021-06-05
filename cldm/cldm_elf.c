@@ -331,24 +331,11 @@ ssize_t cldm_elf_read_needed(struct cldm_elfmap const *restrict map, char *restr
     return offset - 1;
 }
 
-void (*cldm_elf_func(struct cldm_elfmap const *restrict map, char const *restrict func))(void) {
+void *cldm_elf_symlookup(struct cldm_elfmap const *restrict map, char const *restrict symname) {
     void *symaddr;
     Elf64_Sym sym;
 
-    symaddr = cldm_elf_sym(map, func);
-    if(!symaddr) {
-        return 0;
-    }
-
-    cldm_memcpy(&sym, symaddr, sizeof(sym));
-    return (void (*)(void))cldm_elf_symaddr(map, &sym);
-}
-
-void *cldm_elf_testrec(struct cldm_elfmap const *restrict map, char const *restrict record) {
-    void *symaddr;
-    Elf64_Sym sym;
-
-    symaddr = cldm_elf_sym(map, record);
+    symaddr = cldm_elf_sym(map, symname);
     if(!symaddr) {
         return 0;
     }

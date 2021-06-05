@@ -39,8 +39,6 @@ bool cldm_elf_is_executable(struct cldm_elfmap const *map);
 ssize_t cldm_elf_read_strtab(struct cldm_elfmap const *restrict map, char *restrict buffer, char const *restrict section, size_t bufsize);
 ssize_t cldm_elf_read_needed(struct cldm_elfmap const *restrict map, char *restrict buffer, size_t bufsize);
 
-/* Get pointer to given function */
-void (*cldm_elf_func(struct cldm_elfmap const *restrict map, char const *restrict func))(void);
-void *cldm_elf_testrec(struct cldm_elfmap const *restrict map, char const *restrict record);
+void *cldm_elf_symlookup(struct cldm_elfmap const *restrict map, char const *restrict symname);
 
 #endif /* CLDM_ELF_H */

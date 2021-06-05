@@ -22,7 +22,7 @@ ssize_t cldm_collect(struct cldm_rbtree *restrict tree, struct cldm_elfmap const
     for(size_t i = 0; i < map->strtab.size; i += strlen(map->strtab.addr + i) + 1) {
         /* Identify by test prefix */
         if(strncmp(cldm_str_expand(cldm_testrec_prefix), map->strtab.addr + i, cldm_strlitlen(cldm_str_expand(cldm_testrec_prefix))) == 0) {
-            record = cldm_elf_testrec(map, map->strtab.addr + i);
+            record = cldm_elf_symlookup(map, map->strtab.addr + i);
             if(!record) {
                 cldm_err("Could not map test record for %s", map->strtab.addr + i + cldm_strlitlen(cldm_str_expand(cldm_testrec_prefix)));
                 return -1;
@@ -58,7 +58,7 @@ ssize_t cldm_collect_from(struct cldm_rbtree *restrict tree, struct cldm_elfmap 
 
     for(size_t i = 0; i < map->strtab.size; i += strlen(map->strtab.addr + i) + 1) {
         if(strncmp(cldm_str_expand(cldm_testrec_prefix), map->strtab.addr + i, sizeof(cldm_str_expand(cldm_testrec_prefix)) - 1) == 0) {
-            record = cldm_elf_testrec(map, map->strtab.addr + i);
+            record = cldm_elf_symlookup(map, map->strtab.addr + i);
             if(!record) {
                 cldm_err("Could not map test record for %s", map->strtab.addr + i + sizeof(cldm_str_expand(cldm_testrec_prefix)) - 1);
                 goto epilogue;
@@ -116,7 +116,7 @@ size_t cldm_collect_auxprocs(struct cldm_auxprocs *auxprocs, struct cldm_elfmap 
 
     nloaded = 0;
     cldm_for_each_zip(cciter, setup_iter, setup_idents, setup_handles) {
-        **setup_iter = cldm_elf_func(map, *cciter);
+        *(void **)*setup_iter = cldm_elf_symlookup(map, *cciter);
         nloaded += !!**setup_iter;
         if(!**setup_iter) {
             **setup_iter = cldm_empty_setup;
@@ -124,7 +124,7 @@ size_t cldm_collect_auxprocs(struct cldm_auxprocs *auxprocs, struct cldm_elfmap 
     }
 
     cldm_for_each_zip(cciter, teardown_iter, teardown_idents, teardown_handles) {
-        **teardown_iter = cldm_elf_func(map, *cciter);
+        *(void **)*teardown_iter = cldm_elf_symlookup(map, *cciter);
         nloaded += !!**teardown_iter;
         if(!**teardown_iter) {
             **teardown_iter = cldm_empty_teardown;
