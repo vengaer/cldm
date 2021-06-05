@@ -67,12 +67,6 @@ pipeline {
             }
         }
         stage('Fetch Corpora') {
-            when {
-                beforeAgent true
-                expression {
-                    return env.TARGET == 'fuzz'
-                }
-            }
             agent {
                 docker { image "${DOCKER_IMAGE}" }
             }
