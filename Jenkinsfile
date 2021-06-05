@@ -91,12 +91,6 @@ pipeline {
             }
         }
         stage('Build Fuzzer') {
-            when {
-                beforeAgent true
-                expression {
-                    return env.TARGET == 'fuzz'
-                }
-            }
             agent {
                 docker { image "${DOCKER_IMAGE}" }
             }
@@ -106,12 +100,6 @@ pipeline {
             }
         }
         stage('Merge Corpora') {
-            when {
-                beforeAgent true
-                expression {
-                    return env.TARGET == 'fuzz'
-                }
-            }
             agent {
                 docker { image "${DOCKER_IMAGE}" }
             }
@@ -127,21 +115,23 @@ pipeline {
             }
         }
         stage('Fuzz') {
-            when {
-                beforeAgent true
-                expression {
-                    return env.TARGET == 'fuzz'
-                }
-            }
             agent {
                 docker { image "${DOCKER_IMAGE}" }
             }
             steps {
                 script {
-                    fuzztargets.each { target ->
-                        for(int i = 0; i < config.NFUZZRUNS; i++) {
-                            echo "Fuzzing ${target} ${i + 1}/${config.NFUZZRUNS}"
-                            sh "CLDM_FUZZTARGET=${target} make fuzzrun"
+                    if(env.TARGET == 'fuzz') {
+                        fuzztargets.each { target ->
+                            for(int i = 0; i < config.NFUZZRUNS; i++) {
+                                echo "Fuzzing ${target} ${i + 1}/${config.NFUZZRUNS}"
+                                sh "CLDM_FUZZTARGET=${target} make fuzzrun"
+                            }
+                        }
+                    }
+                    else {
+                        fuzztargets.each { target ->
+                            echo "FUZZING ${target}"
+                            sh "CLDM_FUZZTARGET=${target} make fuzzrun FUZZTIME=25"
                         }
                     }
                 }
