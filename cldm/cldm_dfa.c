@@ -9,14 +9,9 @@ enum { CLDM_DFA_STATE_DELTA = 64 };
 enum { CLDM_DFA_EDGE_DELTA = 128 };
 enum { CLDM_DFA_EDGE_NONE = -1 };
 
-enum cldm_dfa_op {
-    cldm_dfa_op_accept,
-    cldm_dfa_op_valid
-};
-
 struct cldm_dfa_state {
-    enum cldm_dfa_op op;
     int edges;
+    int shortop;
 };
 
 struct cldm_dfa_edge {
@@ -73,7 +68,7 @@ static inline int cldm_dfa_state_pop(struct cldm_dfa *dfa) {
     return dfa->state_idx++;
 }
 
-static int cldm_dfa_append(struct cldm_dfa *dfa, int state, int ch, enum cldm_dfa_op op) {
+static int cldm_dfa_append(struct cldm_dfa *dfa, int state, int ch, int shortop) {
     int edge;
 
     edge = cldm_dfa_edge_pop(dfa);
@@ -94,13 +89,13 @@ static int cldm_dfa_append(struct cldm_dfa *dfa, int state, int ch, enum cldm_df
 
     state = dfa->edges[edge].end;
     dfa->states[dfa->edges[edge].end] = (struct cldm_dfa_state) {
-        .op = op,
-        .edges = CLDM_DFA_EDGE_NONE
+        .edges = CLDM_DFA_EDGE_NONE,
+        .shortop = shortop
     };
     return state;
 }
 
-bool cldm_dfa_add_argument(struct cldm_dfa *restrict dfa, char const *restrict arg) {
+bool cldm_dfa_add_argument(struct cldm_dfa *restrict dfa, char const *restrict arg, int shortop) {
     int state = dfa->start;
     int edge;
     for(; *arg; ++arg) {
@@ -114,17 +109,17 @@ bool cldm_dfa_add_argument(struct cldm_dfa *restrict dfa, char const *restrict a
 
         /* No edge matched, add one */
         if(edge == CLDM_DFA_EDGE_NONE) {
-            state = cldm_dfa_append(dfa, state, *arg, cldm_dfa_op_valid);
+            state = cldm_dfa_append(dfa, state, *arg, 0);
             if(state == -1) {
                 return false;
             }
         }
     }
-    dfa->states[state].op = cldm_dfa_op_accept;
+    dfa->states[state].shortop = shortop;
     return true;
 }
 
-int cldm_dfa_simulate(struct cldm_dfa const *restrict dfa, char const *restrict input) {
+int cldm_dfa_simulate(struct cldm_dfa const *restrict dfa, char const *restrict input, int *restrict shortop) {
     struct cldm_dfa_state *state = &dfa->states[dfa->start];
     int edge;
     char const *pos = input;
@@ -144,10 +139,12 @@ int cldm_dfa_simulate(struct cldm_dfa const *restrict dfa, char const *restrict 
     }
 
     /* Check whether state is an accept state */
-    if(state->op == cldm_dfa_op_accept) {
+    if(state->shortop) {
+        *shortop = state->shortop;
         return pos - input;
     }
 
+    *shortop = 0;
     return -1;
 }
 
@@ -172,8 +169,8 @@ bool cldm_dfa_init(struct cldm_dfa *dfa) {
     dfa->start = 0;
 
     dfa->states[0] = (struct cldm_dfa_state) {
-        .op = cldm_dfa_op_valid,
-        .edges = CLDM_DFA_EDGE_NONE
+        .edges = CLDM_DFA_EDGE_NONE,
+        .shortop = 0
     };
 
     return true;

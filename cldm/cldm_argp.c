@@ -17,6 +17,11 @@ enum { CLDM_ARGP_LONG_SWITCH_INDENT = 13 };
 enum { CLDM_ARGP_DOC_INDENT = 48 };
 enum { CLDM_ARGP_BUFSIZE = 256 };
 
+enum {
+    cldm_argp_short_usage = UCHAR_MAX + 1,
+    cldm_argp_short_ddash
+};
+
 enum cldm_argp_paramtype {
     cldm_argp_positional,
     cldm_argp_switch_short,
@@ -36,7 +41,7 @@ struct cldm_argp_ctx {
 };
 
 struct cldm_argp_param {
-    char p_short;
+    int p_short;
     char const *p_long;
     char const *p_argument;
     cldm_argp_handle handle;
@@ -53,16 +58,16 @@ static bool cldm_argp_set_posidx(struct cldm_argp_ctx *restrict, char const *res
 static bool cldm_argp_set_jobs(struct cldm_argp_ctx *restrict, char const *restrict);
 
 static struct cldm_argp_param cldm_argp_params[] = {
-    { 'v', "--verbose",           0,        cldm_argp_set_verbose      },
-    { 'V', "--version",           0,        cldm_argp_set_version      },
-    { 'h', "--help",              0,        cldm_argp_set_help         },
-    {  0,  "--usage",             0,        cldm_argp_set_help         },
-    { 'x', "--fail-fast",         0,        cldm_argp_set_fail_fast    },
-    { 'c', "--capture",           "STREAM", cldm_argp_set_capture      },
-    { 's', "--capture-none",      0,        cldm_argp_set_capture_none },
-    { 'd', "--redirect-captures", "FILE",   cldm_argp_set_redirect     },
-    { 'j', "--jobs",              "JOBS",   cldm_argp_set_jobs         },
-    {  0,  "--",                  0,        cldm_argp_set_posidx       }
+    { 'v',                     "--verbose",           0,        cldm_argp_set_verbose      },
+    { 'V',                     "--version",           0,        cldm_argp_set_version      },
+    { 'h',                     "--help",              0,        cldm_argp_set_help         },
+    {  cldm_argp_short_usage,  "--usage",             0,        cldm_argp_set_help         },
+    { 'x',                     "--fail-fast",         0,        cldm_argp_set_fail_fast    },
+    { 'c',                     "--capture",           "STREAM", cldm_argp_set_capture      },
+    { 's',                     "--capture-none",      0,        cldm_argp_set_capture_none },
+    { 'd',                     "--redirect-captures", "FILE",   cldm_argp_set_redirect     },
+    { 'j',                     "--jobs",              "JOBS",   cldm_argp_set_jobs         },
+    {  cldm_argp_short_ddash,  "--",                  0,        cldm_argp_set_posidx       }
 };
 
 static char const *cldm_argp_params_doc[] = {
@@ -251,16 +256,17 @@ static bool cldm_argp_parse_short_switch(struct cldm_argp_ctx *restrict ctx, cha
 
 static bool cldm_argp_parse_long_switch(struct cldm_argp_ctx *restrict ctx, struct cldm_dfa const *restrict dfa, char const *restrict sw) {
     struct cldm_argp_param *param;
+    int shortop;
     int len;
 
-    len = cldm_dfa_simulate(dfa, sw);
+    len = cldm_dfa_simulate(dfa, sw, &shortop);
     if(len == -1) {
         cldm_err("Unrecognized option: '%s'", sw);
         return false;
     }
 
     cldm_for_each(param, cldm_argp_params) {
-        if(strncmp(param->p_long, sw, len + !sw[len]) == 0) {
+        if(param->p_short == shortop) {
             if(param->p_argument) {
                 if(sw[len] != '=' || (sw[len] && !sw[len + 1])) {
                     cldm_err("Option '%s' requires an argument", param->p_long);
@@ -310,7 +316,7 @@ bool cldm_argp_parse(struct cldm_args *restrict args, int argc, char **restrict 
     }
 
     cldm_for_each(param, cldm_argp_params) {
-        if(param->p_long && !cldm_dfa_add_argument(&dfa, param->p_long)) {
+        if(param->p_long && !cldm_dfa_add_argument(&dfa, param->p_long, param->p_short)) {
             cldm_err("Error while adding parameter %s to dfa", param->p_long);
             goto epilogue;
         }
