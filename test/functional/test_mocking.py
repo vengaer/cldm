@@ -29,8 +29,8 @@ def test_preload():
     cgen.append_include('cldm.h', system_header=False)
     cgen.append_include('syms.h', system_header=False)
     with cgen.open_macro('TEST', 'foo'):
-        cgen.append_line('WHEN_CALLED(bar).SHOULD_REPEATEDLY(RETURN(28));')   \
-            .append_line('ASSERT_EQ(28, {});'.format(CGen.default_call('bar', db['symbols']['bar']['params'])))
+        cgen.append_line('WHEN_CALLED(bar).SHOULD_REPEATEDLY(RETURN(28));')
+        cgen.append_line('ASSERT_EQ(28, {});'.format(CGen.default_call('bar', db['symbols']['bar']['params'])))
     cgen.write()
 
     gen_symbols()
@@ -41,8 +41,8 @@ def test_preload():
 def test_symbol_fallback():
     db = read_db()
     cgen = CGen('test.c')
-    cgen.append_include('cldm.h', system_header=False)      \
-        .append_include('syms.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('syms.h', system_header=False)
 
     with cgen.open_macro('TEST', 'foo'):
         cgen.append_line('ASSERT_EQ(ret2(), {});'.format(db['symbols']['ret2']['return']))
@@ -56,19 +56,19 @@ def test_symbol_fallback():
 def test_invoke():
     db = read_db()
     cgen = CGen('test.c')
-    cgen.append_include('cldm.h', system_header=False)      \
-        .append_include('syms.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('syms.h', system_header=False)
 
     cgen.append_line('int mockfoo_called  = 0;')
     with cgen.open_function('void', 'mockfoo', db['symbols']['foo']['params']):
-        cgen.append_line('(void)a0;')                       \
-            .append_line('(void)a1;')                       \
-            .append_line('mockfoo_called = 1;')
+        cgen.append_line('(void)a0;')
+        cgen.append_line('(void)a1;')
+        cgen.append_line('mockfoo_called = 1;')
 
     with cgen.open_macro('TEST', 'bar'):
-        cgen.append_line('WHEN_CALLED(foo).SHOULD_REPEATEDLY(INVOKE(mockfoo));')                      \
-            .append_line('{};'.format(CGen.default_call('foo', db['symbols']['foo']['params'])))    \
-            .append_line('ASSERT_EQ(mockfoo_called, 1);')
+        cgen.append_line('WHEN_CALLED(foo).SHOULD_REPEATEDLY(INVOKE(mockfoo));')
+        cgen.append_line('{};'.format(CGen.default_call('foo', db['symbols']['foo']['params'])))
+        cgen.append_line('ASSERT_EQ(mockfoo_called, 1);')
     cgen.write()
 
     gen_symbols()
@@ -78,14 +78,14 @@ def test_invoke():
 
 def test_increment_counter():
     cgen = CGen('test.c')
-    cgen.append_include('cldm.h', system_header=False)      \
-        .append_include('syms.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('syms.h', system_header=False)
 
     with cgen.open_macro('TEST', 'foo'):
-        cgen.append_line('WHEN_CALLED(ret2).SHOULD_REPEATEDLY(INCREMENT_COUNTER(0));')    \
-            .append_line('ASSERT_EQ(1, ret2());')                                       \
-            .append_line('ASSERT_EQ(2, ret2());')                                       \
-            .append_line('ASSERT_EQ(3, ret2());')
+        cgen.append_line('WHEN_CALLED(ret2).SHOULD_REPEATEDLY(INCREMENT_COUNTER(0));')
+        cgen.append_line('ASSERT_EQ(1, ret2());')
+        cgen.append_line('ASSERT_EQ(2, ret2());')
+        cgen.append_line('ASSERT_EQ(3, ret2());')
     cgen.write()
 
     gen_symbols()
@@ -96,22 +96,22 @@ def test_increment_counter():
 def test_invoke_with_fallback():
     db = read_db()
     cgen = CGen('test.c')
-    cgen.append_include('cldm.h', system_header=False)      \
-        .append_include('syms.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('syms.h', system_header=False)
 
     cgen.append_line('int mockfoo_called = 0;')
 
     with cgen.open_function('void', 'mockfoo', db['symbols']['foo']['params']):
-        cgen.append_line('(void)a0;')                       \
-            .append_line('(void)a1;')                       \
-            .append_line('mockfoo_called = 1;')
+        cgen.append_line('(void)a0;')
+        cgen.append_line('(void)a1;')
+        cgen.append_line('mockfoo_called = 1;')
 
     with cgen.open_macro('TEST', 'foo'):
-        cgen.append_line('WHEN_CALLED(foo).SHOULD_REPEATEDLY(INVOKE(mockfoo));')                                              \
-            .append_line('{};'.format(CGen.default_call('foo', db['symbols']['foo']['params'])))                            \
-            .append_line('foo({});'.format(', '.join(['({}){{ 0 }}'.format(a) for a in db['symbols']['foo']['params']])))   \
-            .append_line('ASSERT_EQ(mockfoo_called, 1);')                                                                   \
-            .append_line('ASSERT_EQ(ret2(), 2);')
+        cgen.append_line('WHEN_CALLED(foo).SHOULD_REPEATEDLY(INVOKE(mockfoo));')
+        cgen.append_line('{};'.format(CGen.default_call('foo', db['symbols']['foo']['params'])))
+        cgen.append_line('foo({});'.format(', '.join(['({}){{ 0 }}'.format(a) for a in db['symbols']['foo']['params']])))
+        cgen.append_line('ASSERT_EQ(mockfoo_called, 1);')
+        cgen.append_line('ASSERT_EQ(ret2(), 2);')
     cgen.write()
 
     gen_symbols()
@@ -121,13 +121,13 @@ def test_invoke_with_fallback():
 
 def test_will_once():
     cgen = CGen('test.c')
-    cgen.append_include('cldm.h', system_header=False)      \
-        .append_include('syms.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('syms.h', system_header=False)
 
     with cgen.open_macro('TEST', 'foo'):
-        cgen.append_line('WHEN_CALLED(ret2).SHOULD_ONCE(RETURN(5));') \
-            .append_line('ASSERT_EQ(5, ret2());')                   \
-            .append_line('ASSERT_EQ(2, ret2());')
+        cgen.append_line('WHEN_CALLED(ret2).SHOULD_ONCE(RETURN(5));')
+        cgen.append_line('ASSERT_EQ(5, ret2());')
+        cgen.append_line('ASSERT_EQ(2, ret2());')
     cgen.write()
 
     gen_symbols()
@@ -137,14 +137,14 @@ def test_will_once():
 
 def test_atoi_mock():
     cgen = CGen('test.c')
-    cgen.append_include('cldm.h', system_header=False)      \
-        .append_include('syms.h', system_header=False)      \
-        .append_include('stdlib.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('syms.h', system_header=False)
+    cgen.append_include('stdlib.h')
 
     with cgen.open_macro('TEST', 'foo'):
-        cgen.append_line('WHEN_CALLED(atoi).SHOULD_ONCE(RETURN(5));') \
-            .append_line('ASSERT_EQ(atoi("1"), 5);')                \
-            .append_line('ASSERT_EQ(atoi("1"), 1);')
+        cgen.append_line('WHEN_CALLED(atoi).SHOULD_ONCE(RETURN(5));')
+        cgen.append_line('ASSERT_EQ(atoi("1"), 5);')
+        cgen.append_line('ASSERT_EQ(atoi("1"), 1);')
     cgen.write()
 
     gen_symbols()
@@ -157,8 +157,8 @@ def test_max_params():
     typelist = 'int ' * 127
     typelist = [t for t in typelist.strip().split(' ')]
     cgen = CGen(symfile)
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_line('MOCK_FUNCTION(int, foo, {});'.format(', '.join(typelist)))
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_line('MOCK_FUNCTION(int, foo, {});'.format(', '.join(typelist)))
     cgen.write()
 
     cgen = CGen('syms.c')
@@ -173,11 +173,11 @@ def test_max_params():
     cgen.write()
 
     cgen = CGen('test.c')
-    cgen.append_include('cldm.h', system_header=False)              \
-        .append_include('syms.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('syms.h', system_header=False)
     with cgen.open_macro('TEST', 'ironing_board'):
-        cgen.append_line('WHEN_CALLED(foo).SHOULD_ONCE(RETURN(38));') \
-            .append_line('ASSERT_EQ(38, {});'.format(CGen.default_call('foo', typelist)))
+        cgen.append_line('WHEN_CALLED(foo).SHOULD_ONCE(RETURN(38));')
+        cgen.append_line('ASSERT_EQ(38, {});'.format(CGen.default_call('foo', typelist)))
     cgen.write()
 
     gen_makefile()
@@ -187,14 +187,14 @@ def test_max_params():
 
 def test_will_n_times():
     cgen = CGen('test.c')
-    cgen.append_include('cldm.h', system_header=False)      \
-        .append_include('syms.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('syms.h', system_header=False)
 
     with cgen.open_macro('TEST', 'foo'):
-        cgen.append_line('WHEN_CALLED(ret2).SHOULD_N_TIMES(2, RETURN(5));')   \
-            .append_line('ASSERT_EQ(5, ret2());')                           \
-            .append_line('ASSERT_EQ(5, ret2());')                           \
-            .append_line('ASSERT_EQ(2, ret2());')
+        cgen.append_line('WHEN_CALLED(ret2).SHOULD_N_TIMES(2, RETURN(5));')
+        cgen.append_line('ASSERT_EQ(5, ret2());')
+        cgen.append_line('ASSERT_EQ(5, ret2());')
+        cgen.append_line('ASSERT_EQ(2, ret2());')
     cgen.write()
 
     gen_symbols()
@@ -204,15 +204,15 @@ def test_will_n_times():
 
 def test_will_invoke_default():
     cgen = CGen('test.c')
-    cgen.append_include('cldm.h', system_header=False)      \
-        .append_include('syms.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('syms.h', system_header=False)
 
     with cgen.open_macro('TEST', 'foo'):
-        cgen.append_line('WHEN_CALLED(ret2).SHOULD_REPEATEDLY(RETURN(5));')   \
-            .append_line('ASSERT_EQ(5, ret2());')                           \
-            .append_line('ASSERT_EQ(5, ret2());')                           \
-            .append_line('WHEN_CALLED(ret2).SHOULD_INVOKE_DEFAULT();')        \
-            .append_line('ASSERT_EQ(2, ret2());')
+        cgen.append_line('WHEN_CALLED(ret2).SHOULD_REPEATEDLY(RETURN(5));')
+        cgen.append_line('ASSERT_EQ(5, ret2());')
+        cgen.append_line('ASSERT_EQ(5, ret2());')
+        cgen.append_line('WHEN_CALLED(ret2).SHOULD_INVOKE_DEFAULT();')
+        cgen.append_line('ASSERT_EQ(2, ret2());')
     cgen.write()
 
     gen_symbols()
@@ -222,13 +222,13 @@ def test_will_invoke_default():
 
 def test_return_param():
     cgen = CGen('test.c')
-    cgen.append_include('cldm.h', system_header=False)      \
-        .append_include('syms.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('syms.h', system_header=False)
 
     with cgen.open_macro('TEST', 'foo'):
-        cgen.append_line('WHEN_CALLED(retarg).SHOULD_REPEATEDLY(RETURN_PARAM(2));') \
-            .append_line('ASSERT_EQ(10, retarg("foo", 0, 10));')                \
-            .append_line('ASSERT_EQ(8, retarg("foo", 0, 8));')
+        cgen.append_line('WHEN_CALLED(retarg).SHOULD_REPEATEDLY(RETURN_PARAM(2));')
+        cgen.append_line('ASSERT_EQ(10, retarg("foo", 0, 10));')
+        cgen.append_line('ASSERT_EQ(8, retarg("foo", 0, 8));')
     cgen.write()
 
     gen_symbols()
@@ -238,15 +238,15 @@ def test_return_param():
 
 def test_return_pointee():
     cgen = CGen('test.c')
-    cgen.append_include('cldm.h', system_header=False)      \
-        .append_include('syms.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('syms.h', system_header=False)
 
     with cgen.open_macro('TEST', 'foo'):
-        cgen.append_line('int i = 10, j = 12;')                                         \
-            .append_line('WHEN_CALLED(retpointee).SHOULD_REPEATEDLY(RETURN_POINTEE(0));') \
-            .append_line('ASSERT_EQ(10, retpointee(&i, &j));')                          \
-            .append_line('WHEN_CALLED(retpointee).SHOULD_REPEATEDLY(RETURN_POINTEE(1));') \
-            .append_line('ASSERT_EQ(12, retpointee(&i, &j));')
+        cgen.append_line('int i = 10, j = 12;')
+        cgen.append_line('WHEN_CALLED(retpointee).SHOULD_REPEATEDLY(RETURN_POINTEE(0));')
+        cgen.append_line('ASSERT_EQ(10, retpointee(&i, &j));')
+        cgen.append_line('WHEN_CALLED(retpointee).SHOULD_REPEATEDLY(RETURN_POINTEE(1));')
+        cgen.append_line('ASSERT_EQ(12, retpointee(&i, &j));')
     cgen.write()
 
     gen_symbols()
@@ -256,21 +256,21 @@ def test_return_pointee():
 
 def test_assign():
     cgen = CGen('test.c')
-    cgen.append_include('cldm.h', system_header=False)      \
-        .append_include('syms.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('syms.h', system_header=False)
 
     with cgen.open_macro('TEST', 'foo'):
-        cgen.append_line('int i = 10, j = 12;')                                         \
-            .append_line('WHEN_CALLED(baz).SHOULD_REPEATEDLY(ASSIGN(i, j));')             \
-            .append_line('ASSERT_EQ(10, i);')                                           \
-            .append_line('baz();')                                                      \
-            .append_line('ASSERT_EQ(12, i);')                                           \
-            .append_line('WHEN_CALLED(baz).SHOULD_REPEATEDLY(ASSIGN(i, 13, int));')       \
-            .append_line('baz();')                                                      \
-            .append_line('ASSERT_EQ(13, i);')                                           \
-            .append_line('WHEN_CALLED(baz).SHOULD_REPEATEDLY(ASSIGN(i, (int){ 14 }));')   \
-            .append_line('baz();')                                                      \
-            .append_line('ASSERT_EQ(14, i);')
+        cgen.append_line('int i = 10, j = 12;')
+        cgen.append_line('WHEN_CALLED(baz).SHOULD_REPEATEDLY(ASSIGN(i, j));')
+        cgen.append_line('ASSERT_EQ(10, i);')
+        cgen.append_line('baz();')
+        cgen.append_line('ASSERT_EQ(12, i);')
+        cgen.append_line('WHEN_CALLED(baz).SHOULD_REPEATEDLY(ASSIGN(i, 13, int));')
+        cgen.append_line('baz();')
+        cgen.append_line('ASSERT_EQ(13, i);')
+        cgen.append_line('WHEN_CALLED(baz).SHOULD_REPEATEDLY(ASSIGN(i, (int){ 14 }));')
+        cgen.append_line('baz();')
+        cgen.append_line('ASSERT_EQ(14, i);')
     cgen.write()
 
     gen_symbols()
@@ -280,15 +280,15 @@ def test_assign():
 
 def test_assign_param():
     cgen = CGen('test.c')
-    cgen.append_include('cldm.h', system_header=False)      \
-        .append_include('syms.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('syms.h', system_header=False)
 
     with cgen.open_macro('TEST', 'foo'):
-        cgen.append_line('int i = 10;')                                         \
-            .append_line('WHEN_CALLED(foo).SHOULD_REPEATEDLY(ASSIGN_PARAM(0, i));') \
-            .append_line('ASSERT_EQ(10, i);')                                   \
-            .append_line('foo(12, 13);')                                        \
-            .append_line('ASSERT_EQ(12, i);')
+        cgen.append_line('int i = 10;')
+        cgen.append_line('WHEN_CALLED(foo).SHOULD_REPEATEDLY(ASSIGN_PARAM(0, i));')
+        cgen.append_line('ASSERT_EQ(10, i);')
+        cgen.append_line('foo(12, 13);')
+        cgen.append_line('ASSERT_EQ(12, i);')
     cgen.write()
 
     gen_symbols()
@@ -298,14 +298,14 @@ def test_assign_param():
 
 def test_force_disable():
     cgen = CGen('test.c')
-    cgen.append_include('cldm.h', system_header=False)      \
-        .append_include('syms.h', system_header=False)      \
-        .append_include('stdlib.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('syms.h', system_header=False)
+    cgen.append_include('stdlib.h')
 
     with cgen.open_macro('TEST', 'foo'):
-        cgen.append_line('cldm_mock_disable_all();')                    \
-            .append_line('WHEN_CALLED(atoi).SHOULD_ONCE(RETURN(5));')   \
-            .append_line('ASSERT_EQ(1, atoi("1"));')
+        cgen.append_line('cldm_mock_disable_all();')
+        cgen.append_line('WHEN_CALLED(atoi).SHOULD_ONCE(RETURN(5));')
+        cgen.append_line('ASSERT_EQ(1, atoi("1"));')
     cgen.write()
 
     gen_symbols()
@@ -315,8 +315,8 @@ def test_force_disable():
 
 def test_return_void():
     cgen = CGen('test.c')
-    cgen.append_include('cldm.h', system_header=False)      \
-        .append_include('syms.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('syms.h', system_header=False)
 
     with cgen.open_macro('TEST', 'test'):
         cgen.append_line('WHEN_CALLED(printfoo).SHOULD_ONCE(RETURN_VOID());')

@@ -47,14 +47,14 @@ def test_violating_assertions_logged():
     ]
 
     with cgen.open_macro('TEST', 'foo'):
-        cgen.append_line('ASSERT_EQ(1,2);')     \
-            .append_line('ASSERT_LE(3,1);')     \
-            .append_line('ASSERT_LT(3,1);')     \
-            .append_line('ASSERT_GE(1,3);')     \
-            .append_line('ASSERT_GT(1,3);')     \
-            .append_line('ASSERT_NE(1,1);')     \
-            .append_line('ASSERT_FALSE(1);')    \
-            .append_line('ASSERT_TRUE(0);')
+        cgen.append_line('ASSERT_EQ(1,2);')
+        cgen.append_line('ASSERT_LE(3,1);')
+        cgen.append_line('ASSERT_LT(3,1);')
+        cgen.append_line('ASSERT_GE(1,3);')
+        cgen.append_line('ASSERT_GT(1,3);')
+        cgen.append_line('ASSERT_NE(1,1);')
+        cgen.append_line('ASSERT_FALSE(1);')
+        cgen.append_line('ASSERT_TRUE(0);')
     with cgen.open_macro('TEST', 'bar'):
         pass
     with cgen.open_macro('TEST', 'baz'):

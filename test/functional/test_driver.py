@@ -36,8 +36,8 @@ def test_collection():
 
 def test_setup_detection():
     cgen = CGen(__TESTFILE)
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('LOCAL_SETUP'):
         cgen.append_line('puts("Local setup");')
@@ -51,8 +51,8 @@ def test_setup_detection():
 
 def test_teardown_detection():
     cgen = CGen(__TESTFILE)
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('LOCAL_TEARDOWN'):
         cgen.append_line('puts("Local teardown");')
@@ -66,8 +66,8 @@ def test_teardown_detection():
 
 def test_global_setup_detection():
     cgen = CGen(__TESTFILE)
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('GLOBAL_SETUP'):
         cgen.append_line('puts("Global setup");')
@@ -81,8 +81,8 @@ def test_global_setup_detection():
 
 def test_global_teardown_detection():
     cgen = CGen(__TESTFILE)
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('GLOBAL_TEARDOWN'):
         cgen.append_line('puts("Global teardown");')
@@ -96,8 +96,8 @@ def test_global_teardown_detection():
 
 def test_runner():
     cgen = CGen(__TESTFILE)
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('TEST', 'foo'):
         cgen.append_line('puts(__func__);')
@@ -111,8 +111,8 @@ def test_runner():
 
 def test_setup_invoked_before_tests():
     cgen = CGen(__TESTFILE)
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('LOCAL_SETUP'):
         cgen.append_line('puts(__func__);')
@@ -128,8 +128,8 @@ def test_setup_invoked_before_tests():
 
 def test_teardown_invoked_after_tests():
     cgen = CGen(__TESTFILE)
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('LOCAL_TEARDOWN'):
         cgen.append_line('puts(__func__);')
@@ -145,8 +145,8 @@ def test_teardown_invoked_after_tests():
 
 def test_global_setup_invoked_once():
     cgen = CGen(__TESTFILE)
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('GLOBAL_SETUP'):
         cgen.append_line('puts(__func__);')
@@ -162,8 +162,8 @@ def test_global_setup_invoked_once():
 
 def test_global_teardown_invoked_once():
     cgen = CGen(__TESTFILE)
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('GLOBAL_TEARDOWN'):
         cgen.append_line('puts(__func__);')
@@ -179,8 +179,8 @@ def test_global_teardown_invoked_once():
 
 def test_setup_teardown():
     cgen = CGen(__TESTFILE)
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('GLOBAL_SETUP'):
         cgen.append_line('puts(__func__);')

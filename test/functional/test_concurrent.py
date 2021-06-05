@@ -25,8 +25,8 @@ def gen_makefile():
 
 def do_concurrent_setup_test(nthreads):
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)          \
-        .append_include('cldm_thread.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('cldm_thread.h', system_header=False)
 
     cgen.append_line('static int vals[{}];'.format(nthreads))
     with cgen.open_macro('LOCAL_SETUP'):
@@ -43,18 +43,18 @@ def do_concurrent_setup_test(nthreads):
 
 def do_concurrent_teardown_test(nthreads):
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)          \
-        .append_include('cldm_thread.h', system_header=False)   \
-        .append_include('stdlib.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('cldm_thread.h', system_header=False)
+    cgen.append_include('stdlib.h')
 
     cgen.append_line('static int vals[{}];'.format(nthreads))
     with cgen.open_macro('LOCAL_TEARDOWN'):
         cgen.append_line('vals[cldm_thread_id()] = 0;')
     with cgen.open_macro('GLOBAL_TEARDOWN'):
         with cgen.open_for('int', 'i', 0, str(nthreads)):
-            cgen.append_line('if(vals[i]) {')   \
-                .append_line('  exit(1);')      \
-                .append_line('}')
+            cgen.append_line('if(vals[i]) {')
+            cgen.append_line('  exit(1);')
+            cgen.append_line('}')
 
     for i in range(nthreads):
         with cgen.open_macro('TEST', 'test{}'.format(i)):
@@ -68,8 +68,8 @@ def do_concurrent_teardown_test(nthreads):
 
 def test_concurrent_execution():
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)          \
-        .append_include('unistd.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('unistd.h')
 
     for i in range(4):
         with cgen.open_macro('TEST', 'test{}'.format(i)):
@@ -86,8 +86,8 @@ def test_concurrent_execution():
 
 def test_fast_fail_reflection():
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)          \
-        .append_include('unistd.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('unistd.h')
 
     with cgen.open_macro('TEST', 'test0'):
         cgen.append_line('ASSERT_FALSE(1);')
@@ -105,9 +105,9 @@ def test_fast_fail_reflection():
 
 def test_global_setup():
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)          \
-        .append_include('stdio.h')                              \
-        .append_include('stdlib.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
+    cgen.append_include('stdlib.h')
 
     with cgen.open_macro('GLOBAL_SETUP'):
         cgen.append_line('WHEN_CALLED(atoi).SHOULD_REPEATEDLY(RETURN(1));')
@@ -124,17 +124,17 @@ def test_global_setup():
 
 def test_global_teardown():
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)          \
-        .append_include('stdio.h')                              \
-        .append_include('stdlib.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
+    cgen.append_include('stdlib.h')
 
     with cgen.open_macro('GLOBAL_SETUP'):
         cgen.append_line('WHEN_CALLED(atoi).SHOULD_REPEATEDLY(RETURN(1));')
 
     with cgen.open_macro('GLOBAL_TEARDOWN'):
-        cgen.append_line('if(atoi("18") != 1) {')    \
-            .append_line('  exit(1);')              \
-            .append_line('}')
+        cgen.append_line('if(atoi("18") != 1) {')
+        cgen.append_line('  exit(1);')
+        cgen.append_line('}')
 
     for i in range(2):
         with cgen.open_macro('TEST', 'test{}'.format(i)):
@@ -148,10 +148,10 @@ def test_global_teardown():
 
 def test_local_setup_thread_local():
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)          \
-        .append_include('cldm_thread.h', system_header=False)   \
-        .append_include('stdio.h')                              \
-        .append_include('stdlib.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('cldm_thread.h', system_header=False)
+    cgen.append_include('stdio.h')
+    cgen.append_include('stdlib.h')
 
     with cgen.open_macro('LOCAL_SETUP'):
         cgen.append_line('WHEN_CALLED(strtoul).SHOULD_REPEATEDLY(RETURN(cldm_thread_id()));')
@@ -168,10 +168,10 @@ def test_local_setup_thread_local():
 
 def test_local_teardown_thread_local():
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)          \
-        .append_include('cldm_thread.h', system_header=False)   \
-        .append_include('stdio.h')                              \
-        .append_include('stdlib.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('cldm_thread.h', system_header=False)
+    cgen.append_include('stdio.h')
+    cgen.append_include('stdlib.h')
 
     with cgen.open_macro('LOCAL_SETUP'):
         cgen.append_line('WHEN_CALLED(strtoul).SHOULD_REPEATEDLY(RETURN(cldm_thread_id()));')

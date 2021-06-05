@@ -85,12 +85,12 @@ def test_argp_short_fail_fast():
 
 def test_argp_short_capture_none():
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('TEST', 'bar'):
-        cgen.append_line('puts("text");')  \
-            .append_line('ASSERT_EQ(1, 1);')
+        cgen.append_line('puts("text");')
+        cgen.append_line('ASSERT_EQ(1, 1);')
     cgen.write()
     gen_makefile()
 
@@ -108,13 +108,13 @@ def test_argp_short_capture_none():
 
 def test_argp_short_capture_with_none():
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('TEST', 'bar'):
-        cgen.append_line('puts("text");')               \
-            .append_line('fputs("stderr\\n", stderr);') \
-            .append_line('ASSERT_EQ(1, 0);')
+        cgen.append_line('puts("text");')
+        cgen.append_line('fputs("stderr\\n", stderr);')
+        cgen.append_line('ASSERT_EQ(1, 0);')
     cgen.write()
     gen_makefile()
 
@@ -129,13 +129,13 @@ def test_argp_short_capture_with_none():
 
 def test_argp_short_capture_with_stdout():
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('TEST', 'bar'):
-        cgen.append_line('puts("text");')               \
-            .append_line('fputs("stderr\\n", stderr);') \
-            .append_line('ASSERT_EQ(1, 0);')
+        cgen.append_line('puts("text");')
+        cgen.append_line('fputs("stderr\\n", stderr);')
+        cgen.append_line('ASSERT_EQ(1, 0);')
     cgen.write()
     gen_makefile()
 
@@ -150,13 +150,13 @@ def test_argp_short_capture_with_stdout():
 
 def test_argp_short_capture_with_all():
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('TEST', 'bar'):
-        cgen.append_line('puts("text");')               \
-            .append_line('fputs("stderr\\n", stderr);') \
-            .append_line('ASSERT_EQ(1, 0);')
+        cgen.append_line('puts("text");')
+        cgen.append_line('fputs("stderr\\n", stderr);')
+        cgen.append_line('ASSERT_EQ(1, 0);')
     cgen.write()
     gen_makefile()
 
@@ -273,12 +273,12 @@ def test_argp_long_fail_fast():
 
 def test_argp_long_capture_none():
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('TEST', 'bar'):
-        cgen.append_line('puts("text");')  \
-            .append_line('ASSERT_EQ(1, 1);')
+        cgen.append_line('puts("text");')
+        cgen.append_line('ASSERT_EQ(1, 1);')
     cgen.write()
     gen_makefile()
 
@@ -296,13 +296,13 @@ def test_argp_long_capture_none():
 
 def test_argp_long_capture_with_none():
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('TEST', 'bar'):
-        cgen.append_line('puts("text");')               \
-            .append_line('fputs("stderr\\n", stderr);') \
-            .append_line('ASSERT_EQ(1, 0);')
+        cgen.append_line('puts("text");')
+        cgen.append_line('fputs("stderr\\n", stderr);')
+        cgen.append_line('ASSERT_EQ(1, 0);')
     cgen.write()
     gen_makefile()
 
@@ -314,13 +314,13 @@ def test_argp_long_capture_with_none():
 
 def test_argp_long_capture_with_stdout():
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('TEST', 'bar'):
-        cgen.append_line('puts("text");')               \
-            .append_line('fputs("stderr\\n", stderr);') \
-            .append_line('ASSERT_EQ(1, 0);')
+        cgen.append_line('puts("text");')
+        cgen.append_line('fputs("stderr\\n", stderr);')
+        cgen.append_line('ASSERT_EQ(1, 0);')
     cgen.write()
     gen_makefile()
 
@@ -332,13 +332,13 @@ def test_argp_long_capture_with_stdout():
 
 def test_argp_long_capture_with_all():
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('TEST', 'bar'):
-        cgen.append_line('puts("text");')               \
-            .append_line('fputs("stderr\\n", stderr);') \
-            .append_line('ASSERT_EQ(1, 0);')
+        cgen.append_line('puts("text");')
+        cgen.append_line('fputs("stderr\\n", stderr);')
+        cgen.append_line('ASSERT_EQ(1, 0);')
     cgen.write()
     gen_makefile()
 
@@ -350,13 +350,13 @@ def test_argp_long_capture_with_all():
 
 def test_argp_long_switch_without_value():
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('TEST', 'bar'):
-        cgen.append_line('puts("text");')               \
-            .append_line('fputs("stderr\\n", stderr);') \
-            .append_line('ASSERT_EQ(1, 0);')
+        cgen.append_line('puts("text");')
+        cgen.append_line('fputs("stderr\\n", stderr);')
+        cgen.append_line('ASSERT_EQ(1, 0);')
     cgen.write()
     gen_makefile()
 

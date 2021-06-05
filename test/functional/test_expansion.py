@@ -21,9 +21,9 @@ def test_failures_expanded():
     cgen.append_include('cldm.h', system_header=False)
 
     with cgen.open_macro('TEST', 'foo'):
-        cgen.append_line('int i = 3;')          \
-            .append_line('int j = 12;')         \
-            .append_line('ASSERT_EQ(i, j);')
+        cgen.append_line('int i = 3;')
+        cgen.append_line('int j = 12;')
+        cgen.append_line('ASSERT_EQ(i, j);')
 
     cgen.write()
     gen_makefile()

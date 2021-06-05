@@ -18,10 +18,10 @@ def test_alignof():
     expected = expected.strip().split(' ')
 
     cgen = CGen('main.c')
-    cgen.append_include('cldm_macro.h', system_header=False)            \
-        .append_include('stdio.h')                                      \
-        .append_include('stdalign.h')                                   \
-        .append_line('#define ARRSIZE(a) (sizeof(a) / sizeof(a[0]))')
+    cgen.append_include('cldm_macro.h', system_header=False)
+    cgen.append_include('stdio.h')
+    cgen.append_include('stdalign.h')
+    cgen.append_line('#define ARRSIZE(a) (sizeof(a) / sizeof(a[0]))')
 
     with cgen.open_function('int', 'main'):
         with cgen.open_scope('int result[] =', semicolon=True):
@@ -47,41 +47,41 @@ def test_alignof():
     assert output == expected
 
 def test_sequential_strscpy():
-    string = 'Out to work my train at the railway station, Shotgun Betty stoppin\' dead at my shoes.'   \
+    string = 'Out to work my train at the railway station, Shotgun Betty stoppin\' dead at my shoes.' \
              'Out to run the train at the railway station, Shotgun Betty stoppin\' dead at my shoes'
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)      \
-        .append_include('cldm_byteseq.h', system_header=False) \
-        .append_include('string.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('cldm_byteseq.h', system_header=False)
+    cgen.append_include('string.h')
 
     with cgen.open_macro('TEST', 'sequential_strscpy'):
-        cgen.append_line('enum { SIZE = 256 };')                                                    \
-            .append_line('char dst[SIZE];')                                                         \
-            .append_line('char const *src = "{}";'.format(string))                                  \
-            .append_line('ASSERT_EQ(cldm_strscpy(dst, src, sizeof(dst)), (long long)strlen(src));') \
-            .append_line('ASSERT_STREQ(dst, src);')
+        cgen.append_line('enum { SIZE = 256 };')
+        cgen.append_line('char dst[SIZE];')
+        cgen.append_line('char const *src = "{}";'.format(string))
+        cgen.append_line('ASSERT_EQ(cldm_strscpy(dst, src, sizeof(dst)), (long long)strlen(src));')
+        cgen.append_line('ASSERT_STREQ(dst, src);')
 
     with cgen.open_macro('TEST', 'sequential_strscpy_termination'):
-        cgen.append_line('enum { SIZE = 16 };')                                 \
-            .append_line('char dst[SIZE];')                                     \
-            .append_line('char const *src = "{}";'.format(string))              \
-            .append_line('ASSERT_EQ(cldm_strscpy(dst, src, sizeof(dst)), -7);') \
-            .append_line('ASSERT_STRNEQ(src, dst, sizeof(dst) - 1);')           \
-            .append_line('ASSERT_EQ(dst[sizeof(dst) - 1], 0);')
+        cgen.append_line('enum { SIZE = 16 };')
+        cgen.append_line('char dst[SIZE];')
+        cgen.append_line('char const *src = "{}";'.format(string))
+        cgen.append_line('ASSERT_EQ(cldm_strscpy(dst, src, sizeof(dst)), -7);')
+        cgen.append_line('ASSERT_STRNEQ(src, dst, sizeof(dst) - 1);')
+        cgen.append_line('ASSERT_EQ(dst[sizeof(dst) - 1], 0);')
 
     with cgen.open_macro('TEST', 'sequential_strscpy_empty'):
-        cgen.append_line('enum { SIZE = 32 };')                                 \
-            .append_line('char dst[SIZE];')                                     \
-            .append_line('char const *src = "";')                               \
-            .append_line('ASSERT_EQ(cldm_strscpy(dst, src, sizeof(dst)), 0);')  \
-            .append_line('ASSERT_EQ(dst[0], 0);')
+        cgen.append_line('enum { SIZE = 32 };')
+        cgen.append_line('char dst[SIZE];')
+        cgen.append_line('char const *src = "";')
+        cgen.append_line('ASSERT_EQ(cldm_strscpy(dst, src, sizeof(dst)), 0);')
+        cgen.append_line('ASSERT_EQ(dst[0], 0);')
 
     with cgen.open_macro('TEST', 'sequential_strscpy_dstsize_zero'):
-        cgen.append_line('enum { SIZE = 32 };')                         \
-            .append_line('char dst[SIZE] = { 0x18 };')                  \
-            .append_line('char const *src = "asdf";')                   \
-            .append_line('ASSERT_EQ(cldm_strscpy(dst, src, 0), -7);')   \
-            .append_line('ASSERT_EQ(dst[0], 0x18);')
+        cgen.append_line('enum { SIZE = 32 };')
+        cgen.append_line('char dst[SIZE] = { 0x18 };')
+        cgen.append_line('char const *src = "asdf";')
+        cgen.append_line('ASSERT_EQ(cldm_strscpy(dst, src, 0), -7);')
+        cgen.append_line('ASSERT_EQ(dst[0], 0x18);')
     cgen.write()
 
     mgen = Makegen(_BINARY)

@@ -24,17 +24,17 @@ def gen_symbols():
 def test_readme_example_usage():
     db = read_db()
     cgen = CGen('test.c')
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('assert.h')                     \
-        .append_include('stdlib.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('assert.h')
+    cgen.append_include('stdlib.h')
 
     with cgen.open_macro('TEST', 'foo'):
-        cgen.append_line('WHEN_CALLED(atoi).SHOULD_ONCE(RETURN(8));')         \
-            .append_line('assert(atoi("2") == 8);')                         \
-            .append_line('assert(atoi("2") == 2);')                         \
-            .append_line('WHEN_CALLED(atoi).SHOULD_REPEATEDLY(RETURN(7));')   \
-            .append_line('assert(atoi("2") == 7);')                         \
-            .append_line('assert(atoi("6") == 7);')
+        cgen.append_line('WHEN_CALLED(atoi).SHOULD_ONCE(RETURN(8));')
+        cgen.append_line('assert(atoi("2") == 8);')
+        cgen.append_line('assert(atoi("2") == 2);')
+        cgen.append_line('WHEN_CALLED(atoi).SHOULD_REPEATEDLY(RETURN(7));')
+        cgen.append_line('assert(atoi("2") == 7);')
+        cgen.append_line('assert(atoi("6") == 7);')
     cgen.write()
 
     gen_symbols()
@@ -44,8 +44,8 @@ def test_readme_example_usage():
 
 def test_readme_build():
     cgen = CGen(symfile)
-    cgen.append_include('cldm.h', system_header=False)                          \
-        .append_line('MOCK_FUNCTION(int *, get_resource, int);')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_line('MOCK_FUNCTION(int *, get_resource, int);')
     cgen.write()
 
     cgen = CGen('resource.c')
@@ -55,18 +55,18 @@ def test_readme_build():
     cgen.write()
 
     cgen = CGen('resource.h')
-    cgen.append_line('int *get_resource(int a0);')                              \
-        .write()
+    cgen.append_line('int *get_resource(int a0);')
+    cgen.write()
 
     cgen = CGen('test.c')
-    cgen.append_include('cldm.h', system_header=False)                          \
-        .append_include('resource.h', system_header=False)                      \
-        .append_include('assert.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('resource.h', system_header=False)
+    cgen.append_include('assert.h')
     with cgen.open_macro('TEST', 'foo'):
-        cgen.append_line('int i = 12;')                                         \
-            .append_line('WHEN_CALLED(get_resource).SHOULD_ONCE(RETURN(&i));')    \
-            .append_line('int *res = get_resource(0);')                         \
-            .append_line('assert(res == &i);')
+        cgen.append_line('int i = 12;')
+        cgen.append_line('WHEN_CALLED(get_resource).SHOULD_ONCE(RETURN(&i));')
+        cgen.append_line('int *res = get_resource(0);')
+        cgen.append_line('assert(res == &i);')
 
     cgen.write()
 
@@ -77,8 +77,8 @@ def test_readme_build():
 
 def test_readme_incorrect_build():
     cgen = CGen(symfile)
-    cgen.append_include('cldm.h', system_header=False)                          \
-        .append_line('MOCK_FUNCTION(int *, get_resource, int);')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_line('MOCK_FUNCTION(int *, get_resource, int);')
     cgen.write()
 
     cgen = CGen('resource.c')
@@ -88,19 +88,19 @@ def test_readme_incorrect_build():
     cgen.write()
 
     cgen = CGen('resource.h')
-    cgen.append_line('int *get_resource(int a0);')                              \
-        .write()
+    cgen.append_line('int *get_resource(int a0);')
+    cgen.write()
 
     cgen = CGen('test.c')
-    cgen.append_include('cldm.h', system_header=False)                          \
-        .append_include('resource.h', system_header=False)                      \
-        .append_include('assert.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('resource.h', system_header=False)
+    cgen.append_include('assert.h')
     with cgen.open_function('int', 'main'):
-        cgen.append_line('int i = 12;')                                         \
-            .append_line('WHEN_CALLED(get_resource).SHOULD_ONCE(RETURN(&i));')    \
-            .append_line('int *res = get_resource(0);')                         \
-            .append_line('assert(res == &i);')                                  \
-            .append_return(0)
+        cgen.append_line('int i = 12;')
+        cgen.append_line('WHEN_CALLED(get_resource).SHOULD_ONCE(RETURN(&i));')
+        cgen.append_line('int *res = get_resource(0);')
+        cgen.append_line('assert(res == &i);')
+        cgen.append_return(0)
     cgen.write()
 
     assert build_cldm()[0] == 0
@@ -110,25 +110,25 @@ def test_readme_incorrect_build():
 def test_readme_assign():
     db = read_db()
     cgen = CGen('test.c')
-    cgen.append_include('cldm.h', system_header=False)      \
-        .append_include('syms.h', system_header=False)      \
-        .append_include('string.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('syms.h', system_header=False)
+    cgen.append_include('string.h')
 
     with cgen.open_macro('TEST', 'foo'):
         with cgen.open_union('uic'):
-            cgen.append_line('int as_int;')                                                     \
-                .append_line('char as_bytes[sizeof(long long)];')
+            cgen.append_line('int as_int;')
+            cgen.append_line('char as_bytes[sizeof(long long)];')
 
-        cgen.append_line('long long i;')                                                        \
-            .append_line('union uic u;')                                                        \
-            .append_line('memset(&u.as_bytes, 1, sizeof(u));')                                  \
-            .append_line('u.as_int = 10;')                                                      \
-            .append_line('WHEN_CALLED(baz).SHOULD_REPEATEDLY(ASSIGN(i, u.as_int));')              \
-            .append_line('baz();')                                                              \
-            .append_line('ASSERT_NE(i, 10);')                                                   \
-            .append_line('WHEN_CALLED(baz).SHOULD_REPEATEDLY(ASSIGN(i, u.as_int, long long));')   \
-            .append_line('baz();')                                                              \
-            .append_line('ASSERT_EQ(i, 10);')
+        cgen.append_line('long long i;')
+        cgen.append_line('union uic u;')
+        cgen.append_line('memset(&u.as_bytes, 1, sizeof(u));')
+        cgen.append_line('u.as_int = 10;')
+        cgen.append_line('WHEN_CALLED(baz).SHOULD_REPEATEDLY(ASSIGN(i, u.as_int));')
+        cgen.append_line('baz();')
+        cgen.append_line('ASSERT_NE(i, 10);')
+        cgen.append_line('WHEN_CALLED(baz).SHOULD_REPEATEDLY(ASSIGN(i, u.as_int, long long));')
+        cgen.append_line('baz();')
+        cgen.append_line('ASSERT_EQ(i, 10);')
     cgen.write()
 
     gen_symbols()

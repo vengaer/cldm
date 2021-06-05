@@ -23,23 +23,23 @@ def gen_symbols():
 
 def test_dl_cycle():
     cgen = CGen(_SOURCEFILE)
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('syms.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('syms.h', system_header=False)
 
     cgen.append_line('int whirlb(int);')
     with cgen.open_function('int', 'whirlf', ['int']):
-        cgen.append_line('if(a0) {')        \
-            .append_line('  return a0;')    \
-            .append_line('}')               \
-            .append_return('pad1(1);')
+        cgen.append_line('if(a0) {')
+        cgen.append_line('  return a0;')
+        cgen.append_line('}')
+        cgen.append_return('pad1(1);')
 
     with cgen.open_function('int', 'whirlb', ['int']):
         cgen.append_return('pad0(a0);')
 
     with cgen.open_macro('TEST', 'whirl'):
-        cgen.append_line('WHEN_CALLED(pad0).SHOULD_REPEATEDLY(INVOKE(whirlf));')  \
-            .append_line('WHEN_CALLED(pad1).SHOULD_REPEATEDLY(INVOKE(whirlb));')  \
-            .append_line('ASSERT_EQ(pad0(0), 1);')
+        cgen.append_line('WHEN_CALLED(pad0).SHOULD_REPEATEDLY(INVOKE(whirlf));')
+        cgen.append_line('WHEN_CALLED(pad1).SHOULD_REPEATEDLY(INVOKE(whirlb));')
+        cgen.append_line('ASSERT_EQ(pad0(0), 1);')
 
     cgen.write()
 
@@ -50,8 +50,8 @@ def test_dl_cycle():
 
 def test_dl_realloc():
     cgen = CGen(_SOURCEFILE)
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('syms.h', system_header=False)
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('syms.h', system_header=False)
 
     with cgen.open_macro('TEST', 'foo'):
         for i in range(33):

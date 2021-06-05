@@ -21,8 +21,8 @@ def gen_makefile():
 
 def test_runinfo_setup():
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('UNBOUND_SETUP', 'ubsetup'):
         cgen.append_line('puts("Unbound setup");')
@@ -37,8 +37,8 @@ def test_runinfo_setup():
 
 def test_runinfo_teardown():
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('UNBOUND_TEARDOWN', 'ubteardown'):
         cgen.append_line('puts("Unbound teardown");')
@@ -53,8 +53,8 @@ def test_runinfo_teardown():
 
 def test_runinfo_setup_teardown():
     cgen = CGen('tests.c')
-    cgen.append_include('cldm.h', system_header=False)  \
-        .append_include('stdio.h')
+    cgen.append_include('cldm.h', system_header=False)
+    cgen.append_include('stdio.h')
 
     with cgen.open_macro('UNBOUND_SETUP', 'ubsetup'):
         cgen.append_line('puts("Unbound setup");')
