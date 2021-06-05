@@ -7,6 +7,7 @@ crash*
 cldm/mockups.h
 cldm/cldmgen.h
 cldm/cldm_config.h
+cldm/cldm_config.S
 
 libcldm.so*
 libcldm_main.a

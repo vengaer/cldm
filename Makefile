@@ -46,7 +46,8 @@ cldmtest    := cldmtest
 cldmfuzz    := cldmfuzz
 
 cldmgen     := $(libsrcdir)/cldmgen.h
-cldm_config := $(libsrcdir)/cldm_config.h
+cconfig     := $(libsrcdir)/cldm_config.h
+asmconfig   := $(libsrcdir)/cldm_config.S
 
 MOCKUPS     ?= $(abspath $(libsrcdir)/mockups.h)
 
@@ -74,8 +75,6 @@ QUIET       ?= @
 module_path := $(root)
 module_mk   := Makefile
 
-prepare     := $(builddir)/.prepare.stamp
-
 prepdeps    :=
 
 $(call set-build-config)
@@ -86,9 +85,6 @@ all: $(link) $(lcldm_main)
 ifneq ($(MAKECMDGOALS),clean)
   $(call include-each-module,$(srcdirs))
 endif
-
-$(prepare): $(prepdeps)
-	$(QUIET)$(TOUCH) $@
 
 $(link): $(lcldm)
 	$(info [LN]  $@)
@@ -112,11 +108,11 @@ $(lcldm_main): $(lcldm_main_obj)
 	$(info [AR]  $@)
 	$(QUIET)$(AR) $(ARFLAGS) $@ $^
 
-$(builddir)/%.$(oext): $(root)/%.$(cext) $(cldmgen) $(cldm_config) Makefile
+$(builddir)/%.$(oext): $(root)/%.$(cext) $(cldmgen) $(cconfig) Makefile
 	$(info [CC]  $(notdir $@))
 	$(QUIET)$(CC) -o $@ $< $(CFLAGS) $(CPPFLAGS)
 
-$(builddir)/%.$(oext): $(root)/%.$(asext) Makefile
+$(builddir)/%.$(oext): $(root)/%.$(asext) $(asmconfig) Makefile
 	$(info [AS]  $(notdir $@))
 	$(QUIET)$(AS) -o $@ $< $(ASFLAGS)
 
@@ -124,7 +120,7 @@ $(cldmgen): $(MOCKUPS)
 	$(info [GEN] $(notdir $@))
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CLDMGEN_H\n#define CLDMGEN_H\n#include "$^"\n#endif /* CLDMGEN_H */' > $@
 
-$(cldm_config): $(prepare)
+$(cconfig): $(system_mk) $(avx2_mk)
 	$(info [GEN] $(notdir $@))
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CLDM_CONFIG_H\n#define CLDM_CONFIG_H\n' > $@
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_ARCH_$(patsubst %-bit,%,$(arch))\n' >> $@
@@ -133,6 +129,10 @@ $(cldm_config): $(prepare)
 	$(QUIET)$(if $(filter y,$(avx2_support)),$(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_AVX2\n' >> $@)
 	$(QUIET)$(if $(filter y,$(has_generic)), $(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_GENERIC\n' >> $@)
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#endif /* CLDM_CONFIG_H */' >> $@
+
+$(asmconfig): $(system_mk)
+	$(info [GEN] $(notdir $@))
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '%define PGSIZE $(pagesize)' > $@
 
 $(MOCKUPS):
 	$(info [GEN] $(notdir $@))
@@ -182,6 +182,6 @@ fuzzmerge: $(cldmfuzz)
 
 .PHONY: clean
 clean:
-	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(lcldm) $(lcldm_main) $(link) $(cldmgen) $(cldmtest) $(cldmfuzz) $(cldm_config) crash-*
+	$(QUIET)$(RM) $(RMFLAGS) $(builddir) $(lcldm) $(lcldm_main) $(link) $(cldmgen) $(cldmtest) $(cldmfuzz) $(cconfig) $(asmconfig) crash-*
 
 -include $(obj:.$(oext)=.$(dext))

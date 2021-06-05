@@ -24,11 +24,9 @@ $(patsubst $(root)/%,$(builddir)/%,$(module_path))/%.$(oext): $(module_path)/%.$
 	$(info [CC]  $(notdir $@))
 	$(QUIET)$(CC) -o $@ $< $(CFLAGS) $(CPPFLAGS)
 
-prepdeps  += $(system_mk)
 include $(system_mk)
 
 ifeq ($(arch)_$(abi),64-bit_SYSV)
-  prepdeps += $(avx2_mk)
   include $(avx2_mk)
 endif
 
