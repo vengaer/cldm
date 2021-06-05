@@ -59,7 +59,9 @@ static char dlnames[CLDM_DLNAME_MAX_SIZE][CLDM_MAX_SODEPS];
 static cldm_cachealign(struct cldm_dllookup) dllookups[CLDM_MAX_THREADS];
 
 static void cldm_dllookup_init(unsigned thread_id) {
-    dllookups[thread_id].data.ht = cldm_ht_init();
+    /* Work around Clang using memset for designated inits */
+    cldm_memset(&dllookups[thread_id].data.ht, 0, sizeof(dllookups[thread_id].data.ht));
+    dllookups[thread_id].data.ht.capacity = cldm_ht_static_capacity();
     dllookups[thread_id].data.capacity = CLDM_STATIC_LOOKUP_SIZE;
 }
 
@@ -108,7 +110,7 @@ static inline void cldm_dllookup_free(struct cldm_dllookup *lookup) {
 }
 
 int cldm_dlmap_explicit(void) {
-    char buffer[CLDM_DLNAME_MAX_SIZE] = { 0 };
+    char buffer[CLDM_DLNAME_MAX_SIZE];
     struct cldm_dltab *iter;
     unsigned offset;
     void *handle;
@@ -122,17 +124,18 @@ int cldm_dlmap_explicit(void) {
     cldm_static_assert(sizeof(buffer) >= cldm_strlitlen("libc.so.") + 3);
     cldm_strscpy(buffer, "libc.so.", sizeof(buffer));
 
-    struct cldm_dltab lookup[] = {
-        { (void **)&cldm_explicit_open,     "open"     },
-        { (void **)&cldm_explicit_close,    "close"    },
-        { (void **)&cldm_explicit_fstat,    "fstat"    },
-        { (void **)&cldm_explicit_mmap,     "mmap"     },
-        { (void **)&cldm_explicit_munmap,   "munmap"   },
-        { (void **)&cldm_explicit_strcmp,   "strcmp"   },
-        { (void **)&cldm_explicit_strncmp,  "strncmp"  },
-        { (void **)&cldm_explicit_strerror, "strerror" },
-        { (void **)&cldm_explicit_fprintf,  "fprintf"  }
-    };
+    /* Clang memsets arrays initialized at creation causing infinite recursion
+     * should memset happen to be mocked. Initialize separately to circumvent this */
+    struct cldm_dltab lookup[9];
+    lookup[0] = (struct cldm_dltab) { (void **)&cldm_explicit_open,    "open" };
+    lookup[1] = (struct cldm_dltab) { (void **)&cldm_explicit_close,   "close" };
+    lookup[2] = (struct cldm_dltab) { (void **)&cldm_explicit_fstat,    "fstat" };
+    lookup[3] = (struct cldm_dltab) { (void **)&cldm_explicit_mmap,     "mmap" };
+    lookup[4] = (struct cldm_dltab) { (void **)&cldm_explicit_munmap,   "munmap" };
+    lookup[5] = (struct cldm_dltab) { (void **)&cldm_explicit_strcmp,   "strcmp" };
+    lookup[6] = (struct cldm_dltab) { (void **)&cldm_explicit_strncmp,  "strncmp" };
+    lookup[7] = (struct cldm_dltab) { (void **)&cldm_explicit_strerror, "strerror" };
+    lookup[8] = (struct cldm_dltab) { (void **)&cldm_explicit_fprintf,  "fprintf" };
 
     offset = cldm_strlitlen("libc.so.");
     for(unsigned i = 0; i <= CLDM_MAX_LIBC_VERSION; i++) {

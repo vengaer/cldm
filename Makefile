@@ -120,7 +120,7 @@ $(cldmgen): $(MOCKUPS)
 	$(info [GEN] $(notdir $@))
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CLDMGEN_H\n#define CLDMGEN_H\n#include "$^"\n#endif /* CLDMGEN_H */' > $@
 
-$(cconfig): $(system_mk) $(avx2_mk)
+$(cconfig): $(system_mk) $(avx2_mk) Makefile
 	$(info [GEN] $(notdir $@))
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CLDM_CONFIG_H\n#define CLDM_CONFIG_H\n' > $@
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_ARCH_$(patsubst %-bit,%,$(arch))' >> $@
@@ -131,7 +131,7 @@ $(cconfig): $(system_mk) $(avx2_mk)
 	$(QUIET)$(if $(filter y,$(has_generic)), $(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_GENERIC' >> $@)
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '\n#endif /* CLDM_CONFIG_H */' >> $@
 
-$(asmconfig): $(system_mk)
+$(asmconfig): $(system_mk) Makefile
 	$(info [GEN] $(notdir $@))
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '%ifndef CLDM_CONFIG_S\n%define CLDM_CONFIG_s\n' > $@
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '%define PGSIZE $(pagesize)' >> $@

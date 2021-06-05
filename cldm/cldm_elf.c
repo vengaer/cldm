@@ -213,10 +213,9 @@ int cldm_map_elf(struct cldm_elfmap *restrict map, char const *restrict file) {
         goto epilogue;
     }
 
-    *map = (struct cldm_elfmap){
-        .m_un.addr = addr,
-        .size = sb.st_size
-    };
+    cldm_memset(map,0, sizeof(*map));
+    map->m_un.addr = addr;
+    map->size = sb.st_size;
     map->shstrtab = cldm_elf_shstrtab(map);
 
     if(!map->shstrtab) {

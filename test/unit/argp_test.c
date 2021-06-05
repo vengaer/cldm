@@ -149,17 +149,16 @@ TEST(cldm_argp_parse_capture) {
 
     strcpy(progname, "progname");
 
-    char *opts[] = {
-        progname,
-        opt0,
-        opt1,
-        0
-    };
-
+    char *opts[4];
 
     cldm_for_each_zip(it0, it1, capture_opts, captures) {
         ASSERT_LT((size_t)snprintf(opt0, sizeof(opt0), "-c%s", *it0), sizeof(opt0));
         opt1[0] = '\0';
+
+        opts[0] = progname;
+        opts[1] = opt0;
+        opts[2] = opt1;
+        opts[3] = 0;
 
         args = (struct cldm_args) { 0 };
         ASSERT_TRUE(cldm_argp_parse(&args, 2, opts));
@@ -167,6 +166,11 @@ TEST(cldm_argp_parse_capture) {
 
         strcpy(opt0, "-c");
         strcpy(opt1, *it0);
+
+        opts[0] = progname;
+        opts[1] = opt0;
+        opts[2] = opt1;
+        opts[3] = 0;
 
         args = (struct cldm_args) { 0 };
         ASSERT_TRUE(cldm_argp_parse(&args, 3, opts));

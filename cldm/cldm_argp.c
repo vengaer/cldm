@@ -213,8 +213,8 @@ static bool cldm_argp_partition(struct cldm_argp_ctx *restrict ctx, unsigned cha
         }
     }
 
-    memcpy(&argv[1], tmp, lidx * sizeof(*tmp));
-    memcpy(&argv[lidx + 1], &tmp[argc], (hidx - argc) * sizeof(*tmp));
+    cldm_memcpy(&argv[1], tmp, lidx * sizeof(*tmp));
+    cldm_memcpy(&argv[lidx + 1], &tmp[argc], (hidx - argc) * sizeof(*tmp));
     ctx->args->posparams = &argv[lidx + 1];
     ctx->args->nposparams = argc - lidx - 1;
 
@@ -279,31 +279,31 @@ static bool cldm_argp_parse_long_switch(struct cldm_argp_ctx *restrict ctx, stru
 }
 
 bool cldm_argp_parse(struct cldm_args *restrict args, int argc, char **restrict argv) {
-    unsigned char posflags[CLDM_ARGP_MAX_PARAMS / CHAR_BIT] = { 0 };
+    unsigned char posflags[CLDM_ARGP_MAX_PARAMS / CHAR_BIT];
     struct cldm_argp_param *param;
     struct cldm_argp_ctx ctx;
     struct cldm_dfa dfa;
     bool success;
 
+    cldm_memset(posflags, 0, sizeof(posflags));
+    cldm_memset(args, 0, sizeof(*args));
+    cldm_memset(&ctx, 0, sizeof(ctx));
+
     success = false;
 
-    *args = (struct cldm_args) {
-        .posparams = &argv[argc],
-        .nposparams = 0u,
-        .jobs = 1u,
-        .capture = cldm_capture_all
-    };
+    args->posparams = &argv[argc];
+    args->nposparams = 0u;
+    args->jobs = 1u;
+    args->capture = cldm_capture_all;
 
     if(argc > CLDM_ARGP_MAX_PARAMS) {
         cldm_err("At most %d command line parameters are supported", CLDM_ARGP_MAX_PARAMS);
         return false;
     }
 
-    ctx = (struct cldm_argp_ctx) {
-        .args = args,
-        .index = 1,
-        .treat_as_posparam = false
-    };
+    ctx.args = args;
+    ctx.index = 1;
+    ctx.treat_as_posparam = false;
 
     if(!cldm_dfa_init(&dfa)) {
         return false;
