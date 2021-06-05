@@ -112,11 +112,11 @@ $(lcldm_main): $(lcldm_main_obj)
 	$(info [AR]  $@)
 	$(QUIET)$(AR) $(ARFLAGS) $@ $^
 
-$(builddir)/%.$(oext): $(root)/%.$(cext) $(cldmgen) $(cldm_config)
+$(builddir)/%.$(oext): $(root)/%.$(cext) $(cldmgen) $(cldm_config) Makefile
 	$(info [CC]  $(notdir $@))
 	$(QUIET)$(CC) -o $@ $< $(CFLAGS) $(CPPFLAGS)
 
-$(builddir)/%.$(oext): $(root)/%.$(asext)
+$(builddir)/%.$(oext): $(root)/%.$(asext) Makefile
 	$(info [AS]  $(notdir $@))
 	$(QUIET)$(AS) -o $@ $< $(ASFLAGS)
 

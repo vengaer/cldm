@@ -40,7 +40,7 @@ $(foreach __src,$(1),
     $(eval __obj           := $(module_builddir)/$(notdir $(patsubst %.$(cext),%.$(oext),$(__src))))
     $(eval $(cldmfuzz)_obj += $(__obj))
     $(eval
-        $(__obj): $(__src) $(cldm_config)
+        $(__obj): $(__src) $(cldm_config) Makefile
 	        $(QUIET)$(ECHO) "[CC]  $$(notdir $$@)"
 	        $(QUIET)$(FUZZCC) -o $$@ $$< $(fuzzcflags) $(CPPFLAGS)))
 endef
