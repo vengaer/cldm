@@ -123,18 +123,20 @@ $(cldmgen): $(MOCKUPS)
 $(cconfig): $(system_mk) $(avx2_mk)
 	$(info [GEN] $(notdir $@))
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CLDM_CONFIG_H\n#define CLDM_CONFIG_H\n' > $@
-	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_ARCH_$(patsubst %-bit,%,$(arch))\n' >> $@
-	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_ABI_$(abi)\n' >> $@
-	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_PGSIZE $(pagesize)\n' >> $@
-	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_L1_DCACHE_LINESIZE $(l1_dcache)\n' >> $@
-	$(QUIET)$(if $(filter y,$(avx2_support)),$(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_AVX2\n' >> $@)
-	$(QUIET)$(if $(filter y,$(has_generic)), $(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_GENERIC\n' >> $@)
-	$(QUIET)$(ECHO) $(ECHOFLAGS) '#endif /* CLDM_CONFIG_H */' >> $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_ARCH_$(patsubst %-bit,%,$(arch))' >> $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_ABI_$(abi)' >> $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_PGSIZE $(pagesize)' >> $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_L1_DCACHE_LINESIZE $(l1_dcache)' >> $@
+	$(QUIET)$(if $(filter y,$(avx2_support)),$(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_AVX2' >> $@)
+	$(QUIET)$(if $(filter y,$(has_generic)), $(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_GENERIC' >> $@)
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '\n#endif /* CLDM_CONFIG_H */' >> $@
 
 $(asmconfig): $(system_mk)
 	$(info [GEN] $(notdir $@))
-	$(QUIET)$(ECHO) $(ECHOFLAGS) '%define PGSIZE $(pagesize)' > $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '%ifndef CLDM_CONFIG_S\n%define CLDM_CONFIG_s\n' > $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '%define PGSIZE $(pagesize)' >> $@
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '%define L1_DCACHE_LINESIZE $(l1_dcache)' >> $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '\n%endif ; CLDM_CONFIG_S' >> $@
 
 $(MOCKUPS):
 	$(info [GEN] $(notdir $@))
