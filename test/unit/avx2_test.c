@@ -11,6 +11,7 @@ extern void *cldm_avx2_memset(void *dst, int v, unsigned long long n);
 extern void *cldm_avx2_memcpy(void *restrict dst, void const *restrict src, unsigned long long n);
 extern int cldm_avx2_memcmp(void const *s0, void const *s1, unsigned long long n);
 extern unsigned cldm_avx2_scan_lt(char const *str, int sentinel);
+extern unsigned long long cldm_avx2_strlen(char const *str);
 
 TEST(cldm_avx2_strscpy) {
     enum { SIZE = 256 };
@@ -188,6 +189,20 @@ TEST(cldm_avx2_scan_lt_unaligned) {
     char const *sp = "All mixed up, turned around. You're thinking out loud. What were we talking about now? Emotion free, euphoric stat. Too little too late. Let it go";
     strcpy(s.str, sp);
     ASSERT_EQ(cldm_avx2_scan_lt(s.str, 1), strlen(s.str));
+}
+
+TEST(cldm_avx2_strlen) {
+    char const *str = "Pensive";
+    ASSERT_EQ(cldm_avx2_strlen(str), strlen(str));
+    str = "I made it up. It's complicated. I gave it up. On giving it a name. Things are implied. Nothing's the same";
+    ASSERT_EQ(cldm_avx2_strlen(str), strlen(str));
+    str = "If you pray for us. Pray for love. It might just save us from. It just might. Wish you godspeed. Oh, please, whatever it might be. Tell it about the way it is";
+    ASSERT_EQ(cldm_avx2_strlen(str), strlen(str));
+}
+
+TEST(cldm_avx2_strlen_empty) {
+    char const *str = "";
+    ASSERT_EQ(cldm_avx2_strlen(str), strlen(str));
 }
 
 #endif /* CLDM_HAS_AVX2 */
