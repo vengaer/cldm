@@ -150,14 +150,12 @@ pipeline {
         always {
             node(null) {
                 script {
-                    if(env.TARGET == 'fuzz') {
-                        if(fileExists("${ARTIFACT_DIR}/corpora.zip")) {
-                            sh "rm ${ARTIFACT_DIR}/corpora.zip"
-                        }
-
-                        zip zipFile: "$ARTIFACT_DIR/corpora.zip", archive:true, dir: "test/fuzz/corpora", overwrite: false
-                        archiveArtifacts artifacts: "${ARTIFACT_DIR}/corpora.zip", fingerprint: true
+                    if(fileExists("${ARTIFACT_DIR}/corpora.zip")) {
+                        sh "rm ${ARTIFACT_DIR}/corpora.zip"
                     }
+
+                    zip zipFile: "$ARTIFACT_DIR/corpora.zip", archive:true, dir: "test/fuzz/corpora", overwrite: false
+                    archiveArtifacts artifacts: "${ARTIFACT_DIR}/corpora.zip", fingerprint: true
                 }
 
                 echo '-- Removing dangling Docker images --'
