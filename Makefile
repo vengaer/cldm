@@ -126,6 +126,7 @@ $(cconfig): $(system_mk) $(avx2_mk)
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_ARCH_$(patsubst %-bit,%,$(arch))\n' >> $@
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_ABI_$(abi)\n' >> $@
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_PGSIZE $(pagesize)\n' >> $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_L1_DCACHE_LINESIZE $(l1_dcache)\n' >> $@
 	$(QUIET)$(if $(filter y,$(avx2_support)),$(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_AVX2\n' >> $@)
 	$(QUIET)$(if $(filter y,$(has_generic)), $(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_GENERIC\n' >> $@)
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#endif /* CLDM_CONFIG_H */' >> $@
@@ -133,6 +134,7 @@ $(cconfig): $(system_mk) $(avx2_mk)
 $(asmconfig): $(system_mk)
 	$(info [GEN] $(notdir $@))
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '%define PGSIZE $(pagesize)' > $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '%define L1_DCACHE_LINESIZE $(l1_dcache)' >> $@
 
 $(MOCKUPS):
 	$(info [GEN] $(notdir $@))

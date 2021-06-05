@@ -92,6 +92,7 @@ static bool write_config(char const *out) {
     fprintf(fp, "arch        := %s\n", arch_strings[makecfg.arch]);
     fprintf(fp, "abi         := %s\n", abi_strings[makecfg.abi]);
     fprintf(fp, "pagesize    := %ld\n", sysconf(_SC_PAGESIZE));
+    fprintf(fp, "l1_dcache   := %ld\n", sysconf(_SC_LEVEL1_DCACHE_LINESIZE));
 
     fclose(fp); return true;
 }
