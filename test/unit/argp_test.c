@@ -213,23 +213,26 @@ TEST(cldm_argp_parse_redirect) {
     char opt0[64];
     char opt1[64];
 
-    char *opts[] = {
-        progname,
-        opt0,
-        opt1,
-        0
-    };
+    char *opts[4];
 
     strcpy(progname, "progname");
     strcpy(opt0, "-dout.log");
     opt1[0] = '\0';
 
+    opts[0] = progname;
+    opts[1] = opt0;
+    opts[2] = opt1;
+    opts[3] = 0;
     ASSERT_TRUE(cldm_argp_parse(&args, 2, opts));
     ASSERT_STREQ(args.redirect, "out.log");
 
     strcpy(opt0, "-d");
     strcpy(opt1, "out.log");
 
+    opts[0] = progname;
+    opts[1] = opt0;
+    opts[2] = opt1;
+    opts[3] = 0;
     ASSERT_TRUE(cldm_argp_parse(&args, 3, opts));
     ASSERT_STREQ(args.redirect, "out.log");
 
