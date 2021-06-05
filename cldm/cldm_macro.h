@@ -48,6 +48,8 @@
 #define cldm_second_pick(_, x, ...) x
 #define cldm_second(...) cldm_second_pick(__VA_ARGS__,)
 
+#define cldm_declval(type) (*((type *)0))
+
 #define cldm_count_sequence 128, 127, 126, 125, 124, 123, 122, 121, \
                             120, 119, 118, 117, 116, 115, 114, 113, \
                             112, 111, 110, 109, 108, 107, 106, 105, \

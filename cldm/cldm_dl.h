@@ -17,7 +17,6 @@ extern int   (*cldm_explicit_open)(char const *, int);
 extern int   (*cldm_explicit_close)(int);
 extern int   (*cldm_explicit_fstat)(int, struct stat *);
 extern void *(*cldm_explicit_mmap)(void *, size_t, int, int, int, off_t);
-extern void *(*cldm_explicit_memcpy)(void *restrict, void const *restrict, size_t);
 extern int   (*cldm_explicit_munmap)(void *, size_t);
 extern int   (*cldm_explicit_strcmp)(char const *, char const *);
 extern int   (*cldm_explicit_strncmp)(char const *, char const *, size_t);

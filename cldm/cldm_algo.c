@@ -1,4 +1,5 @@
 #include "cldm_algo.h"
+#include "cldm_byteseq.h"
 #include "cldm_log.h"
 
 #include <stdlib.h>
@@ -59,17 +60,17 @@ ssize_t cldm_stable_partition(void *data, size_t elemsize, size_t nelems, bool(*
         elem = (unsigned char *)data + i * elemsize;
         if(predicate(elem)) {
             /* Write to lower half */
-            memcpy(arr + elemsize * st++, elem, elemsize);
+            cldm_memcpy(arr + elemsize * st++, elem, elemsize);
         }
         else {
             /* Write to upper half */
-            memcpy(arr + (nelems + ust++) * elemsize, elem, elemsize);
+            cldm_memcpy(arr + (nelems + ust++) * elemsize, elem, elemsize);
         }
     }
 
     /* Write back */
-    memcpy(data, arr, st * elemsize);
-    memcpy((unsigned char *)data + st * elemsize, arr + nelems * elemsize, ust * elemsize);
+    cldm_memcpy(data, arr, st * elemsize);
+    cldm_memcpy((unsigned char *)data + st * elemsize, arr + nelems * elemsize, ust * elemsize);
 
     free(arr);
 

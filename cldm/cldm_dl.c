@@ -18,9 +18,9 @@
 enum { CLDM_MAX_SODEPS = 32 };
 enum { CLDM_DLBUF_SIZE = 1024 };
 enum { CLDM_DLNAME_MAX_SIZE = 32 };
-enum { CLDM_INITIAL_DLLOOKUP_SIZE = 32 };
 enum { CLDM_MAX_SYMNAME_SIZE = 128 };
 enum { CLDM_MAX_LIBC_VERSION = 32 };
+enum { CLDM_STATIC_LOOKUP_SIZE = 32 };
 
 struct cldm_dlentry {
     char symname[CLDM_MAX_SYMNAME_SIZE];
@@ -31,7 +31,10 @@ struct cldm_dlentry {
 
 struct cldm_dllookup {
     struct cldm_ht ht;
-    struct cldm_dlentry *dlentries;
+    union {
+        struct cldm_dlentry stat[CLDM_STATIC_LOOKUP_SIZE];
+        struct cldm_dlentry *dyn;
+    } un_entries;
     size_t capacity;
 };
 
@@ -44,7 +47,6 @@ int   (*cldm_explicit_open)(char const *, int);
 int   (*cldm_explicit_close)(int);
 int   (*cldm_explicit_fstat)(int, struct stat *);
 void *(*cldm_explicit_mmap)(void *, size_t, int, int, int, off_t);
-void *(*cldm_explicit_memcpy)(void *restrict, void const *restrict, size_t);
 int   (*cldm_explicit_munmap)(void *, size_t);
 int   (*cldm_explicit_strcmp)(char const *, char const *);
 int   (*cldm_explicit_strncmp)(char const *, char const *, size_t);
@@ -56,37 +58,53 @@ static void *dlhandles[CLDM_MAX_SODEPS];
 static char dlnames[CLDM_DLNAME_MAX_SIZE][CLDM_MAX_SODEPS];
 static cldm_cachealign(struct cldm_dllookup) dllookups[CLDM_MAX_THREADS];
 
-static bool cldm_dllookup_init(unsigned thread_id) {
+static void cldm_dllookup_init(unsigned thread_id) {
     dllookups[thread_id].data.ht = cldm_ht_init();
-    dllookups[thread_id].data.dlentries = malloc(CLDM_INITIAL_DLLOOKUP_SIZE * sizeof(*dllookups[thread_id].data.dlentries));
-    if(!dllookups[thread_id].data.dlentries) {
-        return false;
-    }
-    dllookups[thread_id].data.capacity = CLDM_INITIAL_DLLOOKUP_SIZE;
-    return true;
+    dllookups[thread_id].data.capacity = CLDM_STATIC_LOOKUP_SIZE;
+}
+
+static inline struct cldm_dlentry *cldm_dllookup_entry(struct cldm_dllookup *lookup) {
+    return lookup->capacity == CLDM_STATIC_LOOKUP_SIZE ? lookup->un_entries.stat : lookup->un_entries.dyn;
 }
 
 static bool cldm_dllookup_ensure_capacity(unsigned thread_id) {
     void *addr;
+    size_t nbytes;
     if(cldm_ht_size(&dllookups[thread_id].data.ht) < dllookups[thread_id].data.capacity) {
         return true;
     }
+    nbytes = 2 * dllookups[thread_id].data.capacity * sizeof(*dllookups[thread_id].data.un_entries.dyn);
 
-    addr = realloc(dllookups[thread_id].data.dlentries, 2 * dllookups[thread_id].data.capacity * sizeof(*dllookups[thread_id].data.dlentries));
-    if(!addr) {
-        return false;
+    if(dllookups[thread_id].data.capacity == CLDM_STATIC_LOOKUP_SIZE) {
+        addr = malloc(nbytes);
+        if(!addr) {
+            return false;
+        }
+        cldm_memcpy(addr, dllookups[thread_id].data.un_entries.stat, sizeof(dllookups[thread_id].data.un_entries.stat));
     }
-    dllookups[thread_id].data.dlentries = addr;
+    else {
+        addr = realloc(dllookups[thread_id].data.un_entries.dyn, nbytes);
+        if(!addr) {
+            return false;
+        }
+    }
+    dllookups[thread_id].data.un_entries.dyn = addr;
 
     cldm_ht_clear(&dllookups[thread_id].data.ht);
 
     for(unsigned i = 0; i < dllookups[thread_id].data.capacity; i++) {
         /* This cannot fail */
-        cldm_ht_insert(&dllookups[thread_id].data.ht, &cldm_ht_mkentry_str(dllookups[thread_id].data.dlentries[i].symname));
+        cldm_ht_insert(&dllookups[thread_id].data.ht, &cldm_ht_mkentry_str(cldm_dllookup_entry(&dllookups[thread_id].data)->symname));
     }
 
     dllookups[thread_id].data.capacity *= 2u;
     return true;
+}
+
+static inline void cldm_dllookup_free(struct cldm_dllookup *lookup) {
+    if(lookup->capacity > CLDM_STATIC_LOOKUP_SIZE) {
+        free(lookup->un_entries.dyn);
+    }
 }
 
 int cldm_dlmap_explicit(void) {
@@ -109,7 +127,6 @@ int cldm_dlmap_explicit(void) {
         { (void **)&cldm_explicit_close,    "close"    },
         { (void **)&cldm_explicit_fstat,    "fstat"    },
         { (void **)&cldm_explicit_mmap,     "mmap"     },
-        { (void **)&cldm_explicit_memcpy,   "memcpy"   },
         { (void **)&cldm_explicit_munmap,   "munmap"   },
         { (void **)&cldm_explicit_strcmp,   "strcmp"   },
         { (void **)&cldm_explicit_strncmp,  "strncmp"  },
@@ -192,7 +209,7 @@ void cldm_dlfree(void) {
 
     for(unsigned i = 0; i < cldm_jobs; i++) {
         if(dllookups[i].data.capacity) {
-            free(dllookups[i].data.dlentries);
+            cldm_dllookup_free(&dllookups[i].data);
             cldm_ht_free(&dllookups[i].data.ht);
         }
     }
@@ -208,10 +225,7 @@ void *cldm_dlsym_next(char const *symname) {
     thread_id = cldm_thread_id();
 
     if(!dllookups[thread_id].data.capacity) {
-        if(!cldm_dllookup_init(thread_id)) {
-            cldm_err("Could not allocate memory for symbol caching");
-            return 0;
-        }
+        cldm_dllookup_init(thread_id);
     }
 
     sym = 0;
@@ -247,7 +261,7 @@ void *cldm_dlsym_next(char const *symname) {
         return 0;
     }
 
-    dlentry = &dllookups[thread_id].data.dlentries[cldm_ht_size(&dllookups[thread_id].data.ht)];
+    dlentry = &cldm_dllookup_entry(&dllookups[thread_id].data)[cldm_ht_size(&dllookups[thread_id].data.ht)];
     if(cldm_strscpy(dlentry->symname, symname, sizeof(dlentry->symname)) < 0) {
         cldm_err("Name of symbol %s overflows internal buffer", symname);
         return 0;

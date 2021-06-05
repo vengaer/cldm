@@ -1,4 +1,5 @@
 #include "cldm_algo.h"
+#include "cldm_byteseq.h"
 #include "cldm_hash.h"
 #include "cldm_macro.h"
 
@@ -55,7 +56,7 @@ static union cldm_ht_internal_entry *cldm_ht_probe(struct cldm_ht *restrict ht, 
             }
             continue;
         }
-        if(entries[idx].ent.size == entry->size && memcmp(entries[idx].ent.key, entry->key, entry->size) == 0) {
+        if(entries[idx].ent.size == entry->size && cldm_memcmp(entries[idx].ent.key, entry->key, entry->size) == 0) {
             return &entries[idx];
         }
     }
@@ -82,7 +83,7 @@ static bool cldm_ht_expand(struct cldm_ht *ht) {
 
     if(ht->capacity == cldm_ht_static_capacity()) {
         /* Stack storage used */
-        memcpy(t_un.stat, ht->t_un.stat, sizeof(t_un.stat));
+        cldm_memcpy(t_un.stat, ht->t_un.stat, sizeof(t_un.stat));
         pdyn = false;
     }
     else {
@@ -168,6 +169,6 @@ bool cldm_ht_remove(struct cldm_ht *restrict ht, struct cldm_ht_entry const *res
 }
 
 void cldm_ht_clear(struct cldm_ht *ht) {
-    memset(cldm_ht_storage(ht), 0, ht->capacity * sizeof(*cldm_ht_storage(ht)));
+    cldm_memset(cldm_ht_storage(ht), 0, ht->capacity * sizeof(*cldm_ht_storage(ht)));
     ht->size = 0;
 }
