@@ -133,7 +133,7 @@ $(cconfig): $(system_mk) $(avx2_mk) Makefile
 
 $(asmconfig): $(system_mk) Makefile
 	$(info [GEN] $(notdir $@))
-	$(QUIET)$(ECHO) $(ECHOFLAGS) '%ifndef CLDM_CONFIG_S\n%define CLDM_CONFIG_s\n' > $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '%ifndef CLDM_CONFIG_S\n%define CLDM_CONFIG_S\n' > $@
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '%define PGSIZE $(pagesize)' >> $@
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '%define L1_DCACHE_LINESIZE $(l1_dcache)' >> $@
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '\n%endif' >> $@
