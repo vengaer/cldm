@@ -1,5 +1,5 @@
+import hashlib
 import os
-import zlib
 
 from subprocess import Popen, PIPE
 
@@ -9,8 +9,9 @@ def exec_bash(command):
     output, error = proc.communicate()
     return proc.returncode, output, error
 
-def buffered_crc(file):
-    p = 0
-    for l in open(file, 'rb'):
-        l = zlib.crc32(l, p)
-    return p & 0xffffffff
+def buffered_md5(file):
+    h = hashlib.md5()
+    with open(file, 'rb') as fp:
+        for c in iter(lambda: fp.read(4096), b''):
+            h.update(c)
+    return h.hexdigest()

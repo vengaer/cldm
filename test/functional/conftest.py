@@ -6,21 +6,21 @@ from config import *
 from symbols import *
 from util import *
 
-crc = None
+md5 = None
 
 def pytest_runtest_setup():
-    global crc
+    global md5
 
     try:
         os.mkdir(working_dir)
     except:
         pass
 
-    if not crc or crc != buffered_crc(solib):
+    if md5 is None or md5 != buffered_md5(solib):
         assert gen_symbols()[0] == 0
 
-    if not crc:
-        crc = buffered_crc(solib)
+    if md5 is None:
+        md5 = buffered_md5(solib)
 
 def pytest_runtest_teardown():
     shutil.rmtree(working_dir)
