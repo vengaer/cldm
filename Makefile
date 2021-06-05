@@ -51,7 +51,7 @@ asmconfig   := $(libsrcdir)/cldm_config.S
 
 MOCKUPS     ?= $(abspath $(libsrcdir)/mockups.h)
 
-ASFLAGS     := -felf64 -g -Fdwarf
+ASFLAGS     := -felf64 -g -Fdwarf -i$(libsrcdir)
 CFLAGS      := -std=c99 -Wall -Wextra -Wpedantic -fPIC -c -MD -MP -g
 CPPFLAGS    := -D_POSIX_C_SOURCE=200112L -DCLDM_VERSION=$(cldmver) -I$(root)
 LDFLAGS     := -shared -Wl,-soname,$(libstem).$(soext).$(socompat)
