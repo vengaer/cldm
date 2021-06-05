@@ -136,7 +136,7 @@ $(asmconfig): $(system_mk) Makefile
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '%ifndef CLDM_CONFIG_S\n%define CLDM_CONFIG_s\n' > $@
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '%define PGSIZE $(pagesize)' >> $@
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '%define L1_DCACHE_LINESIZE $(l1_dcache)' >> $@
-	$(QUIET)$(ECHO) $(ECHOFLAGS) '\n%endif ; CLDM_CONFIG_S' >> $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '\n%endif' >> $@
 
 $(MOCKUPS):
 	$(info [GEN] $(notdir $@))
