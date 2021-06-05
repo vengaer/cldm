@@ -35,7 +35,7 @@ testdir     := $(root)/test
 srcdirs     := $(libsrcdir) $(testdir)
 
 # Generated during prepare step
-cldmsstm_mk := $(builddir)/cldmsstm.mk
+system_mk   := $(builddir)/system.mk
 avx2_mk     := $(builddir)/avx2.mk
 
 lcldm       := $(libstem).$(soext).$(sover)
