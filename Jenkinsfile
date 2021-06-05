@@ -139,8 +139,8 @@ pipeline {
             steps {
                 script {
                     fuzztargets.each { target ->
-                        echo "Fuzzing ${target}"
                         for(int i = 0; i < config.NFUZZRUNS; i++) {
+                            echo "Fuzzing ${target} ${i + 1}/${config.NFUZZRUNS}"
                             sh "CLDM_FUZZTARGET=${target} make fuzzrun"
                         }
                     }
