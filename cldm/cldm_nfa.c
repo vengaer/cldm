@@ -124,8 +124,8 @@ bool cldm_nfa_add_argument(struct cldm_nfa *restrict nfa, char const *restrict a
             }
         }
     }
-
-    return cldm_nfa_append(nfa, state, cldm_nfa_epsilon, cldm_nfa_op_accept) != -1;
+    nfa->states[state].op = cldm_nfa_op_accept;
+    return true;
 }
 
 int cldm_nfa_simulate(struct cldm_nfa const *restrict nfa, char const *restrict input) {
@@ -150,13 +150,6 @@ int cldm_nfa_simulate(struct cldm_nfa const *restrict nfa, char const *restrict 
     /* Check whether state is an accept state */
     if(state->op == cldm_nfa_op_accept) {
         return pos - input;
-    }
-
-    /* Check for accept states reachable via epsilon transition */
-    for(edge = state->edges; edge != CLDM_NFA_EDGE_NONE; edge = nfa->edges[edge].next) {
-        if(nfa->edges[edge].ch == cldm_nfa_epsilon && nfa->states[nfa->edges[edge].end].op == cldm_nfa_op_accept) {
-            return pos - input;
-        }
     }
 
     return -1;
