@@ -11,16 +11,16 @@ crc = None
 def pytest_runtest_setup():
     global crc
 
-    if not crc or crc != buffered_crc(solib):
-        try:
-            os.mkdir(working_dir)
-        except:
-            pass
+    try:
+        os.mkdir(working_dir)
+    except:
+        pass
 
+    if not crc or crc != buffered_crc(solib):
         assert gen_symbols()[0] == 0
 
     if not crc:
-        ctc = buffered_crc(solib)
+        crc = buffered_crc(solib)
 
 def pytest_runtest_teardown():
     shutil.rmtree(working_dir)
