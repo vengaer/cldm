@@ -114,24 +114,26 @@ pipeline {
                 }
             }
         }
-        stage('Fuzz') {
+        stage('Dynamic Fuzzing') {
             agent {
                 docker { image "${DOCKER_IMAGE}" }
             }
             steps {
                 script {
-                    if(env.TARGET == 'fuzz') {
-                        fuzztargets.each { target ->
-                            for(int i = 0; i < config.NFUZZRUNS; i++) {
-                                echo "Fuzzing ${target} ${i + 1}/${config.NFUZZRUNS}"
-                                sh "CLDM_FUZZTARGET=${target} make fuzzrun"
+                    fuzztargets.each { target ->
+                        stage("Fuzz ${target}") {
+                            if(env.TARGET == 'fuzz') {
+                                nruns = config.NFUZZRUNS
+                                fuzztime = 240
                             }
-                        }
-                    }
-                    else {
-                        fuzztargets.each { target ->
-                            echo "FUZZING ${target}"
-                            sh "CLDM_FUZZTARGET=${target} make fuzzrun FUZZTIME=25"
+                            else {
+                                nruns = 1
+                                fuzztime = 25
+                            }
+                            for(int i = 0; i < nruns; i++) {
+                                echo "Fuzzing ${target} ${i + 1}/${nruns}"
+                                sh "CLDM_FUZZTARGET=${target} make fuzzrun FUZZTIME=${fuzztime}"
+                            }
                         }
                     }
                 }
