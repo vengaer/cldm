@@ -168,7 +168,7 @@ inline bool cldm_mock_enabled(void) {
             union {                                                                                 \
                 rettype(*invoke)(__VA_ARGS__);                                                      \
                 rettype retval;                                                                     \
-                rettype counter;                                                                    \
+                unsigned counter;                                                                   \
                 unsigned paramidx;                                                                  \
                 struct cldm_assign_opdata assign;                                                   \
                 struct cldm_assign_param_opdata assign_param;                                       \
