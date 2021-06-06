@@ -130,8 +130,7 @@ cldm_avx2_strlen:
     vmovq   xmm0, [rdi + rax]               ; Load qword
     vpcmpeqb    xmm1, xmm0, xmm15           ; Check for null
     vpmovmskb   esi, xmm1                   ; Extract bitmask
-    and     esi, 0xff                       ; Mask out zeroed bytes
-    test    esi, esi
+    test    esi, 0xff
     jnz     .epi_offset
     add     rax, 0x8                        ; Increment size
 
@@ -146,8 +145,7 @@ cldm_avx2_strlen:
     vmovd   xmm0, [rdi + rax]               ; Load dword
     vpcmpeqb    xmm1, xmm0, xmm15           ; Check for null
     vpmovmskb   esi, xmm1                   ; Extract bitmask
-    and     esi, 0xf                        ; Mask out zeroes bytes
-    test    esi, esi
+    test    esi, 0xf
     jnz     .epi_offset
     add     rax, 0x4                        ; Increment size
 
@@ -163,8 +161,7 @@ cldm_avx2_strlen:
     vmovd   xmm0, edx                       ; Load into vector register
     vpcmpeqb    xmm1, xmm0, xmm15           ; Check for null
     vpmovmskb   esi, xmm1                   ; Extract bitmask
-    and     esi, 0x3                        ; Mask out zeroed bytes
-    test    esi, esi
+    test    esi, 0x3
     jnz     .epi_offset
     add     rax, 0x2                        ; Increment size
 
