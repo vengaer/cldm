@@ -12,6 +12,7 @@ extern void *cldm_avx2_memcpy(void *restrict dst, void const *restrict src, unsi
 extern int cldm_avx2_memcmp(void const *s0, void const *s1, unsigned long long n);
 extern unsigned cldm_avx2_scan_lt(char const *str, int sentinel);
 extern unsigned long long cldm_avx2_strlen(char const *str);
+extern void cldm_avx2_memswp(void *restrict s0, void *restrict s1, unsigned long long n);
 
 TEST(cldm_avx2_strscpy) {
     enum { SIZE = 256 };
@@ -203,6 +204,25 @@ TEST(cldm_avx2_strlen) {
 TEST(cldm_avx2_strlen_empty) {
     char const *str = "";
     ASSERT_EQ(cldm_avx2_strlen(str), strlen(str));
+}
+
+TEST(cldm_avx2_memswp) {
+    enum { SIZE = 64 };
+    unsigned char bs0[SIZE];
+    unsigned char bs1[SIZE];
+
+    unsigned char ref0[SIZE];
+    unsigned char ref1[SIZE];
+
+    memset(bs0, 0xfe, sizeof(bs0));
+    memset(bs1, 0xaa, sizeof(bs1));
+
+    memset(ref0, 0xaa, sizeof(ref0));
+    memset(ref1, 0xfe, sizeof(ref1));
+
+    cldm_avx2_memswp(bs0, bs1, sizeof(bs0));
+    ASSERT_EQ(memcmp(bs0, ref0, sizeof(bs0)), 0);
+    ASSERT_EQ(memcmp(bs1, ref1, sizeof(bs1)), 0);
 }
 
 #endif /* CLDM_HAS_AVX2 */
