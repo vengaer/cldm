@@ -27,7 +27,7 @@ cldm_avx2_memcpy:
     vmovdqu ymm0, [rsi]                     ; Load ymmword
     vmovdqu [rdi], ymm0                     ; Write
 
-    lea     rcx, [rdi + rcx + 0x1f]         ; End of offset for first 256-byte block
+    lea     rcx, [rdi + rcx + 0x20]         ; End of offset for first 256-byte block
     and     rcx, -0x20                      ; Align
     sub     rcx, rdi
 
