@@ -214,11 +214,32 @@ TEST(cldm_avx2_memswp) {
     unsigned char ref0[SIZE];
     unsigned char ref1[SIZE];
 
-    memset(bs0, 0xfe, sizeof(bs0));
-    memset(bs1, 0xaa, sizeof(bs1));
+    for(unsigned i = 0; i < sizeof(bs0); i++) {
+        bs0[i] = i;
+        ref1[i] = i;
+        bs1[i] = i + sizeof(bs0);
+        ref0[i] = i + sizeof(bs0);
+    }
 
-    memset(ref0, 0xaa, sizeof(ref0));
-    memset(ref1, 0xfe, sizeof(ref1));
+    cldm_avx2_memswp(bs0, bs1, sizeof(bs0));
+    ASSERT_EQ(memcmp(bs0, ref0, sizeof(bs0)), 0);
+    ASSERT_EQ(memcmp(bs1, ref1, sizeof(bs1)), 0);
+}
+
+TEST(cldm_avx2_memswp_residual) {
+    enum { SIZE = 31 };
+    unsigned char bs0[SIZE];
+    unsigned char bs1[SIZE];
+
+    unsigned char ref0[SIZE];
+    unsigned char ref1[SIZE];
+
+    for(unsigned i = 0; i < sizeof(bs0); i++) {
+        bs0[i] = i;
+        ref1[i] = i;
+        bs1[i] = i + sizeof(bs0);
+        ref0[i] = i + sizeof(bs0);
+    }
 
     cldm_avx2_memswp(bs0, bs1, sizeof(bs0));
     ASSERT_EQ(memcmp(bs0, ref0, sizeof(bs0)), 0);
