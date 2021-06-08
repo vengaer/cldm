@@ -252,7 +252,7 @@ cldm_avx2_memswp:
     vmovdqu xmm0, [rdi]
     vmovdqu xmm1, [rsi]
     vmovdqu [rdi], xmm1
-    vmovdqu [rsi], ymm0
+    vmovdqu [rsi], xmm0
 
     add     eax, 0x10
 
