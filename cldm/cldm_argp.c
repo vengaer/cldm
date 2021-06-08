@@ -79,7 +79,7 @@ static char const *cldm_argp_params_doc[] = {
     "Capture output from STREAM and print it once all tests have finished. Valid options are 'none', 'stdout', 'stderr' and 'all'",
     "Same as --capture=none",
     "Redirect captures to FILE instead of printing to console. May be combined with --capture=STREAM",
-    "Run tests concurrently using JOBS threads, max number is " cldm_str_expand(CLDM_MAX_THREADS)
+    cldm_expand("Run tests concurrently using JOBS threads, max number is " cldm_str(CLDM_MAX_THREADS))
 };
 
 static char const *cldm_argp_positional_doc = "[IDENTIFIER]... is a list of test identifiers and may contain both file and test names, in any order.\n"
