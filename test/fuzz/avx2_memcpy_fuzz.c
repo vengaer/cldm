@@ -1,4 +1,5 @@
 #include "avx2_memcpy_fuzz.h"
+#include "memory_utils.h"
 
 #include <cldm/cldm_config.h>
 
@@ -8,10 +9,6 @@
 #include <string.h>
 
 extern void *cldm_avx2_memcpy(void *restrict dst, void const *restrict src, unsigned long long n);
-
-static inline size_t alignment(void const *adstr) {
-    return (size_t)adstr & -(size_t)adstr;
-}
 
 static void hexdump(char const *restrict bufname, uint8_t const *restrict data, size_t size) {
     fprintf(stderr, "%s:\n  { ", bufname);

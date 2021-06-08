@@ -1,4 +1,5 @@
 #include "avx2_scan_lt_fuzz.h"
+#include "memory_utils.h"
 
 #include <cldm/cldm_config.h>
 
@@ -7,10 +8,6 @@
 #include <stdlib.h>
 
 extern unsigned cldm_avx2_scan_lt(char const *str, int sentinel);
-
-static inline size_t alignment(void const *adstr) {
-    return (size_t)adstr & -(size_t)adstr;
-}
 
 static void dump(char const *str, int sentinel, unsigned scanlen, unsigned pos, size_t size) {
     fputs("Invalid length\n", stderr);

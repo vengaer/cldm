@@ -1,4 +1,5 @@
 #include "avx2_memswp_fuzz.h"
+#include "memory_utils.h"
 
 #include <cldm/cldm_config.h>
 
@@ -8,10 +9,6 @@
 #include <string.h>
 
 extern void cldm_avx2_memswp(void *restrict s0, void *restrict s1, unsigned long long n);
-
-static inline size_t alignment(void const *addr) {
-    return (size_t)addr & -(size_t)addr;
-}
 
 void report(unsigned idx, uint8_t const *restrict bs, uint8_t const *restrict ref, size_t size) {
     fprintf(stderr, "bs%u differs\n", idx);

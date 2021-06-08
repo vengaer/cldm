@@ -1,4 +1,5 @@
 #include "avx2_strlen_fuzz.h"
+#include "memory_utils.h"
 
 #include <cldm/cldm_config.h>
 
@@ -9,18 +10,6 @@
 #include <string.h>
 
 extern unsigned long long cldm_avx2_strlen(char const *string);
-
-static inline char ascii_cvt(uint8_t byte) {
-    return isprint(byte) ? (char)byte : (char)(((unsigned char)byte & ('~' - ' ')) + ' ');
-}
-
-static inline size_t alignment(void const *addr) {
-    return (size_t)addr & -(size_t)addr;
-}
-
-static inline size_t pgdistance(void const *addr) {
-    return CLDM_PGSIZE - ((size_t)addr & (CLDM_PGSIZE - 1));
-}
 
 static void report_error(char const *str, unsigned long long reported, size_t actual) {
     fputs("Error encountered\n", stderr);
@@ -48,7 +37,7 @@ int avx2_strlen_fuzz(uint8_t const *data, size_t size) {
         return 0;
     }
     for(unsigned i = 0; i < size - 1; i++) {
-        str[i] = ascii_cvt(data[i]);
+        str[i] = asciicvt(data[i]);
     }
     str[size - 1] = 0;
 
