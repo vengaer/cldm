@@ -22,6 +22,7 @@ test/fuzz/corpora/argp/*
 test/fuzz/corpora/avx2_memcmp/*
 test/fuzz/corpora/avx2_memcpy/*
 test/fuzz/corpora/avx2_memset/*
+test/fuzz/corpora/avx2_memswp/*
 test/fuzz/corpora/avx2_scan_lt/*
 test/fuzz/corpora/avx2_strlen/*
 test/fuzz/corpora/avx2_strscpy/*
@@ -32,6 +33,7 @@ test/fuzz/corpora/rbtree/*
 !test/fuzz/corpora/avx2_memcmp/corpus_*
 !test/fuzz/corpora/avx2_memcpy/corpus_*
 !test/fuzz/corpora/avx2_memset/corpus_*
+!test/fuzz/corpora/avx2_memswp/corpus_*
 !test/fuzz/corpora/avx2_scan_lt/corpus_*
 !test/fuzz/corpora/avx2_strlen/corpus_*
 !test/fuzz/corpora/avx2_strscpy/corpus_*

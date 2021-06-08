@@ -2,6 +2,7 @@
 #include "avx2_memcmp_fuzz.h"
 #include "avx2_memcpy_fuzz.h"
 #include "avx2_memset_fuzz.h"
+#include "avx2_memswp_fuzz.h"
 #include "avx2_scan_lt_fuzz.h"
 #include "avx2_strlen_fuzz.h"
 #include "avx2_strscpy_fuzz.h"
@@ -24,6 +25,7 @@ static struct cldm_fuzzentry const entrypoints[] = {
     { "avx2_memcmp",  avx2_memcmp_fuzz  },
     { "avx2_memcpy",  avx2_memcpy_fuzz  },
     { "avx2_memset",  avx2_memset_fuzz  },
+    { "avx2_memswp",  avx2_memswp_fuzz  },
     { "avx2_scan_lt", avx2_scan_lt_fuzz },
     { "avx2_strlen",  avx2_strlen_fuzz  },
     { "avx2_strscpy", avx2_strscpy_fuzz },
