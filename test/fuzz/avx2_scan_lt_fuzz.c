@@ -22,10 +22,6 @@ static void dump(char const *str, int sentinel, unsigned scanlen, unsigned pos, 
 }
 
 int avx2_scan_lt_fuzz(uint8_t const *data, size_t size) {
-#ifndef CLDM_HAS_AVX2
-    fputs("cldm compiled without avx2 support\n", stderr);
-    abort();
-#endif
     bool crash;
     uint8_t sentinel;
     unsigned pos;

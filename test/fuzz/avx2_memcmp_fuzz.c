@@ -33,10 +33,6 @@ static void dump(uint8_t const *restrict dst, uint8_t const *restrict data, size
 }
 
 int avx2_memcmp_fuzz(uint8_t const *data, size_t size) {
-#ifndef CLDM_HAS_AVX2
-    fputs("cldm compiled without avx2 support\n", stderr);
-    abort();
-#endif
     bool crash;
     int rv;
     uint8_t *dst;

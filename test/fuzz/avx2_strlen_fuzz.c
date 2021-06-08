@@ -33,10 +33,6 @@ static void report_error(char const *str, unsigned long long reported, size_t ac
 }
 
 int avx2_strlen_fuzz(uint8_t const *data, size_t size) {
-#ifndef CLDM_HAS_AVX2
-    fputs("cldm compiled without avx2 support\n", stderr);
-    abort();
-#endif
     char *str;
     bool crash;
     unsigned long long reported;

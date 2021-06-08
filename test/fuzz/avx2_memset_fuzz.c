@@ -11,10 +11,6 @@
 extern void *cldm_avx2_memset(void *dst, int v, unsigned long long n);
 
 int avx2_memset_fuzz(uint8_t const *data, size_t size) {
-#ifndef CLDM_HAS_AVX2
-    fputs("cldm compiled without avx2 support\n", stderr);
-    abort();
-#endif
     bool crash;
     uint8_t *dst;
 
