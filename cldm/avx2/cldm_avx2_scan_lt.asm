@@ -9,8 +9,7 @@
         tzcnt   r10, r9                     ; Index of least significant bit
         cmp     r10d, 0x4                   ; Clamp
         cmova   r10d, r8d
-        shl     r10d, 3                     ; Multiply for offset
-        jmp     [rcx + r10]
+        jmp     [rcx + r10 * 8]             ; Jump to branch
     %endmacro
 
     %macro chkbyte 4

@@ -33,8 +33,7 @@ cldm_avx2_memswp:
     tzcnt   r8, rdi                         ; Trailing zerobits
     cmp     r8d, 0x04
     cmova   r8d, r10d                       ; Clamp
-    shl     r8d, 0x03                       ; Multiply for jump offset
-    jmp     [rcx + r8]                      ; Jump to branch
+    jmp     [rcx + r8 * 8]                  ; Jump to branch
 
 .aswpbyte:
     movzx   r8d, byte [rdi]                 ; Load bytes
@@ -48,8 +47,7 @@ cldm_avx2_memswp:
     tzcnt   r8, r9                          ; Trailing zerobits
     cmp     r8d, 0x04
     cmova   r8d, r10d                       ; Clamp
-    shl     r8d, 0x03                       ; Multiply for offset
-    jmp     [rcx + r8]
+    jmp     [rcx + r8 * 8]
 
 .aswpword:
     movzx   r8d, word [rdi + rax]           ; Load words
@@ -63,8 +61,7 @@ cldm_avx2_memswp:
     tzcnt   r8, r9
     cmp     r8d, 0x04
     cmova   r8d, r10d                       ; Clamp
-    shl     r8d, 0x03                       ; Multiply for offset
-    jmp     [rcx + r8]
+    jmp     [rcx + r8 * 8]
 .aswpdword:
     mov     r8d, dword [rdi + rax]          ; Load dwords
     mov     r9d, dword [rsi + rax]
@@ -77,8 +74,7 @@ cldm_avx2_memswp:
     tzcnt   r8, r9
     cmp     r8d, 0x04
     cmova   r8d, r10d                       ; Clamp
-    shl     r8d, 0x03                       ; Multiply for offset
-    jmp     [rcx + r8]
+    jmp     [rcx + r8 * 8]
 .aswpqword:
     mov     r8, qword [rdi + rax]           ; Load qwords
     mov     r9, qword [rsi + rax]
@@ -91,8 +87,7 @@ cldm_avx2_memswp:
     tzcnt   r8, r9
     cmp     r8d, 0x04
     cmova   r8d, r10d                       ; Clamp
-    shl     r8d, 0x03                       ; Multiply for offset
-    jmp     [rcx + r8]
+    jmp     [rcx + r8 * 8]
 .aswpxmmword:
     vmovdqa xmm0, [rdi + rax]               ; Load xmmwords
     vmovdqu xmm1, [rsi + rax]

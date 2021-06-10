@@ -30,9 +30,7 @@
         tzcnt   r9, r10                     ; Index of least significant set bit
         cmp     r9d, 0x4                    ; Check for 32 byte alignment
         cmova   r9d, r11d                   ; Clamp jump address to .rdymmword
-
-        shl     r9d, 0x3                    ; Multiply by 8 for offset
-        jmp     [rcx + r9]                  ; Jump to branch
+        jmp     [rcx + r9 * 8]              ; Jump to branch
     %endmacro
 
 ; AVX2-accelerated string copy routine.
@@ -61,7 +59,7 @@
 cldm_avx2_strscpy:
 
     section .data
-.align_table:
+.aligntbl:
     dq .rdbyte
     dq .rdword
     dq .rddword
@@ -80,7 +78,7 @@ cldm_avx2_strscpy:
 
     vpxor   ymm15, ymm15                    ; Zero for detecting null in x/ymmword
 
-    lea     rcx, [.align_table]             ; Load jump table
+    lea     rcx, [.aligntbl]                ; Load jump table
     alignjmp                                ; Jump to branch
 
 .rdbyte:                                    ; Source aligned to 1 byte boundary

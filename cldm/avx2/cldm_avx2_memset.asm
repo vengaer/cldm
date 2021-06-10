@@ -14,8 +14,7 @@
         cmp     ecx, 0x2                    ; Check for 8 byte alignment
         cmova   ecx, r8d                    ; Clamp jump offset
 
-        shl     ecx, 0x3                    ; Multiply by 8 for offset
-        jmp     [r9 + rcx]
+        jmp     [r9 + rcx * 8]
     %endmacro
 
 ; AVX2-accelerated memset
@@ -133,7 +132,7 @@ cldm_avx2_memset:
 .dresidual:
 
     section .data
-.residual_table:
+.restbl:
     dq .wrbyte
     dq .wrword
     dq .wrdword
@@ -141,7 +140,7 @@ cldm_avx2_memset:
 
     section .text
 
-    lea     r9, [.residual_table]           ; Load jump table
+    lea     r9, [.restbl]                   ; Load jump table
     mov     r8d, 0x3                        ; For clamping jump offset
     lea     r10, [rax + rdx]                ; Upper bound for writes
     mov     r11, 0x0101010101010101
