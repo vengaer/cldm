@@ -62,11 +62,11 @@ def test_readme_build():
     cgen.append_include('cldm.h', system_header=False)
     cgen.append_include('resource.h', system_header=False)
     cgen.append_include('assert.h')
-    with cgen.open_macro('TEST', 'foo'):
+    with cgen.open_macro('TEST', 'user_defined'):
         cgen.append_line('int i = 12;')
         cgen.append_line('WHEN_CALLED(get_resource).SHOULD_ONCE(RETURN(&i));')
         cgen.append_line('int *res = get_resource(0);')
-        cgen.append_line('assert(res == &i);')
+        cgen.append_line('ASSERT_EQ(res, &i);')
 
     cgen.write()
 
@@ -95,16 +95,15 @@ def test_readme_incorrect_build():
     cgen.append_include('cldm.h', system_header=False)
     cgen.append_include('resource.h', system_header=False)
     cgen.append_include('assert.h')
-    with cgen.open_function('int', 'main'):
+    with cgen.open_macro('TEST', 'user_defined'):
         cgen.append_line('int i = 12;')
         cgen.append_line('WHEN_CALLED(get_resource).SHOULD_ONCE(RETURN(&i));')
         cgen.append_line('int *res = get_resource(0);')
-        cgen.append_line('assert(res == &i);')
-        cgen.append_return(0)
+        cgen.append_line('ASSERT_EQ(res, &i);')
     cgen.write()
 
     assert build_cldm()[0] == 0
-    assert exec_bash('gcc -o {d}/a.out {d}/test.c {d}/resource.c -L{root} -lcldm -I{root}/cldm'.format(d=working_dir, root=project_root))[0] == 0
+    assert exec_bash('gcc -o {d}/a.out {d}/test.c {d}/resource.c -L{root} -lcldm -lcldm_main -I{root}/cldm'.format(d=working_dir, root=project_root))[0] == 0
     assert exec_bash('LD_PRELOAD={root}/libcldm.so LD_LIBRARY_PATH={wd} {wd}/a.out'.format(root=project_root, wd=working_dir))[0] != 0
 
 def test_readme_assign():
