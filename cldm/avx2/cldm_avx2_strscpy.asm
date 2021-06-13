@@ -59,6 +59,7 @@
 cldm_avx2_strscpy:
 
     section .data
+    align   8
 .aligntbl:
     dq .rdbyte
     dq .rdword

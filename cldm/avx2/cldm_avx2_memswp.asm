@@ -17,6 +17,7 @@ cldm_avx2_memswp:
     je      .uswpymmwd
 
     section .data
+    align   8
 .aligntbl:
     dq .aswpbyte
     dq .aswpword

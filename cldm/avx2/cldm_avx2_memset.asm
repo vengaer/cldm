@@ -132,6 +132,7 @@ cldm_avx2_memset:
 .dresidual:
 
     section .data
+    align   8
 .restbl:
     dq .wrbyte
     dq .wrword
