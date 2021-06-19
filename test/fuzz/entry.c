@@ -4,6 +4,7 @@
 #include "avx2_memset_fuzz.h"
 #include "avx2_memswp_fuzz.h"
 #include "avx2_scan_lt_fuzz.h"
+#include "avx2_strcmp_fuzz.h"
 #include "avx2_strlen_fuzz.h"
 #include "avx2_strscpy_fuzz.h"
 #include "hash_fuzz.h"
@@ -31,6 +32,7 @@ static int avx2_err(uint8_t const *data, size_t size) {
     fputs("cldm compiled without AVX2 support\n", stderr);
     usage();
     abort();
+    return 0;
 }
 #endif
 
@@ -41,6 +43,7 @@ static struct cldm_fuzzentry const entrypoints[] = {
     { "avx2_memset",  avx2_memset_fuzz  },
     { "avx2_memswp",  avx2_memswp_fuzz  },
     { "avx2_scan_lt", avx2_scan_lt_fuzz },
+    { "avx2_strcmp",  avx2_strcmp_fuzz  },
     { "avx2_strlen",  avx2_strlen_fuzz  },
     { "avx2_strscpy", avx2_strscpy_fuzz },
 #else
@@ -48,9 +51,10 @@ static struct cldm_fuzzentry const entrypoints[] = {
     { "avx2_memcpy",  avx2_err          },
     { "avx2_memset",  avx2_err          },
     { "avx2_memswp",  avx2_err          },
-    { "avx2_scan_lt", avx2_err         },
+    { "avx2_scan_lt", avx2_err          },
+    { "avx2_strcmp",  avx2_err          },
     { "avx2_strlen",  avx2_err          },
-    { "avx2_strscpy", avx2_err         },
+    { "avx2_strscpy", avx2_err          },
 #endif
     { "rbtree",       rbtree_fuzz       },
     { "argp",         argp_fuzz         },
