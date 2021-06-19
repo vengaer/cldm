@@ -29,12 +29,13 @@ cldm_avx2_strlen:
     and     rax, -0x20
     sub     rax, rdi
 
-.cmp128b:                                       ; Compare 4 ymmwords at a time
+.cmp128b_prologue:                              ; Compare 4 ymmwords at a time
     lea     rcx, [rdi + rax]
     and     ecx, PGSIZE - 1
     cmp     ecx, PGSIZE - 0x80                  ; Check whether reading 4 ymmwords would cross page boundary
     ja      .pgcross_aligned
 
+.cmp128b:
     vmovdqa ymm0, [rdi + rax + 0x00]            ; Read ymmwords and check for nullbytes in each
     vpcmpeqb    ymm0, ymm0, ymm15
     vmovdqa ymm1, [rdi + rax + 0x20]
@@ -51,7 +52,7 @@ cldm_avx2_strlen:
     jnz     .nullchk
 
     add     rax, 0x80                           ; Increment offset
-    jmp     .cmp128b
+    jmp     .cmp128b_prologue
 
 .nullchk:
     vpmovmskb   esi, ymm4                       ; Check for null byte in low zmmword
