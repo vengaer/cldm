@@ -4,6 +4,7 @@
     global cldm_avx2_strcmp
 
     %include "cldm_config.S"
+
     %macro  pgchk 2
         %if %2 != 0
             test    r10b, r10b                  ; Check if in a jump chain
