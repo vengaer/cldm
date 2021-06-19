@@ -5,6 +5,8 @@ class config {
 fuzztargets = ['avx2_memcmp', 'avx2_memcpy', 'avx2_memset', 'avx2_memswp', 'avx2_scan_lt', 'avx2_strcmp', 'avx2_strlen', 'avx2_strscpy', 'rbtree', 'argp', 'hash']
 ccs = ['gcc', 'clang']
 
+valid_types = [ 'fuzz' ]
+
 pipeline {
     agent none
     environment {
@@ -12,6 +14,19 @@ pipeline {
         ARTIFACT_DIR='artifacts'
     }
     stages {
+        stage('Validate Environment') {
+            agent any
+            steps {
+                script {
+                    if(env.TYPE && !valid_types.contains(env.TYPE)) {
+                        error("Invalid type ${TYPE}")
+                    }
+                    if(env.FUZZTARGET && !fuzztargets.contains(env.FUZZTARGET)) {
+                        error("Invalid fuzzer target ${FUZZTARGET}")
+                    }
+                }
+            }
+        }
         stage('Gitlab Pending') {
             steps {
                 echo 'Notifying Gitlab'
