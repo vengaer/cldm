@@ -29,11 +29,13 @@ pipeline {
             when {
                 beforeAgent true
                 expression {
-                    return env.TARGET != 'fuzz'
+                    return env.TYPE != 'fuzz'
                 }
             }
             agent {
-                docker { image "${DOCKER_IMAGE}" }
+                docker {
+                    image "${DOCKER_IMAGE}"
+                }
             }
             steps {
                 script {
@@ -48,11 +50,13 @@ pipeline {
             when {
                 beforeAgent true
                 expression {
-                    return env.TARGET != 'fuzz'
+                    return env.TYPE != 'fuzz'
                 }
             }
             agent {
-                docker { image "${DOCKER_IMAGE}" }
+                docker {
+                    image "${DOCKER_IMAGE}"
+                }
             }
             steps {
                 script {
@@ -70,7 +74,9 @@ pipeline {
         }
         stage('Fetch Corpora') {
             agent {
-                docker { image "${DOCKER_IMAGE}" }
+                docker {
+                    image "${DOCKER_IMAGE}"
+                }
             }
             steps {
                 echo 'Copying existing corpora'
@@ -88,7 +94,9 @@ pipeline {
         }
         stage('Build Fuzzer') {
             agent {
-                docker { image "${DOCKER_IMAGE}" }
+                docker {
+                    image "${DOCKER_IMAGE}"
+                }
             }
             steps {
                 echo '-- Building Fuzzer --'
@@ -97,14 +105,19 @@ pipeline {
         }
         stage('Merge Corpora') {
             agent {
-                docker { image "${DOCKER_IMAGE}" }
+                docker {
+                    image "${DOCKER_IMAGE}"
+                }
             }
             steps {
                 script {
                     fuzztargets.each { target ->
-                        echo "Merging ${target} corpora"
                         if(fileExists("${ARTIFACT_DIR}/prev/${target}")) {
+                            echo "Merging ${target} corpora"
                             sh "CLDM_FUZZTARGET=${target} make fuzzmerge CORPORA=${ARTIFACT_DIR}/prev/${target}"
+                        }
+                        else {
+                            echo "No corpora found for ${target}"
                         }
                     }
                 }
@@ -112,23 +125,27 @@ pipeline {
         }
         stage('Dynamic Fuzzing') {
             agent {
-                docker { image "${DOCKER_IMAGE}" }
+                docker {
+                    image "${DOCKER_IMAGE}"
+                }
             }
             steps {
                 script {
+                    if(env.TYPE == 'fuzz') {
+                        nruns = config.NFUZZRUNS
+                        fuzztime = 240
+                    }
+                    else {
+                        nruns = 1
+                        fuzztime = 25
+                    }
                     fuzztargets.each { target ->
                         stage("Fuzz ${target}") {
-                            if(env.TARGET == 'fuzz') {
-                                nruns = config.NFUZZRUNS
-                                fuzztime = 240
-                            }
-                            else {
-                                nruns = 1
-                                fuzztime = 25
-                            }
-                            for(int i = 0; i < nruns; i++) {
-                                echo "Fuzzing ${target} ${i + 1}/${nruns}"
-                                sh "CLDM_FUZZTARGET=${target} make fuzzrun FUZZTIME=${fuzztime}"
+                            if(!env.FUZZTARGET || env.FUZZTARGET == "${target}") {
+                                for(int i = 0; i < nruns; i++) {
+                                    echo "Fuzzing ${target} ${i + 1}/${nruns}"
+                                    sh "CLDM_FUZZTARGET=${target} make fuzzrun FUZZTIME=${fuzztime}"
+                                }
                             }
                         }
                     }
