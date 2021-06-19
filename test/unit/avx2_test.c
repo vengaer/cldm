@@ -13,6 +13,7 @@ extern int cldm_avx2_memcmp(void const *s0, void const *s1, unsigned long long n
 extern unsigned cldm_avx2_scan_lt(char const *str, int sentinel);
 extern unsigned long long cldm_avx2_strlen(char const *str);
 extern void cldm_avx2_memswp(void *restrict s0, void *restrict s1, unsigned long long n);
+extern int cldm_avx2_strcmp(char const *str0, char const *str1);
 
 TEST(cldm_avx2_strscpy) {
     enum { SIZE = 256 };
@@ -244,6 +245,34 @@ TEST(cldm_avx2_memswp_residual) {
     cldm_avx2_memswp(bs0, bs1, sizeof(bs0));
     ASSERT_EQ(memcmp(bs0, ref0, sizeof(bs0)), 0);
     ASSERT_EQ(memcmp(bs1, ref1, sizeof(bs1)), 0);
+}
+
+TEST(cldm_avx2_strcmp) {
+    enum { SIZE = 128 };
+
+    char buf0[SIZE];
+    char buf1[SIZE];
+
+    ASSERT_EQ(cldm_avx2_strcmp("", ""), 0);
+
+    strcpy(buf0, "cornucopia");
+    strcpy(buf1, "cornucopia");
+
+    ASSERT_EQ(cldm_avx2_strcmp(buf0, buf1), 0);
+
+    strcpy(buf1, "cosmic");
+
+    ASSERT_LT(cldm_avx2_strcmp(buf0, buf1), 0);
+    ASSERT_GT(cldm_avx2_strcmp(buf1, buf0), 0);
+
+    strcpy(buf0, "Decrepit ruins, an ancient fane in disarray. Rivers of cadaverine snake below obsidian palisades");
+    strcpy(buf1, "Decrepit ruins, an ancient fane in disarray. Rivers of cadaverine snake below obsidian palisades");
+
+    ASSERT_EQ(cldm_avx2_strcmp(buf0, buf1), 0);
+    strcpy(buf1, "Decrepit ruins, an ancient fane in disarray. Rivers of cadaverine snake below obsidian palisades. Bathed in an ill moonlight");
+
+    ASSERT_LT(cldm_avx2_strcmp(buf0, buf1), 0);
+    ASSERT_GT(cldm_avx2_strcmp(buf1, buf0), 0);
 }
 
 #endif /* CLDM_HAS_AVX2 */
