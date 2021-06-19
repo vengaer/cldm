@@ -30,7 +30,7 @@ cldm_avx2_strlen:
     sub     rax, rdi
 
 .cmp128b:                                   ; Compare 4 ymmwords at a time
-    lea     ecx, [edi + eax]
+    lea     rcx, [rdi + rax]
     and     ecx, PGSIZE - 1
     cmp     ecx, PGSIZE - 0x80              ; Check whether reading 4 ymmwords would cross page boundary
     ja      .pgcross_aligned
@@ -102,7 +102,7 @@ cldm_avx2_strlen:
     jnz     .epi_offset
 
     add     rax, 0x20
-    lea     ecx, [rdi + rax]                ; Address of next load
+    lea     rcx, [rdi + rax]                ; Address of next load
     and     ecx, PGSIZE - 1                 ; Check for page alignment
     test    ecx, ecx
     jz      .cmp128b
@@ -120,7 +120,7 @@ cldm_avx2_strlen:
     add     rax, 0x10                       ; Increment size
 
 .pgcross_qword:
-    lea     ecx, [edi + eax]
+    lea     rcx, [rdi + rax]
     and     ecx, PGSIZE - 1                 ; Mask out page offset
     test    ecx, ecx
     jz      .cmp128b
@@ -135,7 +135,7 @@ cldm_avx2_strlen:
     add     rax, 0x8                        ; Increment size
 
 .pgcross_dword:
-    lea     ecx, [edi + eax]
+    lea     rcx, [rdi + rax]
     and     ecx, PGSIZE - 1                 ; Mask out page offset
     test    ecx, ecx
     jz      .cmp128b
@@ -150,7 +150,7 @@ cldm_avx2_strlen:
     add     rax, 0x4                        ; Increment size
 
 .pgcross_word:
-    lea     ecx, [edi + eax]
+    lea     rcx, [rdi + rax]
     and     ecx, PGSIZE - 1                 ; Mask out page offset
     test    ecx, ecx
     jz      .cmp128b
@@ -166,7 +166,7 @@ cldm_avx2_strlen:
     add     rax, 0x2                        ; Increment size
 
 .pgcross_byte:
-    lea     ecx, [rdi + rax]                ; Check whether address is aligned
+    lea     rcx, [rdi + rax]                ; Check whether address is aligned
     test    ecx, 0x1
     jz      .cmp128b
 
