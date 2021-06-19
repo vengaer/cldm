@@ -10,17 +10,9 @@
 
 extern int cldm_avx2_memcmp(void const *s0, void const *s1, unsigned long long n);
 
-static void hexdump(char const *restrict bufname, uint8_t const *restrict data, size_t size) {
-    fprintf(stderr, "%s:\n  { ", bufname);
-    for(unsigned i = 0; i < size; i++) {
-        fprintf(stderr, "0x%02x, ", data[i]);
-    }
-    fprintf(stderr, "\b\b }\n  Length: %zu\n  Alignment: %zu\n", size, alignment(data));
-}
-
 static void dump(uint8_t const *restrict dst, uint8_t const *restrict data, size_t size) {
-    hexdump("dst", dst, size);
-    hexdump("data", data, size);
+    hexdump("dst", dst, size, stderr);
+    hexdump("data", data, size, stderr);
     for(unsigned i = 0; i < size; i++) {
         if(dst[i] != data[i]) {
             fprintf(stderr, "Offending byte at offset %u\n", i);
