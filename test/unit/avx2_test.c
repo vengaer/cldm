@@ -14,6 +14,7 @@ extern unsigned cldm_avx2_scan_lt(char const *str, int sentinel);
 extern unsigned long long cldm_avx2_strlen(char const *str);
 extern void cldm_avx2_memswp(void *restrict s0, void *restrict s1, unsigned long long n);
 extern int cldm_avx2_strcmp(char const *str0, char const *str1);
+extern char *cldm_avx2_strrchr(char const *str, int c);
 
 TEST(cldm_avx2_strscpy) {
     enum { SIZE = 256 };
@@ -256,7 +257,7 @@ TEST(cldm_avx2_strcmp) {
     ASSERT_EQ(cldm_avx2_strcmp("", ""), 0);
 
     strcpy(buf0, "cornucopia");
-    strcpy(buf1, "cornucopia");
+    strcpy(buf1, buf0);
 
     ASSERT_EQ(cldm_avx2_strcmp(buf0, buf1), 0);
 
@@ -266,13 +267,28 @@ TEST(cldm_avx2_strcmp) {
     ASSERT_GT(cldm_avx2_strcmp(buf1, buf0), 0);
 
     strcpy(buf0, "Decrepit ruins, an ancient fane in disarray. Rivers of cadaverine snake below obsidian palisades");
-    strcpy(buf1, "Decrepit ruins, an ancient fane in disarray. Rivers of cadaverine snake below obsidian palisades");
+    strcpy(buf1, buf0);
 
     ASSERT_EQ(cldm_avx2_strcmp(buf0, buf1), 0);
     strcpy(buf1, "Decrepit ruins, an ancient fane in disarray. Rivers of cadaverine snake below obsidian palisades. Bathed in an ill moonlight");
 
     ASSERT_LT(cldm_avx2_strcmp(buf0, buf1), 0);
     ASSERT_GT(cldm_avx2_strcmp(buf1, buf0), 0);
+}
+
+TEST(cldm_avx2_strrchr) {
+    enum { SIZE = 128 };
+
+    char buf[SIZE];
+
+    strcpy(buf, "Is this how you want to live your lives? Inside the vulture's circle. Can you feel the talons in your neck?");
+    ASSERT_EQ(cldm_avx2_strrchr(buf, '\0'), strrchr(buf, '\0'));
+    ASSERT_EQ(cldm_avx2_strrchr(buf, ' '), strrchr(buf, ' '));
+    ASSERT_EQ(cldm_avx2_strrchr(buf, 's'), strrchr(buf, 's'));
+    ASSERT_EQ(cldm_avx2_strrchr(buf, 'C'), strrchr(buf, 'C'));
+    ASSERT_EQ(cldm_avx2_strrchr(buf, '?'), strrchr(buf, '?'));
+    ASSERT_EQ(cldm_avx2_strrchr(buf, 'I'), strrchr(buf, 'I'));
+    ASSERT_EQ(cldm_avx2_strrchr(buf, 'r'), strrchr(buf, 'r'));
 }
 
 #endif /* CLDM_HAS_AVX2 */
