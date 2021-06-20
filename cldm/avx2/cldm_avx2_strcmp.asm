@@ -218,7 +218,6 @@ cldm_avx2_strcmp:
 
 .pgcross_word:
     pgchk   0x02, 1                             ; Check if reading word risks crossing page boundary
-    seta    r10b                                ; If so, avoid recomputing page position
     ja      .pgcross_byte
 
     movzx   edx, word [rdi + rcx]               ; First string aligned, read word
