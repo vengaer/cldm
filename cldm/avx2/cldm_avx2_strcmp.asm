@@ -221,22 +221,24 @@ cldm_avx2_strcmp:
     seta    r10b                                ; If so, avoid recomputing page position
     ja      .pgcross_byte
 
-    movzx   eax, byte [rdi + rcx]               ; Read first byte of word from each string
-    movzx   edx, byte [rsi + rcx]
+    movzx   edx, word [rdi + rcx]               ; First string aligned, read word
+    movzx   r11d, byte [rsi + rcx]              ; Byte from second string
 
-    sub     eax, edx                            ; Compare
+    movzx   eax, dl                             ; First byte
+
+    sub     eax, r11d                           ; Compare
     jnz     .epi
 
-    add     eax, edx                            ; Check for null
+    add     eax, r11d                           ; Check for null
     jz      .epi
 
-    movzx   eax, byte [rdi + rcx + 0x01]        ; Read second byte of word from each string
-    movzx   edx, byte [rsi + rcx + 0x01]
+    movzx   eax, dh                             ; Second byte already loaded
+    movzx   r11d, byte [rsi + rcx + 0x01]       ; Load second byte
 
-    sub     eax, edx                            ; Compare
+    sub     eax, r11d                           ; Compare
     jnz     .epi
 
-    add     eax, edx                            ; Check for null
+    add     eax, r11d                           ; Check for null
     jz      .epi
 
     add     ecx, 0x02                           ; Advance offset
@@ -292,7 +294,7 @@ cldm_avx2_strcmp:
     seta    r10b                                ; If so, avoid recomputing page position
     ja      .pgcross_qword
 
-    vmovdqu xmm0, [rdi + rcx]                   ; Check for differing bytes
+    vmovdqa xmm0, [rdi + rcx]                   ; Check for differing bytes
     vpcmpeqb    xmm1, xmm0, [rsi + rcx]         ; Compare for equality
     vptest  xmm1, xmm14
     jnc     .pgcross_diff
