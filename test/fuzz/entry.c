@@ -6,6 +6,7 @@
 #include "avx2_scan_lt_fuzz.h"
 #include "avx2_strcmp_fuzz.h"
 #include "avx2_strlen_fuzz.h"
+#include "avx2_strrchr_fuzz.h"
 #include "avx2_strscpy_fuzz.h"
 #include "hash_fuzz.h"
 #include "rbtree_fuzz.h"
@@ -45,6 +46,7 @@ static struct cldm_fuzzentry const entrypoints[] = {
     { "avx2_scan_lt", avx2_scan_lt_fuzz },
     { "avx2_strcmp",  avx2_strcmp_fuzz  },
     { "avx2_strlen",  avx2_strlen_fuzz  },
+    { "avx2_strrchr", avx2_strrchr_fuzz },
     { "avx2_strscpy", avx2_strscpy_fuzz },
 #else
     { "avx2_memcmp",  avx2_err          },
@@ -54,6 +56,7 @@ static struct cldm_fuzzentry const entrypoints[] = {
     { "avx2_scan_lt", avx2_err          },
     { "avx2_strcmp",  avx2_err          },
     { "avx2_strlen",  avx2_err          },
+    { "avx2_strrchr", avx2_err          },
     { "avx2_strscpy", avx2_err          },
 #endif
     { "rbtree",       rbtree_fuzz       },

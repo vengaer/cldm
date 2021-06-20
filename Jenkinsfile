@@ -2,7 +2,7 @@ class config {
     public static final int NFUZZRUNS = 30
 }
 
-fuzztargets = ['avx2_memcmp', 'avx2_memcpy', 'avx2_memset', 'avx2_memswp', 'avx2_scan_lt', 'avx2_strcmp', 'avx2_strlen', 'avx2_strscpy', 'rbtree', 'argp', 'hash']
+fuzztargets = ['avx2_memcmp', 'avx2_memcpy', 'avx2_memset', 'avx2_memswp', 'avx2_scan_lt', 'avx2_strcmp', 'avx2_strlen', 'avx2_strrchr', 'avx2_strscpy', 'rbtree', 'argp', 'hash']
 ccs = ['gcc', 'clang']
 
 valid_types = [ 'fuzz' ]
