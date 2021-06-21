@@ -280,14 +280,14 @@ cldm_avx2_memswp:
     cmp     edx, eax                            ; Check word against upper bound
     jb      .uswpbyte
 
-    movzx   r8d, byte [rdi + rax - 0x02]        ; Load, swap and store
-    movzx   r9d, byte [rsi + rax - 0x02]
+    movzx   r8d, word [rdi + rax - 0x02]
+    movzx   r9d, word [rsi + rax - 0x02]
     mov     byte [rdi + rax - 0x02], r9b
     mov     byte [rsi + rax - 0x02], r8b
 
+    shr     r8d, 8
+    shr     r9d, 8
 
-    movzx   r8d, byte [rdi + rax - 0x01]
-    movzx   r9d, byte [rsi + rax - 0x01]
     mov     byte [rdi + rax - 0x01], r9b
     mov     byte [rsi + rax - 0x01], r8b
 
