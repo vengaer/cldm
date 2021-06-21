@@ -1,13 +1,11 @@
 #include "avx2_scan_lt_fuzz.h"
 #include "memory_utils.h"
 
-#include <cldm/cldm_config.h>
+#include <cldm/cldm_avx2.h>
 
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-extern unsigned cldm_avx2_scan_lt(char const *str, int sentinel);
 
 static void dump(char const *str, int sentinel, unsigned scanlen, unsigned pos, size_t size) {
     fputs("Invalid length\n", stderr);

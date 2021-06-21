@@ -1,13 +1,13 @@
 #include "avx2_strrchr_fuzz.h"
 #include "memory_utils.h"
 
+#include <cldm/cldm_avx2.h>
+
 #include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-extern char *cldm_avx2_strrchr(char const *str, int c);
 
 static void report_error(char const *res0, char const *res1, char const *str, int c, size_t size) {
     fprintf(stderr, "Error encountered looking for %c (%d)\n", (char)c, c);

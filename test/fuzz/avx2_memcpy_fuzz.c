@@ -1,14 +1,12 @@
 #include "avx2_memcpy_fuzz.h"
 #include "memory_utils.h"
 
-#include <cldm/cldm_config.h>
+#include <cldm/cldm_avx2.h>
 
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-extern void *cldm_avx2_memcpy(void *restrict dst, void const *restrict src, unsigned long long n);
 
 static void dump(uint8_t const *restrict dst, uint8_t const *restrict data, size_t size) {
     hexdump("dst", dst, size, stderr);

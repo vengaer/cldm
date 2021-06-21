@@ -1,15 +1,13 @@
 #include "avx2_strlen_fuzz.h"
 #include "memory_utils.h"
 
-#include <cldm/cldm_config.h>
+#include <cldm/cldm_avx2.h>
 
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-extern unsigned long long cldm_avx2_strlen(char const *string);
 
 static void report_error(char const *str, unsigned long long reported, size_t actual) {
     fputs("Error encountered\n", stderr);

@@ -1,14 +1,12 @@
 #include "avx2_memset_fuzz.h"
 
-#include <cldm/cldm_config.h>
+#include <cldm/cldm_avx2.h>
 
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-extern void *cldm_avx2_memset(void *dst, int v, unsigned long long n);
 
 int avx2_memset_fuzz(uint8_t const *data, size_t size) {
     bool crash;

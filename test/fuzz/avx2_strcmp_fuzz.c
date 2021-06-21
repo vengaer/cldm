@@ -1,12 +1,12 @@
 #include "avx2_strcmp_fuzz.h"
 #include "memory_utils.h"
 
+#include <cldm/cldm_avx2.h>
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-extern int cldm_avx2_strcmp(char const *string0, char const *string1);
 
 static inline bool reseq(int l, int r) {
     return (l < 0 && r < 0) || (!l && !r) || (l > 0 && r > 0);

@@ -1,7 +1,7 @@
 #include "avx2_strscpy_fuzz.h"
 #include "memory_utils.h"
 
-#include <cldm/cldm_config.h>
+#include <cldm/cldm_avx2.h>
 
 #include <limits.h>
 #include <stdbool.h>
@@ -12,8 +12,6 @@
 
 enum { VECSIZE = 32 };
 enum { STRINGSIZE = 8192 };
-
-extern long long cldm_avx2_strscpy(char *restrict dst, char const *restrict src, unsigned long long dstsize);
 
 static void report_error(char const *restrict type, char const *restrict src, char const *restrict dst, size_t srcsize, size_t dstsize) {
     fprintf(stderr, "Error encountered: %s\n", type);

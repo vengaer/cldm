@@ -1,14 +1,12 @@
 #include "avx2_memswp_fuzz.h"
 #include "memory_utils.h"
 
-#include <cldm/cldm_config.h>
+#include <cldm/cldm_avx2.h>
 
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-extern void cldm_avx2_memswp(void *restrict s0, void *restrict s1, unsigned long long n);
 
 void report(unsigned idx, uint8_t const *restrict bs, uint8_t const *restrict ref, size_t size) {
     fprintf(stderr, "bs%u differs\n", idx);
