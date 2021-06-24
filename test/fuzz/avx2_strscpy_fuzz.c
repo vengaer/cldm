@@ -20,11 +20,13 @@ static void report_error(char const *restrict type, char const *restrict src, ch
     fprintf(stderr, "  length: %zu\n", strlen(src));
     fprintf(stderr, "  address: %p\n", (void const *)src);
     fprintf(stderr, "  alignment: %zu\n", alignment(src));
+    fprintf(stderr, "  distance to page boundary: %zu\n", pgdistance(src));
     fprintf(stderr, "dst: %s\n", dst);
     fprintf(stderr, "  size: %zu\n", dstsize);
     fprintf(stderr, "  length %zu\n", strlen(dst));
     fprintf(stderr, "  address: %p\n", (void const *)dst);
     fprintf(stderr, "  alignment: %zu\n", alignment(dst));
+    fprintf(stderr, "  distance to page boundary: %zu\n", pgdistance(dst));
 }
 
 int avx2_strscpy_fuzz(uint8_t const *data, size_t size) {
