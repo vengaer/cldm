@@ -20,8 +20,15 @@ TEST(token_1) {
     ASSERT_FALSE(cldm_token_1(asdf));
 }
 
+TEST(token_noreturn) {
+    ASSERT_TRUE(cldm_token_noreturn(_Noreturn));
+    ASSERT_TRUE(cldm_token_noreturn(noreturn));
+    ASSERT_FALSE(cldm_token_noreturn(oreturn));
+}
+
 TEST(repeat_token) {
 #define m(_, v)   ASSERT_EQ(v,30)
     cldm_map_separate(m, ;, cldm_repeat_token(30, 8));
 #undef m
 }
+
