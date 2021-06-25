@@ -20,9 +20,8 @@ cldm_avx2_strlen:
     ja      .pgcross_unaligned
 
     vmovdqu ymm0, [rdi]                         ; Single unaligned read
-    vpcmpeqb    ymm1, ymm0, ymm15
-    vpmovmskb   esi, ymm1
-    test    esi, esi
+    vpcmpeqb    ymm4, ymm0, ymm15
+    vptest  ymm4, ymm4
     jnz     .ymmwd0
 
     lea     rax, [rdi + 0x20]                   ; Align next read to 32 byte boundary
@@ -37,71 +36,72 @@ cldm_avx2_strlen:
 
 .cmp128b:
     vmovdqa ymm0, [rdi + rax + 0x00]            ; Read ymmwords and check for nullbytes in each
-    vpcmpeqb    ymm0, ymm0, ymm15
+    vpcmpeqb    ymm4, ymm0, ymm15
     vmovdqa ymm1, [rdi + rax + 0x20]
-    vpcmpeqb    ymm1, ymm1, ymm15
+    vpcmpeqb    ymm5, ymm1, ymm15
     vmovdqa ymm2, [rdi + rax + 0x40]
-    vpcmpeqb    ymm2, ymm2, ymm15
+    vpcmpeqb    ymm6, ymm2, ymm15
     vmovdqa ymm3, [rdi + rax + 0x60]
-    vpcmpeqb    ymm3, ymm3, ymm15
-    vpor    ymm4, ymm0, ymm1                    ; Reduce
-    vpor    ymm5, ymm2, ymm3
-    vpor    ymm6, ymm4, ymm5
-    vpmovmskb   esi, ymm6                       ; Extract bitmask
-    test    esi, esi                            ; Check if there were null lanes
+    vpcmpeqb    ymm7, ymm3, ymm15
+    vpor    ymm8, ymm4, ymm5                    ; Reduce
+    vpor    ymm9, ymm6, ymm7
+    vpor    ymm10, ymm8, ymm9
+    vptest  ymm10, ymm10
     jnz     .nullchk
 
     add     rax, 0x80                           ; Increment offset
     jmp     .cmp128b_prologue
 
 .nullchk:
-    vpmovmskb   esi, ymm4                       ; Check for null byte in low zmmword
-    test    esi, esi
+    vptest  ymm8, ymm8                          ; Check for null byte in low zmmword
     jnz     .zmmwd0
 
-    vpmovmskb   esi, ymm2                       ; Check for null byte in third ymmword
-    test    esi, esi
+    vptest  ymm6, ymm6                          ; Check for null byte in third ymmword
     jnz     .ymmwd2
 
-    add     rax, 0x60                           ; Null byte is in fourth ymmword
-    vpmovmskb   esi, ymm3                       ; Extract bitmask
+    vpmovmskb   esi, ymm7                       ; Extract bitmask
     tzcnt   edx, esi                            ; Offset in ymmword
-    add     rax, rdx
+    lea     rax, [rax + rdx + 0x60]
     vzeroupper
     ret
 
 .zmmwd0:
-    vpmovmskb   esi, ymm0                       ; Check for null byte in first ymmword
-    test    esi, esi
+    vptest  ymm4, ymm4                          ; Check for null byte in first ymmword
     jnz     .ymmwd0
 
-    add     rax, 0x20                           ; Null byte is in second ymmword
-    vpmovmskb   esi, ymm1                       ; Compute null byte offset
+    vpmovmskb   esi, ymm5                       ; Compute null byte offset
     tzcnt   edx, esi                            ; Offset in ymmword
-    add     rax, rdx
+    lea     rax, [rax + rdx + 0x20]
     vzeroupper
     ret
 
 .ymmwd0:
-    tzcnt   edx, esi                            ; Offset in ymmword
+    vpmovmskb   esi, ymm4                       ; Compute offset of null byte in ymmword
+    tzcnt   edx, esi
     add     rax, rdx
     vzeroupper
     ret
 
 .ymmwd2:
-    add     rax, 0x40                           ; Null byte is in third ymmword
+    vpmovmskb   esi, ymm6                       ; Null byte in third ymmword
     tzcnt   edx, esi                            ; Offset in ymmword
-    add     rax, rdx
+    lea     rax, [rax + rdx + 0x40]
     vzeroupper
     ret
 
 .pgcross_aligned:                               ; Reading 4 ymmwords would cross page boundary
     vmovdqa ymm0, [rdi + rax]                   ; Load single ymmword
-    vpcmpeqb    ymm1, ymm0, ymm15               ; Check for null
-    vpmovmskb   esi, ymm1                       ; Extract bitmask
-    test    esi, esi
-    jnz     .epi_offset
+    vpcmpeqb    ymm4, ymm0, ymm15               ; Check for null
+    vptest  ymm4, ymm4
+    jz      .pgcross_aligned_next
 
+    vpmovmskb   esi, ymm4
+    tzcnt   edx, esi
+    add     rax, rdx
+    vzeroupper
+    ret
+
+.pgcross_aligned_next:
     add     rax, 0x20
     lea     rcx, [rdi + rax]                    ; Address of next load
     and     ecx, PGSIZE - 1                     ; Check for page alignment
@@ -114,10 +114,17 @@ cldm_avx2_strlen:
     ja      .pgcross_qword
 
     vmovdqu xmm0, [rdi]                         ; Load xmmword
-    vpcmpeqb    xmm1, xmm0, xmm15               ; Check for null
-    vpmovmskb   esi, xmm1                       ; Extract bitmask
-    test    esi, esi
-    jnz     .epi_offset
+    vpcmpeqb    xmm4, xmm0, xmm15               ; Check for null
+    vptest  xmm4, xmm4
+    jz      .pgcross_unaligned_next
+
+    vpmovmskb   esi, xmm4
+    tzcnt   edx, esi
+    add     rax, rdx
+    vzeroupper
+    ret
+
+.pgcross_unaligned_next:
     add     rax, 0x10                           ; Increment size
 
 .pgcross_qword:
