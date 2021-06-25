@@ -72,11 +72,11 @@ cldm_avx2_strcmp:
 
     vmovdqu ymm0, [rdi]                         ; Load ymmword
     vpcmpeqb    ymm1, ymm0, [rsi]               ; Compare for equality
-    vptest  ymm1, ymm14                         ; Set CF if nand yields zero
+    vptest  ymm1, ymm14                         ; Check for equality
     jnc     .ymmrd0_diff
 
     vpcmpeqb    ymm1, ymm0, ymm15               ; Check for null
-    vptest  ymm1, ymm14
+    vptest  ymm1, ymm1
     jnz     .epi_eq
 
     lea     rcx, [rdi + 0x20]                   ; Align next read from rdi to 32-byte boundary
@@ -111,7 +111,7 @@ cldm_avx2_strcmp:
     vpor    ymm8, ymm9, ymm10                   ; Reduce
     vpor    ymm9, ymm11, ymm12
     vpor    ymm10, ymm8, ymm9
-    vptest  ymm10, ymm14                        ; Check for null
+    vptest  ymm10, ymm10                        ; Check for null
     jnz     .epi_eq
 
     add     rcx, 0x80                           ; Advance offset
@@ -127,7 +127,7 @@ cldm_avx2_strcmp:
     vpor    ymm8, ymm9, ymm10                   ; Differing byte in fourth ymmword, reduce null checks for first 3 ymmwords
     vpor    ymm9, ymm8, ymm11
 
-    vptest  ymm9, ymm14                         ; Check for null byte
+    vptest  ymm9, ymm9                          ; Check for null byte
     jnz     .epi_eq
 
     ymmdiff ymm3, ymm7, 0x60
@@ -136,7 +136,7 @@ cldm_avx2_strcmp:
 
 .ymmwd2_diff:
     vpor    ymm8, ymm9, ymm10                   ; Reduce null checks in first 2 ymmword
-    vptest  ymm8, ymm14                         ; Check for null
+    vptest  ymm8, ymm8                          ; Check for null
     jnz     .epi_eq
 
     ymmdiff ymm2, ymm6, 0x40                    ; Diff in third ymmword
@@ -147,7 +147,7 @@ cldm_avx2_strcmp:
     vptest  ymm4, ymm14                         ; Check whether differing byte is in first ymmword
     jnc     .ymmwd0_diff
 
-    vptest  ymm9, ymm14                         ; Check for null in first ymmword
+    vptest  ymm9, ymm9                          ; Check for null in first ymmword
     jnz     .epi_eq
 
     ymmdiff ymm1, ymm5, 0x20                    ; Diff in second ymmword
@@ -317,7 +317,7 @@ cldm_avx2_strcmp:
     jnc     .ymmwd0_diff
 
     vpcmpeqb    ymm4, ymm0, ymm15               ; Compare against null
-    vptest  ymm4, ymm14
+    vptest  ymm4, ymm4
     jnz     .epi_eq
 
     lea     rcx, [rcx + 0x20]                   ; Advance offset
@@ -343,7 +343,7 @@ cldm_avx2_strcmp:
     jnc     .zmmwd_diff
 
     vpor    ymm8, ymm9, ymm10                   ; Reduce
-    vptest  ymm8, ymm14                         ; Check for null
+    vptest  ymm8, ymm8                          ; Check for null
     jnz     .epi_eq
 
     add     rcx, 0x40                           ; Advance offset
