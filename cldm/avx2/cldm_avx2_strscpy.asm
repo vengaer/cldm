@@ -193,11 +193,8 @@ cldm_avx2_strscpy:
     mov     r9d, ecx                            ; Compute offset
     shr     r9d, 0x05                           ; Divide by 32
 
-    mov     r10d, ecx                           ; Compute ecx mod 32
-    and     r10d, -0x20
-    sub     ecx, r10d
-
-    neg     ecx                                 ; Compute number of bytes to retract
+    and     ecx, 0x1f                           ; Compute number of bytes to retract
+    neg     ecx
     lea     r10d, [ecx + 0x20]
 
     jmp     [r8 + r9 * 8]                       ; Jump to branch
