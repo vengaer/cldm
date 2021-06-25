@@ -13,7 +13,7 @@ char const *cldm_mockop_strings[cldm_mockop_max + 1] = {
     "unknown"
 };
 
-cldm_aligned_mockinfo mockinfos[CLDM_MAX_THREADS];
+cldm_aligned_mockinfo cldm_mockinfos[CLDM_MAX_THREADS];
 cldm_aligned_bool cldm_mock_force_disable[CLDM_MAX_THREADS];
 bool cldm_mock_global_context;
 

@@ -49,7 +49,7 @@ struct cldm_assign_param_opdata {
 typedef cldm_cachealign(struct cldm_mockinfo *) cldm_aligned_mockinfo;
 typedef cldm_cachealign(bool) cldm_aligned_bool;
 
-extern cldm_aligned_mockinfo mockinfos[CLDM_MAX_THREADS];
+extern cldm_aligned_mockinfo cldm_mockinfos[CLDM_MAX_THREADS];
 extern cldm_aligned_bool cldm_mock_force_disable[CLDM_MAX_THREADS];
 extern bool cldm_mock_global_context;
 
@@ -449,8 +449,8 @@ extern char const *cldm_mockop_strings[cldm_mockop_max + 1];
 
 #define cldm_set_mockop(memb, val, op)                                                                                          \
     memb = val;                                                                                                                 \
-    *(enum cldm_mockop *)(((unsigned char *)mockinfos[cldm_cat_expand(cldm_wc_tid,__LINE__)].data->addr  +                      \
-                                            mockinfos[cldm_cat_expand(cldm_wc_tid,__LINE__)].data->opmode_offset)) = op
+    *(enum cldm_mockop *)(((unsigned char *)cldm_mockinfos[cldm_cat_expand(cldm_wc_tid,__LINE__)].data->addr  +                 \
+                                            cldm_mockinfos[cldm_cat_expand(cldm_wc_tid,__LINE__)].data->opmode_offset)) = op
 
 #define cldm_assign2(lhs, rhs)                                                                                                  \
     cldm_set_mockop(assign, ((struct cldm_assign_opdata){ &lhs, &rhs, sizeof(lhs) }), cldm_mockop_assign);                      \
@@ -469,16 +469,16 @@ extern char const *cldm_mockop_strings[cldm_mockop_max + 1];
             cldm_cat_expand(cldm_wc_tid,__LINE__) < cldm_cat_expand(cldm_wc_tidmax,__LINE__);                                   \
             ++cldm_cat_expand(cldm_wc_tid,__LINE__))                                                                            \
         {                                                                                                                       \
-            mockinfos[cldm_cat_expand(cldm_wc_tid,__LINE__)].data =                                                             \
+            cldm_mockinfos[cldm_cat_expand(cldm_wc_tid,__LINE__)].data =                                                        \
                 &cldm_mock_ ## name[cldm_cat_expand(cldm_wc_tid,__LINE__)].data.info;                                           \
             cldm_mock_ ## name[cldm_cat_expand(cldm_wc_tid,__LINE__)].data.opdata.un_act
 
-#define cldm_should(invocations, ...)                                                                                           \
-            __VA_ARGS__;                                                                                                        \
-            cldm_rtassert(invocations >= 0 || invocations == CLDM_MOCK_INFINITE);                                               \
-            *(int *)((unsigned char *)mockinfos[cldm_cat_expand(cldm_wc_tid,__LINE__)].data->addr +                             \
-                                      mockinfos[cldm_cat_expand(cldm_wc_tid,__LINE__)].data->invocations_offset) = invocations; \
-        }                                                                                                                       \
+#define cldm_should(invocations, ...)                                                                                                   \
+            __VA_ARGS__;                                                                                                                \
+            cldm_rtassert(invocations >= 0 || invocations == CLDM_MOCK_INFINITE);                                                       \
+            *(int *)((unsigned char *)cldm_mockinfos[cldm_cat_expand(cldm_wc_tid,__LINE__)].data->addr +                                \
+                                      cldm_mockinfos[cldm_cat_expand(cldm_wc_tid,__LINE__)].data->invocations_offset) = invocations;    \
+        }                                                                                                                               \
     } while (0)
 
 #define CLDM_SHOULD_ONCE(...)           cldm_should(1, __VA_ARGS__)
