@@ -144,7 +144,7 @@ inline bool cldm_mock_enabled(void) {
     }
 
 #define cldm_mock_gen_procctx(name, ...)                                                            \
-    struct cldm_mock_ ## name ## _ctx   {                                                           \
+    struct cldm_mock_ ## name ## _ctx {                                                             \
         struct cldm_mockinfo info;                                                                  \
         int invocations;                                                                            \
         struct cldm_mock_ ## name ## _opdata {                                                      \
@@ -160,7 +160,7 @@ inline bool cldm_mock_enabled(void) {
     typedef cldm_cachealign(struct cldm_mock_ ## name ## _ctx) cldm_aligned_mock_ ## name ## _ctx
 
 #define cldm_mock_gen_funcctx(rettype, name, ...)                                                   \
-    struct cldm_mock_ ## name ## _ctx   {                                                           \
+    struct cldm_mock_ ## name ## _ctx {                                                             \
         struct cldm_mockinfo info;                                                                  \
         int invocations;                                                                            \
         struct cldm_mock_ ## name ## _opdata {                                                      \
@@ -307,7 +307,8 @@ extern char const *cldm_mockop_strings[cldm_mockop_max + 1];
                             paramsizes[cldm_mockctx(name).opdata.un_act.assign_param.idx])                          \
                     {                                                                                               \
                         cldm_warn("Reinterpreting block of %hu bytes in %s as object of size %u "                   \
-                                  "may alter its value", paramsizes[cldm_mockctx(name).opdata.un_act.paramidx],     \
+                                  "may alter its value",                                                            \
+                                  paramsizes[cldm_mockctx(name).opdata.un_act.assign_param.idx],                    \
                                   cldm_str_expand(name), cldm_mockctx(name).opdata.un_act.assign_param.dstsize);    \
                     }                                                                                               \
                     cldm_memcpy(cldm_mockctx(name).opdata.un_act.assign_param.addr,                                 \
@@ -396,7 +397,8 @@ extern char const *cldm_mockop_strings[cldm_mockop_max + 1];
                             paramsizes[cldm_mockctx(name).opdata.un_act.assign_param.idx])                          \
                     {                                                                                               \
                         cldm_warn("Reinterpreting block of %hu bytes in %s as object of size %u "                   \
-                                  "may alter its value", paramsizes[cldm_mockctx(name).opdata.un_act.paramidx],     \
+                                  "may alter its value",                                                            \
+                                  paramsizes[cldm_mockctx(name).opdata.un_act.assign_param.idx],                    \
                                   cldm_str_expand(name), cldm_mockctx(name).opdata.un_act.assign_param.dstsize);    \
                     }                                                                                               \
                     cldm_memcpy(cldm_mockctx(name).opdata.un_act.assign_param.addr,                                 \
