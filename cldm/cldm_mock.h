@@ -3,8 +3,10 @@
 
 #include "cldm_byteseq.h"
 #include "cldm_cache.h"
+#include "cldm_jmpstack.h"
 #include "cldm_log.h"
 #include "cldm_macro.h"
+#include "cldm_noreturn.h"
 #include "cldm_rtassert.h"
 #include "cldm_thread.h"
 #include "cldm_token.h"
@@ -170,6 +172,21 @@ inline bool cldm_mock_enabled(void) {
                 rettype retval;                                                                     \
                 unsigned counter;                                                                   \
                 unsigned paramidx;                                                                  \
+                struct cldm_assign_opdata assign;                                                   \
+                struct cldm_assign_param_opdata assign_param;                                       \
+            } un_act;                                                                               \
+        } opdata;                                                                                   \
+    };                                                                                              \
+    typedef cldm_cachealign(struct cldm_mock_ ## name ## _ctx) cldm_aligned_mock_ ## name ## _ctx
+
+#define cldm_mock_gen_noreturn_funcctx(rettype, name, ...)                                          \
+    struct cldm_mock_ ## name ## _ctx {                                                             \
+        struct cldm_mockinfo info;                                                                  \
+        int invocations;                                                                            \
+        struct cldm_mock_ ## name ## _opdata {                                                      \
+            enum cldm_mockop op;                                                                    \
+            union {                                                                                 \
+                rettype(*invoke)(__VA_ARGS__);                                                      \
                 struct cldm_assign_opdata assign;                                                   \
                 struct cldm_assign_param_opdata assign_param;                                       \
             } un_act;                                                                               \
@@ -421,11 +438,114 @@ extern char const *cldm_mockop_strings[cldm_mockop_max + 1];
     }                                                                                                               \
     cldm_mocktail(name)
 
+#define cldm_mock_noreturn_function_nullary(rettype, name)                                                          \
+    cldm_mock_gen_procctx(name, void);                                                                              \
+    cldm_mock_populate_ctx(name);                                                                                   \
+    cldm_noreturn_spec rettype name(void) {                                                                         \
+        cldm_static_assert(CLDM_MAX_THREADS == 32);                                                                 \
+        unsigned thread_id = cldm_thread_id();                                                                      \
+        void(*handle)(void);                                                                                        \
+        jmp_buf *retaddr = cldm_jmpstack_top(&cldm_jmpstacks[thread_id].data);                                      \
+        cldm_jmpstack_pop(&cldm_jmpstacks[thread_id].data);                                                         \
+        if(cldm_mock_enabled() && cldm_mockctx(name).invocations) {                                                 \
+            if(cldm_mockctx(name).invocations != CLDM_MOCK_INFINITE) {                                              \
+                --cldm_mockctx(name).invocations;                                                                   \
+            }                                                                                                       \
+            switch(cldm_mockctx(name).opdata.op) {                                                                  \
+                case cldm_mockop_invoke:                                                                            \
+                    cldm_mockctx(name).opdata.un_act.invoke();                                                      \
+                    longjmp(*retaddr, 1);                                                                           \
+                case cldm_mockop_return:                                                                            \
+                    longjmp(*retaddr, 1);;                                                                          \
+                case cldm_mockop_assign:                                                                            \
+                    cldm_memcpy(cldm_mockctx(name).opdata.un_act.assign.lhs,                                        \
+                                cldm_mockctx(name).opdata.un_act.assign.rhs,                                        \
+                                cldm_mockctx(name).opdata.un_act.assign.size);                                      \
+                    longjmp(*retaddr, 1);                                                                            \
+                default:                                                                                            \
+                    cldm_rtassert(0, "Invalid action '%s' for nullary procedure",                                   \
+                                 cldm_mockop_str(cldm_mockctx(name).opdata.op));                                    \
+            }                                                                                                       \
+        }                                                                                                           \
+        cldm_mock_disable() {                                                                                       \
+            *(void **) &handle = cldm_dlsym_next(cldm_str_expand(name));                                            \
+            cldm_rtassert(handle, "%s not found in any of the shared libraries listed in DT_NEEDED",                \
+                                  cldm_str_expand(name));                                                           \
+            handle();                                                                                               \
+            cldm_dlresolve(cldm_str_expand(name));                                                                  \
+        }                                                                                                           \
+        longjmp(*retaddr, 1);                                                                                       \
+    }                                                                                                               \
+    cldm_mocktail(name)
+
+#define cldm_mock_noreturn_function_n_ary(rettype, name, ...)                                                       \
+    cldm_mock_gen_noreturn_funcctx(rettype, name, __VA_ARGS__);                                                     \
+    cldm_mock_populate_ctx(name);                                                                                   \
+    cldm_noreturn_spec rettype name(cldm_mock_name_params(__VA_ARGS__)) {                                           \
+        void *paramaddrs[cldm_count(__VA_ARGS__)];                                                                  \
+        unsigned short paramsizes[cldm_count(__VA_ARGS__)];                                                         \
+        cldm_mock_store_paramaddrs(__VA_ARGS__);                                                                    \
+        cldm_mock_store_paramsizes(__VA_ARGS__);                                                                    \
+        unsigned thread_id = cldm_thread_id();                                                                      \
+        rettype(*handle)(__VA_ARGS__);                                                                              \
+        jmp_buf *retaddr = cldm_jmpstack_top(&cldm_jmpstacks[thread_id].data);                                      \
+        cldm_jmpstack_pop(&cldm_jmpstacks[thread_id].data);                                                         \
+        if(cldm_mock_enabled() && cldm_mockctx(name).invocations) {                                                 \
+            if(cldm_mockctx(name).invocations != CLDM_MOCK_INFINITE) {                                              \
+                --cldm_mockctx(name).invocations;                                                                   \
+            }                                                                                                       \
+            switch(cldm_mockctx(name).opdata.op) {                                                                  \
+                case cldm_mockop_invoke:                                                                            \
+                    cldm_mockctx(name).opdata.un_act.invoke(cldm_mock_paramnames(__VA_ARGS__));                     \
+                    break;                                                                                          \
+                case cldm_mockop_return:                                                                            \
+                    break;                                                                                          \
+                case cldm_mockop_assign:                                                                            \
+                    cldm_memcpy(cldm_mockctx(name).opdata.un_act.assign.lhs,                                        \
+                                cldm_mockctx(name).opdata.un_act.assign.rhs,                                        \
+                                cldm_mockctx(name).opdata.un_act.assign.size);                                      \
+                    break;                                                                                          \
+                case cldm_mockop_assign_param:                                                                      \
+                    cldm_rtassert(cldm_mockctx(name).opdata.un_act.assign_param.idx < cldm_arrsize(paramaddrs),     \
+                                  "Attempt to access parameter %u in %s which accepts only %zu",                    \
+                                  cldm_mockctx(name).opdata.un_act.assign_param.idx + 1, cldm_str_expand(name),     \
+                                  cldm_arrsize(paramaddrs));                                                        \
+                    if(cldm_mockctx(name).opdata.un_act.assign_param.dstsize <                                      \
+                            paramsizes[cldm_mockctx(name).opdata.un_act.assign_param.idx])                          \
+                    {                                                                                               \
+                        cldm_warn("Reinterpreting block of %hu bytes in %s as object of size %u "                   \
+                                  "may alter its value",                                                            \
+                                  paramsizes[cldm_mockctx(name).opdata.un_act.assign_param.idx],                    \
+                                  cldm_str_expand(name), cldm_mockctx(name).opdata.un_act.assign_param.dstsize);    \
+                    }                                                                                               \
+                    cldm_memcpy(cldm_mockctx(name).opdata.un_act.assign_param.addr,                                 \
+                                paramaddrs[cldm_mockctx(name).opdata.un_act.assign_param.idx],                      \
+                                cldm_mockctx(name).opdata.un_act.assign_param.dstsize);                             \
+                    break;                                                                                          \
+                default:                                                                                            \
+                    cldm_rtassert(0, "Invalid action '%s' for variadic function",                                   \
+                                  cldm_mockop_str(cldm_mockctx(name).opdata.op));                                   \
+            }                                                                                                       \
+            longjmp(*retaddr, 1);                                                                                   \
+        }                                                                                                           \
+        cldm_mock_disable() {                                                                                       \
+            *(void **) &handle = cldm_dlsym_next(cldm_str_expand(name));                                            \
+            cldm_rtassert(handle, "%s not found in shared libraries listed in DT_NEEDED", cldm_str_expand(name));   \
+            handle(cldm_mock_paramnames(__VA_ARGS__));                                                              \
+            cldm_dlresolve(cldm_str_expand(name));                                                                  \
+        }                                                                                                           \
+        longjmp(*retaddr, 1);                                                                                       \
+    }                                                                                                               \
+    cldm_mocktail(name)
+
 #else
-#define cldm_mock_procedure_nullary(rettype, name)          cldm_mock_gen_procctx(name, void)
-#define cldm_mock_function_nullary(rettype, name)           cldm_mock_gen_funcctx(rettype, name, void)
-#define cldm_mock_procedure_variadic(rettype, name, ...)    cldm_mock_gen_procctx(name, __VA_ARGS__)
-#define cldm_mock_function_variadic(rettype, name, ...)     cldm_mock_gen_funcctx(rettype, name, __VA_ARGS__)
+#define cldm_mock_procedure_nullary(rettype, name)              cldm_mock_gen_procctx(name, void)
+#define cldm_mock_function_nullary(rettype, name)               cldm_mock_gen_funcctx(rettype, name, void)
+#define cldm_mock_procedure_variadic(rettype, name, ...)        cldm_mock_gen_procctx(name, __VA_ARGS__)
+#define cldm_mock_function_variadic(rettype, name, ...)         cldm_mock_gen_funcctx(rettype, name, __VA_ARGS__)
+
+#define cldm_mock_noreturn_function_nullary(rettype, name)      cldm_mock_gen_procctx(name, void)
+#define cldm_mock_noreturn_function_n_ary(rettype, name, ...)   cldm_mock_gen_noreturn_funcctx(rettype, name, __VA_ARGS__)
 #endif
 
 #define cldm_mock_varchk_resolve00(...) cldm_mock_function_variadic(__VA_ARGS__)
@@ -433,16 +553,31 @@ extern char const *cldm_mockop_strings[cldm_mockop_max + 1];
 #define cldm_mock_varchk_resolve01(...) cldm_mock_function_nullary(cldm_first(__VA_ARGS__), cldm_second(__VA_ARGS__))
 #define cldm_mock_varchk_resolve11(...) cldm_mock_procedure_nullary(cldm_first(__VA_ARGS__), cldm_second(__VA_ARGS__))
 
+#define cldm_mock_noreturn_n_ary_chk_resolve0(...) cldm_mock_noreturn_function_n_ary(__VA_ARGS__)
+#define cldm_mock_noreturn_n_ary_chk_resolve1(...) cldm_mock_noreturn_function_nullary(cldm_first(__VA_ARGS__), cldm_second(__VA_ARGS__))
+
 #define cldm_mock_function_variadic_chk(rettype, name, ...)     \
     cldm_cat_expand(cldm_cat_expand(cldm_mock_varchk_resolve,cldm_token_void(rettype)),cldm_token_void(cldm_first(__VA_ARGS__)))(rettype, name, __VA_ARGS__)
+
+#define cldm_mock_noreturn_function_n_ary_chk(rettype, name, ...)   \
+    cldm_cat_expand(cldm_mock_noreturn_n_ary_chk_resolve,cldm_token_void(cldm_first(__VA_ARGS__)))(rettype, name, __VA_ARGS__)
 
 #define cldm_mock_resolve00() function_variadic_chk
 #define cldm_mock_resolve01() function_variadic_chk
 #define cldm_mock_resolve10() function_nullary
 #define cldm_mock_resolve11() procedure_nullary
 
-#define CLDM_MOCK_FUNCTION(rettype, ...)    \
+#define cldm_mock_noreturn_resolve0() noreturn_function_n_ary_chk
+#define cldm_mock_noreturn_resolve1() noreturn_function_nullary
+
+#define cldm_mock_function_noreturn0(rettype, ...)  \
     cldm_cat_expand(cldm_mock_,cldm_cat_expand(cldm_cat_expand(cldm_mock_resolve, cldm_token_1(cldm_count(__VA_ARGS__))), cldm_token_void(rettype))())(rettype, __VA_ARGS__)
+
+#define cldm_mock_function_noreturn1(fattr, rettype, ...)   \
+    cldm_cat_expand(cldm_mock_,cldm_cat_expand(cldm_mock_noreturn_resolve,cldm_token_1(cldm_count(__VA_ARGS__)))())(rettype, __VA_ARGS__)
+
+#define CLDM_MOCK_FUNCTION(rt_or_fattr, ...)    \
+    cldm_cat_expand(cldm_mock_function_noreturn, cldm_token_noreturn(rt_or_fattr))(rt_or_fattr,__VA_ARGS__)
 
 #define cldm_mock_lower_bound(tid)          \
     (tid * !cldm_mock_global_context)

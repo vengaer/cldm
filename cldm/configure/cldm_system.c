@@ -30,6 +30,7 @@ enum abi {
 
 struct makecfg {
     char has_generic;
+    char has_noreturn;
     enum arch arch;
     enum abi abi;
 };
@@ -57,6 +58,7 @@ static struct makecfg makecfg;
 static void usage(char const *argv0);
 static bool write_config(char const *out);
 static void detect_generic(void);
+static void detect_noreturn(void);
 static bool read_elf(char const *argv0);
 
 int main(int argc, char **argv)  {
@@ -67,6 +69,7 @@ int main(int argc, char **argv)  {
     }
 
     detect_generic();
+    detect_noreturn();
     if(!read_elf(argv[0])) {
         return 1;
     }
@@ -88,11 +91,12 @@ static bool write_config(char const *out) {
         return false;
     }
 
-    fprintf(fp, "has_generic := %c\n", makecfg.has_generic);
-    fprintf(fp, "arch        := %s\n", arch_strings[makecfg.arch]);
-    fprintf(fp, "abi         := %s\n", abi_strings[makecfg.abi]);
-    fprintf(fp, "pagesize    := %ld\n", sysconf(_SC_PAGESIZE));
-    fprintf(fp, "l1_dcache   := %ld\n", sysconf(_SC_LEVEL1_DCACHE_LINESIZE));
+    fprintf(fp, "has_generic  := %c\n", makecfg.has_generic);
+    fprintf(fp, "has_noreturn := %c\n",makecfg.has_noreturn);
+    fprintf(fp, "arch         := %s\n", arch_strings[makecfg.arch]);
+    fprintf(fp, "abi          := %s\n", abi_strings[makecfg.abi]);
+    fprintf(fp, "pagesize     := %ld\n", sysconf(_SC_PAGESIZE));
+    fprintf(fp, "l1_dcache    := %ld\n", sysconf(_SC_LEVEL1_DCACHE_LINESIZE));
 
     fclose(fp); return true;
 }
@@ -105,6 +109,16 @@ static void detect_generic(void) {
 #endif
 #endif
 }
+
+static void detect_noreturn(void) {
+    makecfg.has_noreturn = 'n';
+#ifdef __STDC__
+#if __STDC_VERSION__ >= 201112L
+    makecfg.has_noreturn = 'y';
+#endif
+#endif
+}
+
 
 static bool read_elf(char const *argv0) {
     Elf64_Ehdr ehdr;
