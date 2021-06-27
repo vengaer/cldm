@@ -15,13 +15,13 @@ enum { STRINGSIZE = 8192 };
 
 static void report_error(char const *restrict type, char const *restrict src, char const *restrict dst, size_t srcsize, size_t dstsize) {
     fprintf(stderr, "Error encountered: %s\n", type);
-    fprintf(stderr, "src: %s\n", src);
+    fprintf(stderr, "src: '%s'\n", src);
     fprintf(stderr, "  size: %zu\n", srcsize);
     fprintf(stderr, "  length: %zu\n", strlen(src));
     fprintf(stderr, "  address: %p\n", (void const *)src);
     fprintf(stderr, "  alignment: %zu\n", alignment(src));
     fprintf(stderr, "  distance to page boundary: %zu\n", pgdistance(src));
-    fprintf(stderr, "dst: %s\n", dst);
+    fprintf(stderr, "dst: '%s'\n", dst);
     fprintf(stderr, "  size: %zu\n", dstsize);
     fprintf(stderr, "  length %zu\n", strlen(dst));
     fprintf(stderr, "  address: %p\n", (void const *)dst);
@@ -59,10 +59,10 @@ int avx2_strscpy_fuzz(uint8_t const *data, size_t size) {
     }
     src[size - 1] = 0;
 
-    for(unsigned i = 0; i < VECSIZE; i++) {
+    for(unsigned i = 0; i < size; i++) {
         res = cldm_avx2_strscpy(dst, &src[i], dstsize);
         if(res == -7) {
-            if(size - i <= dstsize) {
+            if(size - i < dstsize) {
                 report_error("erroneous E2BIG", &src[i], dst, size - i, dstsize);
                 goto epilogue;
             }
