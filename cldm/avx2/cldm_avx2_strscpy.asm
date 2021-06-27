@@ -388,8 +388,9 @@ cldm_avx2_strscpy:
 
     and     ecx, eax                            ; Check whether either byte was null
     jnz     .pgcross2b_byte2
+    mov     r10d, 0x01
     test    eax, eax
-    setnz   al                                  ; Return 1 if first byte is non-zero
+    cmovnz  eax, r10d                           ; Return 1 if first byte is non-zero
     ret
 
 .pgcross2b_byte2:
@@ -553,8 +554,9 @@ cldm_avx2_strscpy:
 
     and     ecx, eax                            ; Check whether either byte was null
     jnz     .bufend2b_byte2
+    mov     r10d, 0x01
     test    eax, eax
-    setnz   al                                  ; Return 1 if first byte is non-zero
+    cmovnz  eax, r10d                           ; Return 1 if first byte is non-zero
     ret
 
 .bufend2b_byte2:
