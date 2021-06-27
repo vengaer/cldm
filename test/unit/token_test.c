@@ -21,7 +21,6 @@ TEST(token_1) {
 }
 
 TEST(token_noreturn) {
-    ASSERT_TRUE(cldm_token_noreturn(_Noreturn));
     ASSERT_TRUE(cldm_token_noreturn(noreturn));
     ASSERT_FALSE(cldm_token_noreturn(oreturn));
 }
