@@ -39,8 +39,8 @@ cldm_avx2_strscpy:
 
     mov     ecx, esi                            ; Check whether copying a single ymmword would cross page boudary
     and     ecx, PGSIZE - 1
-    cmp     ecx, 0x20
-    jb      .pgcross_unaligned
+    cmp     ecx, PGSIZE - 0x20
+    ja      .pgcross_unaligned
 
     cmp     rdx, 0x20
     jb      .bufend_unaligned
@@ -350,7 +350,9 @@ cldm_avx2_strscpy:
     ret
 
 .pgcross_unaligned:
-    cmp     rcx, rdx                            ; Check if buffer ends before memory page does
+    neg     ecx
+    lea     r9d, [ecx + PGSIZE]
+    cmp     r9, rdx                            ; Check if buffer ends before memory page does
     jnb     .bufend_unaligned
 
     section .data
@@ -365,8 +367,6 @@ cldm_avx2_strscpy:
     section .text
 
     lea     r8, [.pgcrosstbl]                   ; Load jump table
-    neg     ecx                                 ; Two's complement
-    lea     r9d, [ecx + PGSIZE]                 ; Distance to page boundary
     lzcnt   ecx, r9d                            ; Number of leading zero bits
     neg     rcx
     jmp     [r8 + (rcx + 0x1f) * 8]             ; Jump to branch, rcx + 0x1e -> most significant set bit in r9d, zero-indexed
@@ -417,7 +417,7 @@ cldm_avx2_strscpy:
     vpmovmskb   ecx, xmm4                       ; Check for null in low 4 bytes
     tzcnt   eax, ecx
     cmp     eax, 0x04
-    ja      .pgcross4b_dword1
+    jnb     .pgcross4b_dword1
     vzeroupper
     ret
 
@@ -427,10 +427,9 @@ cldm_avx2_strscpy:
     cmp     r9d, eax                            ; Check if aligned to page boundary
     je      .cpy128b
 
-    mov     ecx, r9d                            ; Set up offset for final dword
+    mov     ecx, r9d                            ; Set up offset for final qword
     sub     ecx, eax
-    neg     ecx                                 ; Two's complement
-    lea     eax, [ecx + 0x04]
+    lea     eax, [eax + ecx - 0x04]
 
     vmovd   xmm1, [rsi + rax]                   ; Load, compare and store final dword
     vpcmpeqb    xmm5, xmm1, xmm15
@@ -440,7 +439,7 @@ cldm_avx2_strscpy:
     tzcnt   r8d, ecx
     lea     eax, [eax + r8d]
     cmp     r8d, 0x04
-    ja      .cpy128b
+    jnb     .cpy128b
     vzeroupper
     ret
 
@@ -454,7 +453,7 @@ cldm_avx2_strscpy:
     vpmovmskb   ecx, xmm4                       ; Check for null in low 8 bytes
     tzcnt   eax, ecx
     cmp     eax, 0x08
-    ja      .pgcross8b_qword1
+    jnb     .pgcross8b_qword1
     vzeroupper
     ret
 
@@ -466,8 +465,7 @@ cldm_avx2_strscpy:
 
     mov     ecx, r9d                            ; Set up offset for final qword
     sub     ecx, eax
-    neg     ecx
-    lea     eax, [ecx + 0x08]
+    lea     eax, [eax + ecx - 0x08]
 
     vmovq   xmm1, [rsi + rax]                   ; Load, compare and store final qword
     vpcmpeqb    xmm5, xmm1, xmm15
@@ -477,7 +475,7 @@ cldm_avx2_strscpy:
     tzcnt   r8d, ecx
     lea     eax, [eax + r8d]
     cmp     r8d, 0x08
-    ja      .cpy128b
+    jnb     .cpy128b
     vzeroupper
     ret
 
@@ -503,8 +501,7 @@ cldm_avx2_strscpy:
 
     mov     ecx, r9d                            ; Set up offset for final xmmword
     sub     ecx, eax
-    neg     ecx
-    lea     eax, [ecx + 0x10]
+    lea     eax, [eax + ecx - 0x10]
 
     vmovdqu xmm1, [rsi + rax]                   ; Load, compare and store final xmmword
     vpcmpeqb    xmm5, xmm1, xmm15
