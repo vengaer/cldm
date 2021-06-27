@@ -386,6 +386,7 @@ cldm_avx2_strscpy:
     movzx   ecx, byte [rsi + 0x01]
     mov     byte [rdi + 0x01], cl
 
+    xor     r11d, r11d
     mov     r10d, 0xff
     test    eax, eax
     cmovnz  r11d, r10d
