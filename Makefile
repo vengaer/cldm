@@ -152,7 +152,7 @@ unit: $(cldmtest)
 	$(QUIET)LD_LIBRARY_PATH=$(root) $(UNITPREFIX) ./$< $(UNITSUFFIX)
 
 .PHONY: vgunit
-vgunit: UNITPREFIX := valgrind
+vgunit: UNITPREFIX := valgrind --suppressions=.cldm.supp
 vgunit: unit
 
 .PHONY: fuzz

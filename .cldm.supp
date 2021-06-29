@@ -1,0 +1,115 @@
+{
+   <avx2_strcmp.init.diff>
+   Memcheck:Cond
+   obj:*/libcldm.so.*
+   fun:cldm_test_run
+   fun:cldm_sequential_run
+   fun:main
+}
+{
+   <avx2_strcmp.init.null>
+   Memcheck:Cond
+   obj:*/libcldm.so.*
+   ...
+   fun:main
+}
+{
+   <avx2_strcmp.diff.ymmwd3>
+   Memcheck:Cond
+   obj:*/libcldm.so.*
+   ...
+   fun:main
+}
+{
+   <avx2_strcmp.macro.ymmdiff>
+   Memcheck:Cond
+   obj:*/libcldm.so.*
+   ...
+   fun:main
+}
+{
+   <avx2_strrchr.chk.128b.match>
+   Memcheck:Cond
+   obj:*/libcldm.so.*
+   ...
+   fun:main
+}
+{
+   <avx2_strrchr.chk.ymmwd2>
+   Memcheck:Cond
+   obj:*/libcldm.so.*
+   ...
+   fun:main
+}
+{
+   <avx2_strrchr.macro.vchk_masked>
+   Memcheck:Cond
+   obj:*/libcldm.so.*
+   ...
+   fun:main
+}
+{
+   <avx2_strscpy.init.null>
+   Memcheck:Cond
+   obj:*/libcldm.so.*
+   fun:cldm_testproc_cldm_strscpy
+   ...
+   fun:main
+}
+{
+   <avx2_strrchr.par.ymmwd2>
+   Memcheck:Cond
+   obj:*/libcldm.so.*
+   fun:cldm_test_run
+   ...
+   fun:clone
+}
+{
+   <avx2_strrchr.par.macro.vchk_masked>
+   Memcheck:Cond
+   obj:*/libcldm.so.*
+   fun:cldm_test_run
+   ...
+   fun:clone
+}
+{
+   <avx2_strcmp.par.init.eqchk>
+   Memcheck:Cond
+   obj:*/libcldm.so.*
+   fun:cldm_test_run
+   ...
+   fun:clone
+}
+{
+   <avx2_strcmp.par.init.nullchk>
+   Memcheck:Cond
+   obj:*/libcldm.so.*
+   fun:cldm_test_run
+   ...
+   fun:clone
+}
+{
+   <avx2_strcmp.par.zmmwdchk>
+   Memcheck:Cond
+   obj:*/libcldm.so.*
+   fun:cldm_test_run
+   ...
+   fun:clone
+}
+{
+   <avx2_strcmp.par.macro.ymmdiff>
+   Memcheck:Cond
+   obj:*/libcldm.so.*
+   fun:cldm_test_run
+   ...
+   fun:clone
+}
+{
+   <avx2_strscpy.par.init.nullchk>
+   Memcheck:Cond
+   obj:*/libcldm.so.*
+   fun:cldm_testproc_cldm_strscpy
+   fun:cldm_test_run
+   ...
+   fun:clone
+}
