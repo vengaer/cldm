@@ -145,10 +145,6 @@ cldm_avx2_strscpy:
     ret
 
 .pgcross_aligned:
-    lea     rcx, [rsi + rax]                    ; Check if aligned to page boundary
-    and     ecx, PGSIZE - 1
-    jz      .cpy128b
-
     lea     rcx, [rax + 0x20]                   ; Check against end of buffer
     cmp     rcx, rdx
     ja      .pgcross_aligned_bufend
@@ -160,13 +156,13 @@ cldm_avx2_strscpy:
     lea     rax, [rax + 0x20]                   ; Advance offset
 
     vptest  ymm4, ymm4                          ; Check whether null byte was encountered
-    jz      .pgcross_aligned
+    jnz     .pgcross_aligned_epi
 
-    vpmovmskb   ecx, ymm4                       ; Compute offset of null byte in ymmword
-    tzcnt   r8d, ecx
-    lea     rax, [rax + r8 - 0x20]              ; Compute actual length contribution of ymmword
-    vzeroupper
-    ret
+    lea     rcx, [rsi + rax]                    ; Check if aligned to page boundary
+    and     ecx, PGSIZE - 1
+    jz      .cpy128b
+
+    jmp     .pgcross_aligned
 
 .pgcross_aligned_bufend:
     mov     rcx, rdx                            ; Compute number of bytes to retract offse
@@ -174,6 +170,14 @@ cldm_avx2_strscpy:
     neg     rcx
     lea     r10d, [rcx + 0x20]
     jmp     .bufend32b
+
+.pgcross_aligned_epi:
+    vpmovmskb   ecx, ymm4                       ; Compute offset of null byte in ymmword
+    tzcnt   r8d, ecx
+    lea     rax, [rax + r8 - 0x20]              ; Compute actual length contribution of ymmword
+    vzeroupper
+    ret
+
 
 .bufend_aligned:
     section .data
