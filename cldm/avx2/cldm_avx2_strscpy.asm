@@ -21,7 +21,7 @@
 ; Accesses beyond the null-terminator in
 ; source are, by design, likely to occur.
 ; No accesses, neither read nor writes,
-; risk crossing page boundaries.
+; risk hitting the guard page.
 ;
 ; Params:
 ;   rdi: address of destination
@@ -369,7 +369,7 @@ cldm_avx2_strscpy:
     lea     r8, [.pgcrosstbl]                   ; Load jump table
     lzcnt   ecx, r9d                            ; Number of leading zero bits
     neg     rcx
-    jmp     [r8 + (rcx + 0x1f) * 8]             ; Jump to branch, rcx + 0x1e -> most significant set bit in r9d, zero-indexed
+    jmp     [r8 + (rcx + 0x1f) * 8]             ; Jump to branch, rcx + 0x1f -> most significant set bit in r9d, zero-indexed
 
 .pgcross1b:
     movzx   ecx, byte [rsi]                     ; Copy byte
