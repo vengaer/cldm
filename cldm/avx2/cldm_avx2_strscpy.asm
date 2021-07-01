@@ -578,6 +578,7 @@ cldm_avx2_strscpy:
     jna     .epi_ovf
 
     movzx   edx, byte [rsi + 0x02]              ; Final byte
+    mov     byte [rdi + 0x02], 0x00             ; Null terminate
     mov     eax, 0x02                           ; Return value if final byte is null
     mov     rcx, -E2BIG                         ; Return vlaue if final byte is non-null
     test    edx, edx                            ; Check if null
