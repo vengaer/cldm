@@ -670,11 +670,9 @@ cldm_avx2_strscpy:
     cmp     edx, 0x10                           ; Check for end of buffer
     jna     .epi_ovf_clear
 
-    mov     eax, 0x10                           ; Set up offset for final xmmword
-    mov     ecx, edx
-    sub     ecx, eax
-    neg     ecx                                 ; Two's complement
-    lea     eax, [eax + 0x10]
+    mov     ecx, 0x10                           ; Set up offset for final xmmword
+    mov     eax, edx
+    sub     eax, ecx
 
     vmovdqu ymm1, [rsi + rax]                   ; Load, compare and store final xmmword
     vpcmpeqb    xmm5, xmm1, xmm15
