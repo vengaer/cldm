@@ -34,6 +34,7 @@ int avx2_strscpy_fuzz(uint8_t const *data, size_t size) {
     bool crash;
     char *src;
     char *dst;
+    size_t dstsize;
 
     crash = true;
 
@@ -43,44 +44,46 @@ int avx2_strscpy_fuzz(uint8_t const *data, size_t size) {
 
     src = malloc(STRINGSIZE);
     if(!src) {
+        fputs("malloc failure\n", stderr);
         return 0;
     }
 
     dst = malloc(STRINGSIZE);
     if(!dst) {
+        fputs("malloc failure\n", stderr);
         goto epilogue;
     }
     size = size > STRINGSIZE ? STRINGSIZE : size;
+    dstsize = size;
 
     for(unsigned i = 0; i < size; i++) {
         src[i] = asciicvt(data[i]);
     }
     src[size - 1] = 0;
 
-    for(unsigned j = 0; j < STRINGSIZE; j++) {
+    for(unsigned j = 0; j < dstsize; j++) {
         for(unsigned i = 0; i < size; i++) {
-            res = cldm_avx2_strscpy(dst, &src[i], STRINGSIZE - j);
+            res = cldm_avx2_strscpy(dst, &src[i], dstsize - j);
             if(res == -7) {
-                if(size - i < STRINGSIZE - j) {
-                    report_error("erroneous E2BIG", &src[i], dst, size - i, STRINGSIZE - j);
+                if(size - i < dstsize - j) {
+                    report_error("erroneous E2BIG", &src[i], dst, size - i, dstsize - j);
                     goto epilogue;
                 }
-                else if(STRINGSIZE - j && dst[STRINGSIZE - j - 1]) {
-                    report_error("missing null terminator on E2BIG", &src[i], dst, size - i, STRINGSIZE - j);
+                else if(dstsize - j && dst[dstsize - j - 1]) {
+                    report_error("missing null terminator on E2BIG", &src[i], dst, size - i, dstsize - j);
                     goto epilogue;
                 }
             }
             else if(res != (long long)strlen(&src[i])) {
-                report_error("incorrect return value", &src[i], dst, size - i, STRINGSIZE - j);
+                report_error("incorrect return value", &src[i], dst, size - i, dstsize - j);
                 goto epilogue;
             }
             else if(strncmp(dst, &src[i], res)) {
-                fprintf(stderr, "Got %lld\n", res);
-                report_error("incorrect string written", &src[i], dst, size - i, STRINGSIZE - j);
+                report_error("incorrect string written", &src[i], dst, size - i, dstsize - j);
                 goto epilogue;
             }
             else if(dst[res]) {
-                report_error("missing null terminator", &src[i], dst, size - i, STRINGSIZE - j);
+                report_error("missing null terminator", &src[i], dst, size - i, dstsize - j);
                 goto epilogue;
             }
         }
