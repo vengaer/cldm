@@ -561,7 +561,12 @@ cldm_avx2_strscpy:
     movzx   ecx, byte [rsi + 0x01]              ; Second byte
     mov     byte [rdi + 0x01], cl
 
-    and     ecx, eax                            ; Check whether either byte was null
+    xor     r11d, r11d
+    mov     r10d, 0xff
+    test    eax, eax
+    cmovnz  r11d, r10d
+
+    test    ecx, r11d                           ; Check whether either byte was null
     jnz     .bufend2b_byte2
     mov     r10d, 0x01
     test    eax, eax
