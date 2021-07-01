@@ -633,21 +633,19 @@ cldm_avx2_strscpy:
     cmp     edx, 0x08                           ; Check for end of buffer
     jna     .epi_ovf_clear
 
-    mov     eax, 0x08                           ; Set up offset for final qword
-    mov     ecx, edx
-    sub     ecx, eax
-    neg     ecx                                 ; Two's complement
-    lea     eax, [ecx + 0x08]
+    mov     ecx, 0x08                           ; Set up offset for final qword
+    mov     eax, edx
+    sub     eax, ecx
 
     vmovq   xmm1, [rsi + rax]                   ; Load, compare and store final qword
     vpcmpeqb    xmm5, xmm1, xmm15
     vmovq   [rdi + rax], xmm1
 
-    vpmovmskb   ecx, xmm5                       ; Check for ull byte in low 8 lanes
-    tzcnt   edx, ecx
-    cmp     edx, 0x08
+    vpmovmskb   r8d, xmm5                       ; Check for null byte in low 8 lanes
+    tzcnt   ecx, r8d
+    cmp     ecx, 0x08
     jnb     .epi_ovf_clear
-    lea     eax, [eax + edx]
+    lea     eax, [eax + ecx]
     vzeroupper
     ret
 
