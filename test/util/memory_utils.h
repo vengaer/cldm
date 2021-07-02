@@ -17,7 +17,7 @@ inline size_t pgdistance(void const *addr) {
 }
 
 inline char asciicvt(uint8_t byte) {
-    return isprint(byte) ? (char)byte : (char)(((unsigned char)byte % ('~' - ' ')) + ' ');
+    return byte ? (isprint(byte) ? (char)byte : (char)(((unsigned char)byte % ('~' - ' ')) + ' ')) : byte;
 }
 
 inline void hexdump(char const *restrict bufname, uint8_t const *restrict data, size_t size, FILE *restrict fp) {
