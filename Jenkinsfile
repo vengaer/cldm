@@ -1,4 +1,7 @@
 class config {
+    public static final int CI_FUZZTIME = 25
+    public static final int FUZZTIME = 240
+    public static final int CI_NFUZZRUNS = 1
     public static final int NFUZZRUNS = 30
 }
 
@@ -6,6 +9,8 @@ fuzztargets = ['avx2_memcmp', 'avx2_memcpy', 'avx2_memset', 'avx2_memswp', 'avx2
 ccs = ['gcc', 'clang']
 
 valid_types = [ 'fuzz' ]
+fuzztime = config.CI_FUZZTIME
+nfuzzruns = config.CI_NFUZZRUNS
 
 pipeline {
     agent none
@@ -18,11 +23,29 @@ pipeline {
             agent any
             steps {
                 script {
-                    if(env.TYPE && !valid_types.contains(env.TYPE)) {
-                        error("Invalid type ${TYPE}")
+                    if(env.TYPE) {
+                        if(!valid_types.contains(env.TYPE)) {
+                            error("Invalid type ${TYPE}")
+                        }
+                        if(env.TYPE == 'fuzz') {
+                            fuzztime = config.FUZZTIME
+                            nfuzzruns = config.NFUZZRUNS
+                        }
                     }
                     if(env.FUZZTARGET && !fuzztargets.contains(env.FUZZTARGET)) {
                         error("Invalid fuzzer target ${FUZZTARGET}")
+                    }
+                    if(env.FUZZTIME) {
+                        if(!env.FUZZTIME.isInteger()) {
+                            error("FUZZTIME must be an integer")
+                        }
+                        fuzztime = env.FUZZTIME.toInteger()
+                    }
+                    if(env.NFUZZRUNS) {
+                        if(!env.NFUZZRUNS.isInteger()) {
+                            error("NFUZZRUNS must be an integer")
+                        }
+                        nfuzzruns = env.NFUZZRUNS.toInteger()
                     }
                 }
             }
@@ -146,19 +169,13 @@ pipeline {
             }
             steps {
                 script {
-                    if(env.TYPE == 'fuzz') {
-                        nruns = config.NFUZZRUNS
-                        fuzztime = 240
-                    }
-                    else {
-                        nruns = 1
-                        fuzztime = 25
-                    }
+                    echo "-- Running ${nfuzzruns} iterations, each with duration ${fuzztime}s, per fuzz target --"
+                    echo "Expected duration per target: ${fuzztime * nfuzzruns / 60}m, ${(fuzztime * nfuzzruns) % 60}s"
                     fuzztargets.each { target ->
                         stage("Fuzz ${target}") {
                             if(!env.FUZZTARGET || env.FUZZTARGET == "${target}") {
-                                for(int i = 0; i < nruns; i++) {
-                                    echo "Fuzzing ${target} ${i + 1}/${nruns}"
+                                for(int i = 0; i < nfuzzruns; i++) {
+                                    echo "Fuzzing ${target} ${i + 1}/${nfuzzruns}"
                                     sh "CLDM_FUZZTARGET=${target} make fuzzrun FUZZTIME=${fuzztime}"
                                 }
                             }
