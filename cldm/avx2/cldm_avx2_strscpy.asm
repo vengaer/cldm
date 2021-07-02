@@ -165,7 +165,7 @@ cldm_avx2_strscpy:
     jmp     .pgcross_aligned
 
 .pgcross_aligned_bufend:
-    mov     rcx, rdx                            ; Compute number of bytes to retract offse
+    mov     rcx, rdx                            ; Compute number of bytes to retract offset
     sub     rcx, rax
     neg     rcx
     lea     r10d, [rcx + 0x20]
@@ -177,7 +177,6 @@ cldm_avx2_strscpy:
     lea     rax, [rax + r8 - 0x20]              ; Compute actual length contribution of ymmword
     vzeroupper
     ret
-
 
 .bufend_aligned:
     section .data
@@ -381,7 +380,7 @@ cldm_avx2_strscpy:
 
     test    ecx, ecx
     setnz   al
-    jnz     .cpy128b                            ; Aligned to page boundary
+    jnz     .pgcross_bufchk                     ; Aligned to page boundary, check end of buffer
     ret
 
 .pgcross2b:
@@ -396,17 +395,17 @@ cldm_avx2_strscpy:
     cmovnz  r11d, r10d
 
     test    ecx, r11d                           ; Check whether either byte was null
-    jnz     .pgcross2b_byte2
+    jnz     .pgcross2b_byte1
     mov     r10d, 0x01
     test    eax, eax
     cmovnz  eax, r10d                           ; Return 1 if first byte is non-zero
     ret
 
-.pgcross2b_byte2:
+.pgcross2b_byte1:
     mov     eax, 0x02                           ; Offset
 
     cmp     r9d, eax                            ; Check if aligned to page boundary
-    je      .cpy128b
+    je      .pgcross_bufchk
 
     movzx   ecx, byte [rsi + 0x02]              ; Copy third byte
     mov     byte [rdi + 0x02], cl
@@ -414,7 +413,7 @@ cldm_avx2_strscpy:
     mov     r9d, 0x03                           ; Incremented size
     test    ecx, ecx
     cmovnz  eax, r9d                            ; If not null, increment size and jump
-    jnz     .cpy128b
+    jnz     .pgcross_bufchk
     ret
 
 .pgcross4b:
@@ -435,7 +434,7 @@ cldm_avx2_strscpy:
     mov     eax, 0x04                           ; Offset
 
     cmp     r9d, eax                            ; Check if aligned to page boundary
-    je      .cpy128b
+    je      .pgcross_bufchk
 
     mov     ecx, r9d                            ; Set up offset for final qword
     sub     ecx, eax
@@ -449,7 +448,7 @@ cldm_avx2_strscpy:
     tzcnt   r8d, ecx
     lea     eax, [eax + r8d]
     cmp     r8d, 0x04
-    jnb     .cpy128b
+    jnb     .pgcross_bufchk
     vzeroupper
     ret
 
@@ -471,7 +470,7 @@ cldm_avx2_strscpy:
     mov     eax, 0x08                           ; Offset
 
     cmp     r9d, eax                            ; Check if aligned to page
-    je      .cpy128b
+    je      .pgcross_bufchk
 
     mov     ecx, r9d                            ; Set up offset for final qword
     sub     ecx, eax
@@ -485,7 +484,7 @@ cldm_avx2_strscpy:
     tzcnt   r8d, ecx
     lea     eax, [eax + r8d]
     cmp     r8d, 0x08
-    jnb     .cpy128b
+    jnb     .pgcross_bufchk
     vzeroupper
     ret
 
@@ -507,7 +506,7 @@ cldm_avx2_strscpy:
     mov     eax, 0x10                           ; Offset
 
     cmp     r9d, eax                            ; Check if aligned to page
-    je      .cpy128b
+    je      .pgcross_bufchk
 
     mov     ecx, r9d                            ; Set up offset for final xmmword
     sub     ecx, eax
@@ -520,7 +519,7 @@ cldm_avx2_strscpy:
     lea     eax, [eax + 0x10]                   ; Advance offset
 
     vptest  xmm5, xmm5                          ; Check if null byte was encountered
-    jz      .cpy128b
+    jz      .pgcross_bufchk
 
     vpmovmskb   ecx, xmm5                       ; Compute offset of null byte in xmmword
     tzcnt   r8d, ecx
@@ -528,7 +527,23 @@ cldm_avx2_strscpy:
     vzeroupper
     ret
 
-    jmp     .cpy128b                            ; Aligned to page boundary
+.pgcross_bufchk:
+    lea     ecx, [eax + 0x20]
+    cmp     rdx, rcx
+    jb      .bufend_unaligned
+
+    vmovdqa ymm0, [rsi + rax]                   ; Load and compare single ymmword
+    vpcmpeqb    ymm4, ymm0, ymm15
+    vmovdqu [rdi + rax], ymm0
+
+    vptest  ymm4, ymm4                          ; Check if there was a null byte
+    jz      .cpy128b                            ; At most 32 bytes from page boundary, no need to check
+
+    vpmovmskb   ecx, ymm4                       ; Extract bitmask
+    tzcnt   edx, ecx                            ; Length is index of first null byte
+    lea     rax, [rax + rdx]
+    vzeroupper
+    ret
 
 .bufend_unaligned:
     section .data
@@ -543,43 +558,48 @@ cldm_avx2_strscpy:
     section .text
 
     lea     r8, [.bufendtbl]                    ; Load jump table
-    lzcnt   ecx, edx                            ; Number of leading zero bits
+    mov     r9d, edx
+    sub     r9d, eax
+    lzcnt   ecx, r9d                            ; Number of leading zero bits
     neg     rcx                                 ; Two's complement
     jmp     [r8 + (rcx + 0x1f) * 8]             ; Jump to branch, rcx + 0x1f -> most significant set bit in edx, zero-indexed
 
 .bufend1b:
-    movzx   eax, byte [rsi]                     ; Load byte
-    mov     byte [rdi], 0x00                    ; Null terminate
+    movzx   r8d, byte [rsi + rax]               ; Load byte
+    mov     byte [rdi + rax], 0x00              ; Null terminate
     mov     rcx, -E2BIG
-    test    eax, eax
+    test    r8d, r8d
     cmovnz  rax, rcx                            ; Return -E2BIG if not null
     ret
 
 .bufend2b:
-    movzx   eax, byte [rsi]                     ; First byte
-    mov     byte [rdi], al
-    movzx   ecx, byte [rsi + 0x01]              ; Second byte
-    mov     byte [rdi + 0x01], cl
+    movzx   r8d, byte [rsi + rax + 0x00]        ; First byte
+    mov     byte [rdi + rax + 0x00], r8b
+    movzx   ecx, byte [rsi + rax + 0x01]        ; Second byte
+    mov     byte [rdi + rax + 0x01], cl
 
     xor     r11d, r11d
     mov     r10d, 0xff
-    test    eax, eax
+    test    r8d, r8d
     cmovnz  r11d, r10d
 
     test    ecx, r11d                           ; Check whether either byte was null
-    jnz     .bufend2b_byte2
+    jnz     .bufend2b_byte1
+
+    xor     r11d, r11d                          ; Increment if first byte is non-zero
     mov     r10d, 0x01
-    test    eax, eax
-    cmovnz  eax, r10d                           ; Return 1 if first byte is non-zero
+    test    r8d, r8d
+    cmovnz  r11d, r10d
+    lea     eax, [eax + r11d]
     ret
 
-.bufend2b_byte2:
-    cmp     edx, 0x02                           ; Check for end of buffer
+.bufend2b_byte1:
+    lea     eax, [eax + 0x02]
+    cmp     edx, eax                            ; Check for end of buffer
     jna     .epi_ovf
 
-    movzx   edx, byte [rsi + 0x02]              ; Final byte
-    mov     byte [rdi + 0x02], 0x00             ; Null terminate
-    mov     eax, 0x02                           ; Return value if final byte is null
+    movzx   edx, byte [rsi + rax]               ; Final byte
+    mov     byte [rdi + rax], 0x00              ; Null terminate
     mov     rcx, -E2BIG                         ; Return vlaue if final byte is non-null
     test    edx, edx                            ; Check if null
     cmovnz  rax, rcx                            ; Set -E2BIG if not null
@@ -588,19 +608,21 @@ cldm_avx2_strscpy:
 .bufend4b:
     vpxor   ymm15, ymm15
 
-    vmovd   xmm0, [rsi]                         ; Load, compare and store first dword
+    vmovd   xmm0, [rsi + rax]                   ; Load, compare and store first dword
     vpcmpeqb    xmm4, xmm0, xmm15
-    vmovd  [rdi], xmm0
+    vmovd  [rdi + rax], xmm0
 
     vpmovmskb   ecx, xmm4                       ; Check for null byte in low 4 lanes
-    tzcnt   eax, ecx
-    cmp     eax, 0x04
+    tzcnt   r8d, ecx
+    cmp     r8d, 0x04
     jnb     .bufend4b_dword1
+    lea     eax, [eax + r8d]
     vzeroupper
     ret
 
 .bufend4b_dword1:
-    cmp     edx, 0x04                           ; Check for end of buffer
+    lea     r9d, [eax + 0x04]
+    cmp     edx, r9d                            ; Check for end of buffer
     jna     .epi_ovf_clear
 
     mov     ecx, 0x04                           ; Set up offset for final dword
@@ -622,19 +644,21 @@ cldm_avx2_strscpy:
 .bufend8b:
     vpxor   ymm15, ymm15
 
-    vmovq   xmm0, [rsi]                         ; Load, compare and store first qword
+    vmovq   xmm0, [rsi + rax]                   ; Load, compare and store first qword
     vpcmpeqb    xmm4, xmm0, xmm15
-    vmovq   [rdi], xmm0
+    vmovq   [rdi + rax], xmm0
 
     vpmovmskb   ecx, xmm4                       ; Check for null byte in low 8 lanes
-    tzcnt   eax, ecx
-    cmp     eax, 0x08
+    tzcnt   r8d, ecx
+    cmp     r8d, 0x08
     jnb     .bufend8b_qword1
+    lea     eax, [eax + r8d]
     vzeroupper
     ret
 
 .bufend8b_qword1:
-    cmp     edx, 0x08                           ; Check for end of buffer
+    lea     r9d, [eax + 0x08]
+    cmp     edx, r9d                            ; Check for end of buffer
     jna     .epi_ovf_clear
 
     mov     ecx, 0x08                           ; Set up offset for final qword
@@ -656,20 +680,22 @@ cldm_avx2_strscpy:
 .bufend16b:
     vpxor   ymm15, ymm15
 
-    vmovdqu xmm0, [rsi]                         ; Load, compare and store first xmmword
+    vmovdqu xmm0, [rsi + rax]                   ; Load, compare and store first xmmword
     vpcmpeqb    xmm4, xmm0, xmm15
-    vmovdqu [rdi], xmm0
+    vmovdqu [rdi + rax], xmm0
 
     vptest  xmm4, xmm4                          ; Check if null byte was encountered
     jz      .bufend16b_xmmwd1
 
     vpmovmskb   ecx, xmm4                       ; Compute offset of null byte in xmmword
-    tzcnt   eax, ecx
+    tzcnt   r8d, ecx
+    lea     eax, [eax + r8d]
     vzeroupper
     ret
 
 .bufend16b_xmmwd1:
-    cmp     edx, 0x10                           ; Check for end of buffer
+    lea     r9d, [eax + 0x10]
+    cmp     edx, r9d                            ; Check for end of buffer
     jna     .epi_ovf_clear
 
     mov     ecx, 0x10                           ; Set up offset for final xmmword
