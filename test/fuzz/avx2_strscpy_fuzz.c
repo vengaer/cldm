@@ -2,6 +2,7 @@
 #include "memory_utils.h"
 
 #include <cldm/cldm_avx2.h>
+#include <cldm/cldm_config.h>
 
 #include <limits.h>
 #include <stdbool.h>
@@ -11,7 +12,8 @@
 #include <time.h>
 
 enum { VECSIZE = 32 };
-enum { STRINGSIZE = 8192 };
+enum { BUFSIZE = 2 * CLDM_PGSIZE };
+enum { STRSIZE = 8 * VECSIZE + 2 };
 
 static void report_error(char const *restrict type, char const *restrict src, char const *restrict dst, size_t srcsize, size_t dstsize) {
     fprintf(stderr, "Error encountered: %s\n", type);
@@ -23,7 +25,7 @@ static void report_error(char const *restrict type, char const *restrict src, ch
     fprintf(stderr, "  distance to page boundary: %zu\n", pgdistance(src));
     fprintf(stderr, "dst: '%s'\n", dst);
     fprintf(stderr, "  size: %zu\n", dstsize);
-    fprintf(stderr, "  length %zu\n", strlen(dst));
+    fprintf(stderr, "  length: %zu\n", strlen(dst));
     fprintf(stderr, "  address: %p\n", (void const *)dst);
     fprintf(stderr, "  alignment: %zu\n", alignment(dst));
     fprintf(stderr, "  distance to page boundary: %zu\n", pgdistance(dst));
@@ -33,27 +35,37 @@ int avx2_strscpy_fuzz(uint8_t const *data, size_t size) {
     long long res;
     bool crash;
     char *src;
+    char *srcbase;
     char *dst;
+    char *dstbase;
     size_t dstsize;
 
     crash = true;
+    /* Closer 256 bytes to pgboundary */
+    /* Closer 256 bytes to bufend */
+    /* Strings shorter than 32 bytes */
 
-    if(size < VECSIZE + 1) {
+    if(!size) {
         return 0;
     }
 
-    src = malloc(STRINGSIZE);
-    if(!src) {
+    srcbase = malloc(BUFSIZE);
+    if(!srcbase) {
         fputs("malloc failure\n", stderr);
         return 0;
     }
 
-    dst = malloc(STRINGSIZE);
-    if(!dst) {
+
+    dstbase = malloc(BUFSIZE);
+    if(!dstbase) {
         fputs("malloc failure\n", stderr);
         goto epilogue;
     }
-    size = size > STRINGSIZE ? STRINGSIZE : size;
+
+    src = (char *)((((uintptr_t)srcbase + CLDM_PGSIZE) & ~(CLDM_PGSIZE - 1)) - STRSIZE / 2);
+    dst = (char *)((((uintptr_t)dstbase + CLDM_PGSIZE) & ~(CLDM_PGSIZE - 1)) - STRSIZE / 2);
+
+    size = size > STRSIZE ? STRSIZE : size;
     dstsize = size;
 
     for(unsigned i = 0; i < size; i++) {
@@ -61,8 +73,8 @@ int avx2_strscpy_fuzz(uint8_t const *data, size_t size) {
     }
     src[size - 1] = 0;
 
-    for(unsigned j = 0; j < dstsize; j++) {
-        for(unsigned i = 0; i < size; i++) {
+    for(unsigned i = 0; i < size; i++) {
+        for(unsigned j = 0; j <= dstsize; j++) {
             res = cldm_avx2_strscpy(dst, &src[i], dstsize - j);
             if(res == -7) {
                 if(size - i < dstsize - j) {
@@ -92,11 +104,9 @@ int avx2_strscpy_fuzz(uint8_t const *data, size_t size) {
     crash = false;
 
 epilogue:
-    if(src) {
-        free(src);
-    }
-    if(dst) {
-        free(dst);
+    free(srcbase);
+    if(dstbase) {
+        free(dstbase);
     }
 
     if(crash) {
