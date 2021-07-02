@@ -5,7 +5,7 @@ fuzzdir                   = $(testdir)/fuzz
 
 FUZZTIME                 ?= 240
 FUZZVALPROF              := 1
-FUZZTIMEOUT              := 30
+FUZZTIMEOUT              := 10
 FUZZLEN                  := 8192
 CORPUSDIR                 = $(fuzzdir)/corpora/$(CLDM_FUZZTARGET)
 FUZZFLAGS                 = -max_len=$(FUZZLEN) -max_total_time=$(FUZZTIME) -use_value_profile=$(FUZZVALPROF) \
