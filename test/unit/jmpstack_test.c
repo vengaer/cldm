@@ -10,7 +10,7 @@ TEST(cldm_jmpstack_push) {
     jmp_buf buf0;
     jmp_buf buf1;
 
-    cldm_jmpstack_init(&stack);
+    stack = cldm_jmpstack_init();
 
     setjmp(buf0);
     setjmp(buf1);
@@ -29,7 +29,7 @@ TEST(cldm_jmpstack_pop) {
     jmp_buf buf0;
     jmp_buf buf1;
 
-    cldm_jmpstack_init(&stack);
+    stack = cldm_jmpstack_init();
 
     setjmp(buf0);
     setjmp(buf1);
@@ -48,7 +48,7 @@ TEST(cldm_jmpstack_size) {
     jmp_buf buf0;
     jmp_buf buf1;
 
-    cldm_jmpstack_init(&stack);
+    stack = cldm_jmpstack_init();
 
     setjmp(buf0);
     setjmp(buf1);
@@ -70,7 +70,7 @@ TEST(cldm_jmpstack_resize) {
     struct cldm_jmpstack stack;
     jmp_buf bufs[cldm_arrsize(stack.s_un.stat) << (1u + 1)];
 
-    cldm_jmpstack_init(&stack);
+    stack = cldm_jmpstack_init();
     for(unsigned i = 0; i < cldm_arrsize(bufs); i++) {
         cldm_jmpstack_push(&stack, &bufs[i]);
         ASSERT_EQ(cldm_jmpstack_top(&stack), &bufs[i]);

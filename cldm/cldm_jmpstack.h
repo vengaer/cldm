@@ -19,15 +19,14 @@ struct cldm_jmpstack {
     size_t capacity;
 };
 
+#define cldm_jmpstack_init()                                                        \
+    (struct cldm_jmpstack) {                                                        \
+        .size = 0,                                                                  \
+        .capacity = cldm_arrsize(cldm_declval(struct cldm_jmpstack).s_un.stat)      \
+    }
+
 inline jmp_buf **cldm_jmpstack_storage(struct cldm_jmpstack *stack) {
     return stack->capacity > cldm_arrsize(stack->s_un.stat) ? stack->s_un.dyn : stack->s_un.stat;
-}
-
-inline void cldm_jmpstack_init(struct cldm_jmpstack *stack) {
-    *stack = (struct cldm_jmpstack) {
-        .size = 0,
-        .capacity = cldm_arrsize(stack->s_un.stat)
-    };
 }
 
 inline void cldm_jmpstack_free(struct cldm_jmpstack *stack) {

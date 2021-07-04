@@ -4,7 +4,6 @@
 
 jmp_buf **cldm_jmpstack_storage(struct cldm_jmpstack *stack);
 jmp_buf *cldm_jmpstack_top(struct cldm_jmpstack *stack);
-void cldm_jmpstack_init(struct cldm_jmpstack *stack);
 void cldm_jmpstack_free(struct cldm_jmpstack *stack);
 void cldm_jmpstack_pop(struct cldm_jmpstack *stack);
 size_t cldm_jmpstack_size(struct cldm_jmpstack const *stack);
