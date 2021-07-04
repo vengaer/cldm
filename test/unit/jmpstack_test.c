@@ -79,3 +79,29 @@ TEST(cldm_jmpstack_resize) {
     ASSERT_GT(cldm_jmpstack_capacity(&stack), cldm_arrsize(stack.s_un.stat));
     cldm_jmpstack_free(&stack);
 }
+
+TEST(cldm_jmpstack_jump) {
+    struct cldm_jmpstack stack;
+    jmp_buf jb0;
+    jmp_buf jb1;
+    int val;
+
+    stack = cldm_jmpstack_init();
+    cldm_jmpstack_push(&stack, jb0);
+    cldm_jmpstack_push(&stack, jb1);
+
+    val = 0;
+    if(!setjmp(jb0)) {
+        if(!setjmp(jb1)) {
+            longjmp(*cldm_jmpstack_top(&stack), 1);
+        }
+        cldm_jmpstack_pop(&stack);
+        val *= -1;
+        longjmp(*cldm_jmpstack_top(&stack), 1);
+        val = 13;
+    }
+    val += 1;
+    cldm_jmpstack_pop(&stack);
+    ASSERT_EQ(val, 1);
+    cldm_jmpstack_free(&stack);
+}
