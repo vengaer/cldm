@@ -1,9 +1,4 @@
-trivial_module := y
-required_by    := lcldm cldmfuzz
-
-$(call include-module,main)
-$(call include-module,configure)
-$(call include-module,asm)
+$(call conditional-include-module,x86_64,avx2_support)
 
 ifndef module_name
 target := $(if $(MAKECMDGOALS),$(MAKECMDGOALS),recurse)

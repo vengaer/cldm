@@ -1,23 +1,23 @@
 $(call mk-build-build-dir)
 
-$(module_name)_target := $(builddir)/cldm_system
-$(module_name)_obj    := $(patsubst $(root)/%.$(cext),$(builddir)/%.$(oext),$(wildcard $(module_path)/*.$(cext)))
+system_target := $(builddir)/cldm_system
+system_obj    := $(patsubst $(root)/%.$(cext),$(builddir)/%.$(oext),$(wildcard $(module_path)/*.$(cext)))
 
-$($(module_name)_target): $($(module_name)_obj)
+$(system_target): $(system_obj)
 	$(info [LD]  $(notdir $@))
 	$(QUIET)$(CC) -o $@ $<
 
-$(system_mk): $($(module_name)_target)
+$(system_mk): $(system_target)
 	$(QUIET)$< $@
 
-$(module_name)_target := $(builddir)/avx2_support
-$(module_name)_obj    := $(patsubst $(root)/%.$(asext),$(builddir)/%.$(oext),$(wildcard $(module_path)/*.$(asext)))
+avx2_target   := $(builddir)/avx2_support
+avx2_obj      := $(patsubst $(root)/%.$(asext),$(builddir)/%.$(oext),$(module_path)/cldm_avx2_support.$(asext))
 
-$($(module_name)_target): $($(module_name)_obj)
+$(avx2_target): $(avx2_obj)
 	$(info [LD]  $(notdir $@))
 	$(QUIET)$(LD) -o $@ $<
 
-$(avx2_mk): $($(module_name)_target)
+$(avx2_mk): $(avx2_target)
 	$(QUIET)$< $@
 
 $(patsubst $(root)/%,$(builddir)/%,$(module_path))/%.$(oext): $(module_path)/%.$(cext) Makefile

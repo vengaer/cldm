@@ -3,8 +3,8 @@ include     scripts/fuzz.mk
 include     scripts/build_config.mk
 
 CC          ?= gcc
-AS          := nasm
-LD          ?= ld
+AS          := gcc
+LD          := gcc
 
 AR          ?= ar
 LN          ?= ln
@@ -20,7 +20,7 @@ libstem     := libcldm
 sover       := 0
 socompat    := 0
 
-asext       := asm
+asext       := S
 cext        := c
 oext        := o
 dext        := d
@@ -47,11 +47,11 @@ cldmfuzz    := cldmfuzz
 
 cldmgen     := $(libsrcdir)/cldmgen.h
 cconfig     := $(libsrcdir)/cldm_config.h
-asmconfig   := $(libsrcdir)/cldm_config.S
+asmconfig   := $(libsrcdir)/asm/system.h
 
 MOCKUPS     ?= $(abspath $(libsrcdir)/mockups.h)
 
-ASFLAGS     := -felf64 -g -Fdwarf -i$(libsrcdir)
+ASFLAGS     := -c -g -I$(libsrcdir)
 CFLAGS      := -std=c99 -Wall -Wextra -Wpedantic -fPIC -c -MD -MP -g
 CPPFLAGS    := -D_POSIX_C_SOURCE=200112L -DCLDM_VERSION=$(cldmver) -I$(root)
 LDFLAGS     := -shared -Wl,-soname,$(libstem).$(soext).$(socompat)
@@ -134,10 +134,10 @@ $(cconfig): $(system_mk) $(avx2_mk) Makefile
 
 $(asmconfig): $(system_mk) Makefile
 	$(info [GEN] $(notdir $@))
-	$(QUIET)$(ECHO) $(ECHOFLAGS) '%ifndef CLDM_CONFIG_S\n%define CLDM_CONFIG_S\n' > $@
-	$(QUIET)$(ECHO) $(ECHOFLAGS) '%define PGSIZE $(pagesize)' >> $@
-	$(QUIET)$(ECHO) $(ECHOFLAGS) '%define L1_DCACHE_LINESIZE $(l1_dcache)' >> $@
-	$(QUIET)$(ECHO) $(ECHOFLAGS) '\n%endif' >> $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef SYSTEM_H\n#define SYSTEM_H\n' > $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define PGSIZE $(pagesize)' >> $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define L1_DCACHE_LINESIZE $(l1_dcache)' >> $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '\n#endif' >> $@
 
 $(MOCKUPS):
 	$(info [GEN] $(notdir $@))
