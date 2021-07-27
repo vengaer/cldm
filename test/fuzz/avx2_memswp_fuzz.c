@@ -10,7 +10,7 @@
 
 void report(unsigned idx, uint8_t const *restrict bs, uint8_t const *restrict ref, size_t size) {
     fprintf(stderr, "bs%u differs\n", idx);
-    fputs("bs: ", stderr);
+    fputs("bs:  ", stderr);
     for(unsigned i = 0; i < size; i++) {
         fprintf(stderr, "%02x", bs[i]);
     }
