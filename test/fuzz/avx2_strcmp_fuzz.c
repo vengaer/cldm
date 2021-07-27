@@ -20,10 +20,14 @@ static void report_error(char const *restrict desc, int res0, int res1, char con
     hexdump("str0 hex", (uint8_t const *)str0, size, stderr);
     fprintf(stderr, "  Address: %p\n", (void const *)str0);
     fprintf(stderr, "  Distance to page boundary: %zu\n", pgdistance(str0));
+    fprintf(stderr, "  strlen: %zu\n", strlen(str0));
     fprintf(stderr, "str1: '%s'\n", str1);
     hexdump("str1 hex", (uint8_t const *)str1, size, stderr);
     fprintf(stderr, "  Address: %p\n", (void const *)str1);
     fprintf(stderr, "  Distance to page boundary: %zu\n", pgdistance(str1));
+    fprintf(stderr, "  strlen: %zu\n", strlen(str1));
+    fprintf(stderr, "Estimated page position: %zu\n", ((size_t)str0 |(size_t)str1) & (CLDM_PGSIZE - 1));
+    fprintf(stderr, "Estimated distance to boundary: %zu\n", CLDM_PGSIZE - ((size_t)str0 | (size_t)str1) & (CLDM_PGSIZE - 1));
 }
 
 int avx2_strcmp_fuzz(uint8_t const *data, size_t size) {
