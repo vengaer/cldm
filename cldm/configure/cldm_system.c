@@ -28,11 +28,34 @@ enum abi {
     abi_embedded
 };
 
+enum machine {
+    mach_none,
+    mach_m32,
+    mach_sparc,
+    mach_386,
+    mach_68k,
+    mach_88k,
+    mach_860,
+    mach_mips,
+    mach_parisc,
+    mach_sparc32plus,
+    mach_ppc,
+    mach_ppc64,
+    mach_s390,
+    mach_arm,
+    mach_sh,
+    mach_sparcv9,
+    mach_ia_64,
+    mach_x86_64,
+    mach_vax
+};
+
 struct makecfg {
     char has_generic;
     char has_noreturn;
     enum arch arch;
     enum abi abi;
+    enum machine machine;
 };
 
 static char const *arch_strings[] = {
@@ -51,6 +74,28 @@ static char const *abi_strings[] = {
     "TRU64",
     "ARM",
     "EMBEDDED"
+};
+
+static char const *mach_strings[] = {
+    "NONE",
+    "M32",
+    "SPARC",
+    "386",
+    "68K",
+    "88K",
+    "860",
+    "MIPS",
+    "PARISC",
+    "SPARC32PLUS",
+    "PPC",
+    "PPC64",
+    "S390",
+    "ARM",
+    "SH",
+    "SPARCV9",
+    "IA_64",
+    "x86_64",
+    "VAX"
 };
 
 static struct makecfg makecfg;
@@ -95,6 +140,7 @@ static bool write_config(char const *out) {
     fprintf(fp, "has_noreturn := %c\n",makecfg.has_noreturn);
     fprintf(fp, "arch         := %s\n", arch_strings[makecfg.arch]);
     fprintf(fp, "abi          := %s\n", abi_strings[makecfg.abi]);
+    fprintf(fp, "machine      := %s\n", mach_strings[makecfg.machine]);
     fprintf(fp, "pagesize     := %ld\n", sysconf(_SC_PAGESIZE));
     fprintf(fp, "l1_dcache    := %ld\n", sysconf(_SC_LEVEL1_DCACHE_LINESIZE));
 
@@ -198,6 +244,67 @@ static bool read_elf(char const *argv0) {
         default:
             fputs("Invalid ABI\n", stderr);
             goto epilogue;
+    }
+
+    switch(ehdr.e_machine) {
+        default:
+        case EM_NONE:
+            makecfg.machine = mach_none;
+            break;
+        case EM_M32:
+            makecfg.machine = mach_m32;
+            break;
+        case EM_SPARC:
+            makecfg.machine = mach_sparc;
+            break;
+        case EM_386:
+            makecfg.machine = mach_386;
+            break;
+        case EM_68K:
+            makecfg.machine = mach_68k;
+            break;
+        case EM_88K:
+            makecfg.machine = mach_88k;
+            break;
+        case EM_860:
+            makecfg.machine = mach_860;
+            break;
+        case EM_MIPS:
+            makecfg.machine = mach_mips;
+            break;
+        case EM_PARISC:
+            makecfg.machine = mach_parisc;
+            break;
+        case EM_SPARC32PLUS:
+            makecfg.machine = mach_sparc32plus;
+            break;
+        case EM_PPC:
+            makecfg.machine = mach_ppc;
+            break;
+        case EM_PPC64:
+            makecfg.machine = mach_ppc64;
+            break;
+        case EM_S390:
+            makecfg.machine = mach_s390;
+            break;
+        case EM_ARM:
+            makecfg.machine = mach_arm;
+            break;
+        case EM_SH:
+            makecfg.machine = mach_sh;
+            break;
+        case EM_SPARCV9:
+            makecfg.machine = mach_sparcv9;
+            break;
+        case EM_IA_64:
+            makecfg.machine = mach_ia_64;
+            break;
+        case EM_X86_64:
+            makecfg.machine = mach_x86_64;
+            break;
+        case EM_VAX:
+            makecfg.machine = mach_vax;
+            break;
     }
 
     success = true;
