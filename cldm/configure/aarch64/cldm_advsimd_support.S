@@ -5,6 +5,7 @@
 .equ    AT_FDCWD,     -0x64
 .equ    O_WRONLY,      0x01
 .equ    O_CREAT,       0100
+.equ    O_TRUNC,       01000
 .equ    S_RDWR,        0666
 .equ    STDERR_FILENO, 0x02
 
@@ -53,7 +54,7 @@ main:
     mov     x5, #0x01                               // Index of file name in argv
     mov     x0, #AT_FDCWD                           // Open relative current dir
     ldr     x1, [x1, x5, lsl #0x03]                 // Address of file name
-    mov     x2, #O_WRONLY | O_CREAT                 // Flags
+    mov     x2, #O_WRONLY | O_CREAT | O_TRUNC       // Flags
     mov     x3, #S_RDWR                             // Permissions
     mov     x8, #__NR_openat                        // openat syscall
     svc     0

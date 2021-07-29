@@ -5,6 +5,7 @@
 .equ    AT_FDCWD,      -0x64
 .equ    O_WRONLY,       0x01
 .equ    O_CREAT,        0100
+.equ    O_TRUNC,        01000
 .equ    S_RDWR,         0666
 .equ    STDERR_FILENO,  0x02
 
@@ -55,7 +56,7 @@ main:
 .Lwrite:
     movl    $__NR_open, %eax                        # Syscall open
     movq    0x08(%rsi), %rdi                        # File name
-    movl    $O_CREAT | O_WRONLY, %esi               # Flags
+    movl    $O_CREAT | O_WRONLY | O_TRUNC, %esi     # Flags
     movl    $0644, %edx                             # Mode
     syscall
 
