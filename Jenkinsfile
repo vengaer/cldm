@@ -63,7 +63,7 @@ pipeline {
                 sh "docker build -f Dockerfile -t ${DOCKER_IMAGE} ."
             }
         }
-        stage('Build') {
+        stage('Build Host') {
             when {
                 beforeAgent true
                 expression {
@@ -82,6 +82,22 @@ pipeline {
                         sh "CC=${cc} make -B -j\$(nproc)"
                     }
                 }
+            }
+        }
+        stage('Build aarch64') {
+            when {
+                beforeAgent true
+                expression {
+                    return env.TYPE != 'fuzz'
+                }
+            }
+            agent {
+                docker {
+                    image "${DOCKER_IMAGE}"
+                }
+            }
+            steps {
+                sh 'make -B -j\$(nproc) ARCH=aarch64'
             }
         }
         stage('Dynamic Test') {
