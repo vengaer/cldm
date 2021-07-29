@@ -1,10 +1,11 @@
-include     scripts/modules.mk
-include     scripts/fuzz.mk
 include     scripts/build_config.mk
+include     scripts/cross.mk
+include     scripts/fuzz.mk
+include     scripts/modules.mk
 
-CC          ?= gcc
-AS          := gcc
-LD          := gcc
+CC          := $(CROSS_COMPILE)gcc
+AS          := $(CROSS_COMPILE)gcc
+LD          := $(CROSS_COMPILE)gcc
 
 AR          ?= ar
 LN          ?= ln
@@ -36,7 +37,7 @@ srcdirs     := $(libsrcdir) $(testdir)
 
 # Generated during prepare step
 system_mk   := $(builddir)/system.mk
-avx2_mk     := $(builddir)/avx2.mk
+proc_mk     := $(builddir)/proc.mk
 
 lcldm       := $(libstem).$(soext).$(sover)
 link        := $(libstem).$(soext)
@@ -54,7 +55,7 @@ MOCKUPS     ?= $(abspath $(libsrcdir)/mockups.h)
 ASFLAGS     := -c -g -I$(libsrcdir)
 CFLAGS      := -std=c99 -Wall -Wextra -Wpedantic -fPIC -c -MD -MP -g
 CPPFLAGS    := -D_POSIX_C_SOURCE=200112L -DCLDM_VERSION=$(cldmver) -I$(root)
-LDFLAGS     := -shared -Wl,-soname,$(libstem).$(soext).$(socompat)
+LDFLAGS     := -shared -Wl,-soname,$(libstem).$(soext).$(socompat) $(CROSS_LDFLAGS)
 LDLIBS      := -ldl -pthread
 
 testldflags := -L$(root)
@@ -120,7 +121,7 @@ $(cldmgen): $(MOCKUPS)
 	$(info [GEN] $(notdir $@))
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CLDMGEN_H\n#define CLDMGEN_H\n#include "$^"\n#endif /* CLDMGEN_H */' > $@
 
-$(cconfig): $(system_mk) $(avx2_mk) Makefile
+$(cconfig): $(system_mk) $(proc_mk) Makefile
 	$(info [GEN] $(notdir $@))
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef CLDM_CONFIG_H\n#define CLDM_CONFIG_H\n' > $@
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_ARCH_$(patsubst %-bit,%,$(arch))' >> $@
@@ -128,6 +129,7 @@ $(cconfig): $(system_mk) $(avx2_mk) Makefile
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_PGSIZE $(pagesize)' >> $@
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_L1_DCACHE_LINESIZE $(l1_dcache)' >> $@
 	$(QUIET)$(if $(filter y,$(avx2_support)), $(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_AVX2' >> $@)
+	$(QUIET)$(if $(filter y,$(advsimd_support)), $(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_ADVSIMD' >> $@)
 	$(QUIET)$(if $(filter y,$(has_generic)),  $(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_GENERIC' >> $@)
 	$(QUIET)$(if $(filter y,$(has_noreturn)), $(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_NORETURN' >> $@)
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '\n#endif /* CLDM_CONFIG_H */' >> $@
@@ -149,7 +151,7 @@ functional:
 
 .PHONY: unit
 unit: $(cldmtest)
-	$(QUIET)LD_LIBRARY_PATH=$(root) $(UNITPREFIX) ./$< $(UNITSUFFIX)
+	$(QUIET)LD_LIBRARY_PATH=$(root) $(UNITPREFIX) $(CROSS_EMU) ./$< $(UNITSUFFIX)
 
 .PHONY: vgunit
 vgunit: UNITPREFIX := valgrind --suppressions=.cldm.supp

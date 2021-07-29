@@ -1,32 +1,22 @@
-    .section .data
-    avx2_y:          .ascii "avx2_support := y\n"
-    avx2_y_len =     . - avx2_y
-    avx2_n:          .ascii "avx2_support := n\n"
-    avx2_n_len =     . - avx2_n
-    no_file:         .ascii "No filename supplied\n"
-    no_file_len =    . - no_file
-    open_fail:       .ascii "Open syscall failed\n"
-    open_fail_len =  . - open_fail
-    write_fail:      .ascii "Write syscall failed\n"
-    write_fail_len = . - write_fail
-
     .section .text
 
-    .equ SC_WRITE, 1
-    .equ SC_OPEN,  2
-    .equ SC_CLOSE, 3
-    .equ SC_EXIT,  60
-    .equ O_WRONLY, 0001
-    .equ O_CREAT,  0100
-    .equ STDERR_FILENO, 2
+    #include <asm/unistd.h>
 
-.macro exiterr str, len
+.equ    AT_FDCWD,      -0x64
+.equ    O_WRONLY,       0x01
+.equ    O_CREAT,        0100
+.equ    S_RDWR,         0666
+.equ    STDERR_FILENO,  0x02
+
+.macro exiterr, str, len
+    leaq    \str(%rip), %rsi                        # Load string and length
+    movq    $\len, %rdx
     movl    $STDERR_FILENO, %edi                    # Write to stderr
-    movl    $SC_WRITE, %eax                         # Syscall write
+    movl    $__NR_write, %eax                       # Syscall write
     syscall
 
     movl    $0x01, %edi                             # Exit status
-    movl    $SC_EXIT, %eax                          # Exit syscall
+    movl    $__NR_exit, %eax                        # Syscall exit
     syscall
 .endm
 
@@ -63,8 +53,8 @@ main:
     movl    $avx2_n_len, %r9d                       # Load length
 
 .Lwrite:
-    movl    $SC_OPEN, %eax                          # Open syscall
-    movq    0x08(%rsi), %rdi
+    movl    $__NR_open, %eax                        # Syscall open
+    movq    0x08(%rsi), %rdi                        # File name
     movl    $O_CREAT | O_WRONLY, %esi               # Flags
     movl    $0644, %edx                             # Mode
     syscall
@@ -75,32 +65,38 @@ main:
     movq    %r8, %rsi                               # String to write
     movl    %r9d, %edx                              # Length
     movl    %eax, %edi                              # File descriptor
-    movl    $SC_WRITE, %eax                         # Syscall write
+    movl    $__NR_write, %eax                       # Syscall write
     syscall
 
     cmpl    $0x00, %eax                             # Check syscall failure
     jl      .Lwrite_failure
 
-    movl    $SC_CLOSE, %eax                         # Close syscall
+    movl    $__NR_close, %eax                       # Syscall close
     syscall
 
     xorl    %edi, %edi                              # Exit status
-    movl    $SC_EXIT, %eax                          # Exit syscall
+    movl    $__NR_exit, %eax                        # Exit syscall
     syscall
 
 .Lno_filearg:
-    leaq    no_file(%rip), %rsi                     # Load string and length
-    movq    $no_file_len, %rdx
-    exiterr
+    exiterr no_file, no_file_len
 
 .Lopen_failure:
-    leaq    open_fail(%rip), %rsi                   # Load string and length
-    movq    $open_fail_len, %rdx
-    exiterr
+    exiterr open_fail, open_fail_len
 
 .Lwrite_failure:
-    movl    $SC_CLOSE, %eax                         # Close syscall
+    movl    $__NR_close, %eax                       # Syscall close
     syscall
-    leaq    write_fail(%rip), %rsi                  # Load string and length
-    movq    $write_fail_len, %rdx
-    exiterr
+    exiterr write_fail, write_fail_len
+
+    .section .data
+    avx2_y:          .ascii "avx2_support := y\n"
+    avx2_y_len =     . - avx2_y
+    avx2_n:          .ascii "avx2_support := n\n"
+    avx2_n_len =     . - avx2_n
+    no_file:         .ascii "No filename supplied\n"
+    no_file_len =    . - no_file
+    open_fail:       .ascii "Open syscall failed\n"
+    open_fail_len =  . - open_fail
+    write_fail:      .ascii "Write syscall failed\n"
+    write_fail_len = . - write_fail
