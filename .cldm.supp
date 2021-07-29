@@ -1,115 +1,163 @@
 {
-   <avx2_strcmp.init.diff>
+   <avx2_strcmp.init.pgchk>
    Memcheck:Cond
-   obj:*/libcldm.so.*
+   obj:*/libcldm.so.0
    fun:cldm_test_run
    fun:cldm_sequential_run
    fun:main
 }
 {
-   <avx2_strcmp.init.null>
+   <avx2_strcmp.diff.cmov.cond>
    Memcheck:Cond
-   obj:*/libcldm.so.*
-   ...
-   fun:main
-}
-{
-   <avx2_strcmp.diff.ymmwd3>
-   Memcheck:Cond
-   obj:*/libcldm.so.*
-   ...
-   fun:main
-}
-{
-   <avx2_strcmp.macro.ymmdiff>
-   Memcheck:Cond
-   obj:*/libcldm.so.*
-   ...
-   fun:main
-}
-{
-   <avx2_strrchr.chk.128b.match>
-   Memcheck:Cond
-   obj:*/libcldm.so.*
-   ...
-   fun:main
-}
-{
-   <avx2_strrchr.chk.ymmwd2>
-   Memcheck:Cond
-   obj:*/libcldm.so.*
-   ...
-   fun:main
-}
-{
-   <avx2_strrchr.macro.vchk_masked>
-   Memcheck:Cond
-   obj:*/libcldm.so.*
-   ...
-   fun:main
-}
-{
-   <avx2_strscpy.init.null>
-   Memcheck:Cond
-   obj:*/libcldm.so.*
-   fun:cldm_testproc_cldm_strscpy
-   ...
-   fun:main
-}
-{
-   <avx2_strrchr.par.ymmwd2>
-   Memcheck:Cond
-   obj:*/libcldm.so.*
+   obj:*/libcldm.so.0
    fun:cldm_test_run
-   ...
-   fun:clone
+   fun:cldm_sequential_run
+   fun:main
 }
 {
-   <avx2_strrchr.par.macro.vchk_masked>
-   Memcheck:Cond
-   obj:*/libcldm.so.*
+   <avx2_strcmp.diff.cmov.val>
+   Memcheck:Value8
+   obj:*/libcldm.so.0
    fun:cldm_test_run
-   ...
-   fun:clone
+   fun:cldm_sequential_run
+   fun:main
 }
 {
-   <avx2_strcmp.par.init.eqchk>
-   Memcheck:Cond
-   obj:*/libcldm.so.*
+   <avx2_strcmp.diff.reduce>
+   Memcheck:Value8
+   obj:*/libcldm.so.0
    fun:cldm_test_run
-   ...
-   fun:clone
+   fun:cldm_sequential_run
+   fun:main
 }
 {
-   <avx2_strcmp.par.init.nullchk>
-   Memcheck:Cond
-   obj:*/libcldm.so.*
+   <avx2_strcmp.diff.ld0>
+   Memcheck:Value8
+   obj:*/libcldm.so.0
    fun:cldm_test_run
-   ...
-   fun:clone
+   fun:cldm_sequential_run
+   fun:main
 }
 {
-   <avx2_strcmp.par.zmmwdchk>
-   Memcheck:Cond
-   obj:*/libcldm.so.*
+   <avx2_strcmp.diff.ld1>
+   Memcheck:Value8
+   obj:*/libcldm.so.0
    fun:cldm_test_run
-   ...
-   fun:clone
+   fun:cldm_sequential_run
+   fun:main
 }
 {
-   <avx2_strcmp.par.macro.ymmdiff>
+   <avx2_strrchr.main.reduce>
    Memcheck:Cond
-   obj:*/libcldm.so.*
+   obj:*/libcldm.so.0
    fun:cldm_test_run
-   ...
-   fun:clone
+   fun:cldm_sequential_run
+   fun:main
 }
 {
-   <avx2_strscpy.par.init.nullchk>
+   <avx2_strrchr.main.ymmwd1>
    Memcheck:Cond
-   obj:*/libcldm.so.*
+   obj:*/libcldm.so.0
+   fun:cldm_test_run
+   fun:cldm_sequential_run
+   fun:main
+}
+{
+   <avx2_strrchr.main.vchk>
+   Memcheck:Cond
+   obj:*/libcldm.so.0
+   fun:cldm_test_run
+   fun:cldm_sequential_run
+   fun:main
+}
+{
+   <avx2_strscpy.init.bufchk>
+   Memcheck:Cond
+   obj:*/libcldm.so.0
    fun:cldm_testproc_cldm_strscpy
    fun:cldm_test_run
-   ...
+   fun:cldm_sequential_run
+   fun:main
+}
+{
+   <avx2_strscpy.par.init.bufchk>
+   Memcheck:Cond
+   obj:*/libcldm.so.0
+   fun:cldm_testproc_cldm_strscpy
+   fun:cldm_test_run
+   fun:cldm_thread_run
+   fun:start_thread
+   fun:clone
+}
+{
+   <avx2_strcmp.par.pgchk>
+   Memcheck:Cond
+   obj:*/libcldm.so.0
+   fun:cldm_test_run
+   fun:cldm_thread_run
+   fun:start_thread
+   fun:clone
+}
+{
+   <avx2_strcmp.par.cmov.cond>
+   Memcheck:Cond
+   obj:*/libcldm.so.0
+   fun:cldm_test_run
+   fun:cldm_thread_run
+   fun:start_thread
+   fun:clone
+}
+{
+   <avx2_strcmp.par.cmov.val>
+   Memcheck:Value8
+   obj:*/libcldm.so.0
+   fun:cldm_test_run
+   fun:cldm_thread_run
+   fun:start_thread
+   fun:clone
+}
+{
+   <avx2_strcmp.par.cmov.lea>
+   Memcheck:Value8
+   obj:*/libcldm.so.0
+   fun:cldm_test_run
+   fun:cldm_thread_run
+   fun:start_thread
+   fun:clone
+}
+{
+   <avx2_strcmp.par.null.chk>
+   Memcheck:Value8
+   obj:*/libcldm.so.0
+   fun:cldm_test_run
+   fun:cldm_thread_run
+   fun:start_thread
+   fun:clone
+}
+{
+   <avx2_strcmp.par.null.reduce>
+   Memcheck:Value8
+   obj:*/libcldm.so.0
+   fun:cldm_test_run
+   fun:cldm_thread_run
+   fun:start_thread
+   fun:clone
+}
+{
+   <avx2_strrchr.par.main.ymmwd1>
+   Memcheck:Cond
+   obj:*/libcldm.so.0
+   fun:cldm_test_run
+   fun:cldm_thread_run
+   fun:start_thread
+   fun:clone
+}
+{
+   <avx2_strrchr.par.main.vchk>
+   Memcheck:Cond
+   obj:*/libcldm.so.0
+   fun:cldm_test_run
+   fun:cldm_thread_run
+   fun:start_thread
    fun:clone
 }
