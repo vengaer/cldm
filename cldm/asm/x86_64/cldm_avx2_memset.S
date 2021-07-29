@@ -38,6 +38,7 @@ cldm_avx2_memset:
 
     leaq    (%rax, %rdx), %rdx                      # Address of last byte to set
 
+    .align 16
 .Lwr256b:
     cmpq    %rdi, %rdx
     jb      .Lwr128b

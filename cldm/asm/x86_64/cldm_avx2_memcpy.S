@@ -22,6 +22,7 @@ cldm_avx2_memcpy:
     andq    $-0x20, %rcx                            # Align
     subq    %rax, %rcx
 
+    .align 16
 .Lcpy256b:
     cmp     %rcx, %rdx                              # Check room for 256 bytes
     jb      .Lcpy128b

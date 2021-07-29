@@ -61,6 +61,7 @@ cldm_avx2_strrchr:
     andq    $-0x20, %rdx
     subq    %rdi, %rdx
 
+    .align 16
 .Lchk128b_prlg:
     leaq    (%rdi, %rdx), %rcx                      # Check if reading 128 bytes would cross page boundary
     andl    $PGSIZE - 1, %ecx
