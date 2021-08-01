@@ -70,9 +70,6 @@ endef
 define conditional-include-module
 $(if $(findstring -_-y-_-,-_-$($(2))-_-),
     $(call include-module,$(1)))
-$(if $(findstring -_-p-_-,-_-$($(2))-_-),
-    $(warning $($(2)) is only partial)
-    $(call include-module,$(1)))
 endef
 
 # $(call declare-trivial-c-module)

@@ -130,6 +130,7 @@ $(cconfig): $(system_mk) $(proc_mk) Makefile
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define CLDM_L1_DCACHE_LINESIZE $(l1_dcache)' >> $@
 	$(QUIET)$(if $(filter y,$(avx2_support)), $(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_AVX2' >> $@)
 	$(QUIET)$(if $(filter y,$(advsimd_support)), $(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_ADVSIMD' >> $@)
+	$(QUIET)$(if $(filter y,$(advsimd_hp_support)), $(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_ADVSIMD_HALF' >> $@)
 	$(QUIET)$(if $(filter y,$(has_generic)),  $(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_GENERIC' >> $@)
 	$(QUIET)$(if $(filter y,$(has_noreturn)), $(ECHO) $(ECHOFLAGS) '#define CLDM_HAS_NORETURN' >> $@)
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '\n#endif /* CLDM_CONFIG_H */' >> $@
@@ -139,6 +140,7 @@ $(asmconfig): $(system_mk) Makefile
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#ifndef SYSTEM_H\n#define SYSTEM_H\n' > $@
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define PGSIZE $(pagesize)' >> $@
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define L1_DCACHE_LINESIZE $(l1_dcache)' >> $@
+	$(QUIET)$(ECHO) $(ECHOFLAGS) '#define HAS_ADVSIMD_HALF' >> $@
 	$(QUIET)$(ECHO) $(ECHOFLAGS) '\n#endif' >> $@
 
 $(MOCKUPS):
