@@ -5,6 +5,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -41,7 +42,7 @@ struct cldm_ht {
 #define cldm_ht_init()    \
     (struct cldm_ht){ .capacity = cldm_ht_static_capacity() }
 
-size_t cldm_hash_fnv1a(unsigned char const *data, size_t size);
+uint_fast64_t cldm_hash_fnv1a(unsigned char const *data, size_t size);
 
 inline void cldm_ht_free(struct cldm_ht *ht) {
     if(ht->capacity > cldm_ht_static_capacity()) {

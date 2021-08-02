@@ -19,7 +19,7 @@ static inline bool cldm_ht_slot_vacant(union cldm_ht_internal_entry const *entry
     return entry->status <= CLDM_HASH_VACANT;
 }
 
-static inline size_t cldm_hash_entry(struct cldm_ht_entry const *entry) {
+static inline uint_fast64_t cldm_hash_entry(struct cldm_ht_entry const *entry) {
     return cldm_hash_fnv1a(entry->key, entry->size);
 }
 
@@ -117,12 +117,12 @@ static bool cldm_ht_expand(struct cldm_ht *ht) {
     return true;
 }
 
-size_t cldm_hash_fnv1a(unsigned char const *data, size_t size) {
-    size_t hash = CLDM_FNV_OFFSET_BASIS;
+uint_fast64_t cldm_hash_fnv1a(unsigned char const *data, size_t size) {
+    uint_fast64_t hash = CLDM_FNV_OFFSET_BASIS;
     unsigned char const *iter;
 
     cldm_for_each(iter, data, size) {
-        hash ^= (size_t)*iter;
+        hash ^= (uint_fast64_t)*iter;
         hash *= CLDM_FNV_PRIME;
     }
 
