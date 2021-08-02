@@ -3,6 +3,7 @@ tags
 build/**
 
 crash*
+qemu_*
 
 cldm/mockups.h
 cldm/cldmgen.h
